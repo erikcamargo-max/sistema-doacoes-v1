@@ -1,0 +1,11 @@
+sistema-doacoes/
+├── package.json
+├── server.js
+├── README.md
+├── database/
+│   └── (será criado automaticamente)
+├── scripts/
+│   └── init-database.js
+└── public/
+    ├── index.html
+    └── app.js
