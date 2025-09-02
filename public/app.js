@@ -1,3 +1,120 @@
+
+// ===============================================================================
+// FUNÇÃO DE BUSCA DE CEP
+// ===============================================================================
+
+// Função para buscar CEP via ViaCEP
+window.buscarCEP = async function(cepValue, prefix = 'simple-') {
+    console.log('🔍 Buscando CEP:', cepValue, 'Prefix:', prefix);
+    
+    // Remove formatação do CEP
+    const cep = cepValue.replace(/\D/g, '');
+    
+    if (cep.length !== 8) {
+        console.log('CEP incompleto:', cep);
+        return;
+    }
+    
+    // Mostrar indicador de carregamento
+    const cepField = document.getElementById(prefix + 'cep');
+    if (cepField) {
+        cepField.style.borderColor = '#fbbf24'; // Amarelo durante busca
+    }
+    
+    try {
+        const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        const data = await response.json();
+        
+        console.log('Resposta ViaCEP:', data);
+        
+        if (!data.erro) {
+            // Preencher campos automaticamente
+            const logradouroField = document.getElementById(prefix + 'logradouro');
+            const bairroField = document.getElementById(prefix + 'bairro');
+            const cidadeField = document.getElementById(prefix + 'cidade');
+            const estadoField = document.getElementById(prefix + 'estado');
+            
+            if (logradouroField) {
+                logradouroField.value = data.logradouro || '';
+                console.log('Logradouro preenchido:', data.logradouro);
+            }
+            if (bairroField) {
+                bairroField.value = data.bairro || '';
+                console.log('Bairro preenchido:', data.bairro);
+            }
+            if (cidadeField) {
+                cidadeField.value = data.localidade || '';
+                console.log('Cidade preenchida:', data.localidade);
+            }
+            if (estadoField) {
+                estadoField.value = data.uf || '';
+                console.log('Estado preenchido:', data.uf);
+            }
+            
+            // Indicar sucesso
+            if (cepField) {
+                cepField.style.borderColor = '#10b981'; // Verde sucesso
+                setTimeout(() => {
+                    cepField.style.borderColor = '#ddd';
+                }, 2000);
+            }
+            
+            // Focar no campo número
+            const numeroField = document.getElementById(prefix + 'numero');
+            if (numeroField) {
+                numeroField.focus();
+            }
+            
+            console.log('✅ Endereço encontrado e preenchido!');
+        } else {
+            console.log('⚠️ CEP não encontrado');
+            if (cepField) {
+                cepField.style.borderColor = '#ef4444'; // Vermelho erro
+                setTimeout(() => {
+                    cepField.style.borderColor = '#ddd';
+                }, 2000);
+            }
+        }
+    } catch (error) {
+        console.error('❌ Erro ao buscar CEP:', error);
+        if (cepField) {
+            cepField.style.borderColor = '#ef4444'; // Vermelho erro
+            setTimeout(() => {
+                cepField.style.borderColor = '#ddd';
+            }, 2000);
+        }
+    }
+}
+
+window.formatCEPInput = function(event) {
+    let value = event.target.value.replace(/\D/g, '');
+    
+    // Limitar a 8 dígitos
+    if (value.length > 8) {
+        value = value.substring(0, 8);
+    }
+    
+    // Adicionar hífen
+    if (value.length > 5) {
+        value = value.substring(0, 5) + '-' + value.substring(5, 8);
+    }
+    
+    event.target.value = value;
+    
+    // Buscar CEP automaticamente quando completo (8 dígitos)
+    if (value.replace(/\D/g, '').length === 8) {
+        // Detectar o prefixo baseado no ID do campo
+        const fieldId = event.target.id;
+        let prefix = 'simple-';
+        
+        if (fieldId.includes('edit-')) {
+            prefix = 'edit-';
+        }
+        
+        console.log('CEP completo, iniciando busca. Prefix:', prefix);
+        buscarCEP(value, prefix);
+    }
+}
 // ===============================================================================
 // SISTEMA DE CONTROLE DE DOAÇÕES - APP.JS COMPLETO E LIMPO
 // ===============================================================================
@@ -359,6 +476,63 @@ function createSimpleModal() {
                                 width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px;
                             ">
                         </div>
+                        
+                        <h4 style="margin: 20px 0 15px 0; font-size: 16px; font-weight: bold; color: #555; border-top: 1px solid #eee; padding-top: 15px;">
+                            📍 Endereço
+                        </h4>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 10px; margin-bottom: 10px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">CEP</label>
+                                <input type="text" id="simple-cep" placeholder="00000-000" maxlength="9" 
+                                       oninput="formatCEPInput(event)" style="
+                                    width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;
+                                ">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">Logradouro</label>
+                                <input type="text" id="simple-logradouro" placeholder="Rua, Avenida..." style="
+                                    width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;
+                                ">
+                            </div>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 10px; margin-bottom: 10px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">Número</label>
+                                <input type="text" id="simple-numero" placeholder="123" style="
+                                    width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;
+                                ">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">Complemento</label>
+                                <input type="text" id="simple-complemento" placeholder="Apto, Bloco, Sala..." style="
+                                    width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;
+                                ">
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 10px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">Bairro</label>
+                            <input type="text" id="simple-bairro" placeholder="Nome do bairro" style="
+                                width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;
+                            ">
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px; margin-bottom: 10px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">Cidade</label>
+                                <input type="text" id="simple-cidade" placeholder="Nome da cidade" style="
+                                    width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;
+                                ">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">Estado</label>
+                                <input type="text" id="simple-estado" placeholder="UF" maxlength="2" style="
+                                    width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px; text-transform: uppercase;
+                                ">
+                            </div>
+                        </div>
                     </div>
                     
                     <div>
@@ -380,8 +554,7 @@ function createSimpleModal() {
                                     width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; background: white;
                                 ">
                                     <option value="Dinheiro">Dinheiro</option>
-                                    <option value="Produto">Produto</option>
-                                    <option value="Serviço">Serviço</option>
+                                    <option value="PIX">PIX</option>
                                 </select>
                             </div>
                         </div>
@@ -484,7 +657,15 @@ async function saveSimpleModalWithDuplicateCheck() {
         contact: document.getElementById('simple-email').value.trim(),
         recurring: document.getElementById('simple-recurring').checked,
         notes: document.getElementById('simple-notes').value.trim(),
-        cpf: document.getElementById('simple-cpf').value.trim()
+        cpf: document.getElementById('simple-cpf').value.trim(),
+        // Novos campos de endereço
+        cep: document.getElementById('simple-cep').value.trim(),
+        logradouro: document.getElementById('simple-logradouro').value.trim(),
+        numero: document.getElementById('simple-numero').value.trim(),
+        complemento: document.getElementById('simple-complemento').value.trim(),
+        bairro: document.getElementById('simple-bairro').value.trim(),
+        cidade: document.getElementById('simple-cidade').value.trim(),
+        estado: document.getElementById('simple-estado').value.trim()
     };
     
     if (!formData.donor || !formData.amount || !formData.date || !formData.phone1) {
@@ -536,11 +717,493 @@ async function saveSimpleModalWithDuplicateCheck() {
 // ===============================================================================
 
 async function showSimpleHistory(id) {
-    alert('🚧 Histórico em desenvolvimento. ID: ' + id);
+    console.log('📊 Exibindo histórico da doação ID:', id);
+    
+    // Buscar doação e seu histórico
+    const donation = donations.find(d => d.id === id);
+    if (!donation) {
+        alert('❌ Doação não encontrada!');
+        return;
+    }
+    
+    // Criar modal de histórico
+    let existingModal = document.getElementById('history-modal-simple');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    const pagamentos = donation.historico_pagamentos || [];
+    const totalPago = pagamentos.reduce((sum, p) => sum + p.valor, 0);
+    
+    const modalHTML = `
+        <div id="history-modal-simple" style="
+            display: flex;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 999999;
+            justify-content: center;
+            align-items: center;
+        ">
+            <div style="
+                background: white;
+                padding: 30px;
+                border-radius: 10px;
+                max-width: 800px;
+                width: 90%;
+                max-height: 80vh;
+                overflow-y: auto;
+            ">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <h2 style="margin: 0; font-size: 24px; font-weight: bold;">
+                        📋 Histórico de Pagamentos
+                    </h2>
+                    <button onclick="closeHistoryModal()" style="
+                        background: none;
+                        border: none;
+                        font-size: 30px;
+                        cursor: pointer;
+                        color: #666;
+                    ">&times;</button>
+                </div>
+                
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+                        <div>
+                            <p style="margin: 0; color: #666; font-size: 14px;">Doador</p>
+                            <p style="margin: 5px 0 0 0; font-weight: bold; font-size: 18px;">
+                                ${donation.codigo_doador || 'D' + donation.doador_id} - ${donation.doador_nome}
+                            </p>
+                        </div>
+                        <div>
+                            <p style="margin: 0; color: #666; font-size: 14px;">Valor da Doação</p>
+                            <p style="margin: 5px 0 0 0; font-weight: bold; font-size: 18px; color: #3b82f6;">
+                                R$ ${donation.valor.toFixed(2).replace('.', ',')}
+                            </p>
+                        </div>
+                        <div>
+                            <p style="margin: 0; color: #666; font-size: 14px;">Total Pago</p>
+                            <p style="margin: 5px 0 0 0; font-weight: bold; font-size: 18px; color: #10b981;">
+                                R$ ${totalPago.toFixed(2).replace('.', ',')}
+                            </p>
+                        </div>
+                    </div>
+                    ${donation.recorrente ? `
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;">
+                        <p style="margin: 0; color: #666; font-size: 14px;">
+                            Doação Recorrente - ${donation.parcelas_totais || 1} parcelas
+                        </p>
+                    </div>
+                    ` : ''}
+                </div>
+                
+                <h3 style="margin: 20px 0 15px 0; font-size: 18px; font-weight: bold;">
+                    💳 Pagamentos Realizados (${pagamentos.length})
+                </h3>
+                
+                ${pagamentos.length > 0 ? `
+                <div style="border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead style="background: #f3f4f6;">
+                            <tr>
+                                <th style="padding: 12px; text-align: left; font-weight: bold; color: #374151;">Data</th>
+                                <th style="padding: 12px; text-align: left; font-weight: bold; color: #374151;">Valor</th>
+                                <th style="padding: 12px; text-align: left; font-weight: bold; color: #374151;">Status</th>
+                                <th style="padding: 12px; text-align: center; font-weight: bold; color: #374151;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${pagamentos.map((p, index) => `
+                            <tr style="border-top: 1px solid #e5e7eb;">
+                                <td style="padding: 12px;">
+                                    ${new Date(p.data_pagamento + 'T00:00:00').toLocaleDateString('pt-BR')}
+                                </td>
+                                <td style="padding: 12px; font-weight: bold; color: #059669;">
+                                    R$ ${p.valor.toFixed(2).replace('.', ',')}
+                                </td>
+                                <td style="padding: 12px;">
+                                    <span style="
+                                        padding: 4px 12px;
+                                        border-radius: 9999px;
+                                        font-size: 12px;
+                                        font-weight: bold;
+                                        background: #10b981;
+                                        color: white;
+                                    ">${p.status || 'Pago'}</span>
+                                </td>
+                                <td style="padding: 12px; text-align: center;">
+                                    <button onclick="deletePagamento(${p.id}, ${id})" style="
+                                        padding: 4px 8px;
+                                        background: #ef4444;
+                                        color: white;
+                                        border: none;
+                                        border-radius: 4px;
+                                        cursor: pointer;
+                                        font-size: 12px;
+                                    ">🗑️ Excluir</button>
+                                </td>
+                            </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+                ` : `
+                <div style="text-align: center; padding: 40px; background: #f9fafb; border-radius: 8px;">
+                    <p style="color: #6b7280; margin: 0;">Nenhum pagamento registrado ainda</p>
+                </div>
+                `}
+                
+                <div style="display: flex; gap: 15px; justify-content: flex-end; margin-top: 25px; padding-top: 20px; border-top: 2px solid #eee;">
+                    <button onclick="closeHistoryModal()" style="
+                        padding: 12px 25px; border: 2px solid #ccc; background: white; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold;
+                    ">Fechar</button>
+                    
+                    <button onclick="addPagamento(${id})" style="
+                        padding: 12px 25px; border: none; background: #10b981; color: white; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold;
+                    ">➕ Adicionar Pagamento</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+window.closeHistoryModal = function() {
+    const modal = document.getElementById('history-modal-simple');
+    if (modal) modal.remove();
+}
+
+window.addPagamento = function(doacaoId) {
+    const date = prompt('Data do pagamento (DD/MM/AAAA):');
+    if (!date) return;
+    
+    const valor = prompt('Valor do pagamento (R$):');
+    if (!valor) return;
+    
+    // Converter data para formato ISO
+    const [dia, mes, ano] = date.split('/');
+    const dataISO = `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
+    
+    fetch(`${API_BASE}/doacoes/${doacaoId}/pagamento`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            data_pagamento: dataISO,
+            valor: parseFloat(valor.replace(',', '.')),
+            status: 'Pago'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message) {
+            alert('✅ Pagamento adicionado!');
+            closeHistoryModal();
+            loadDonations();
+            loadSummary();
+        } else {
+            alert('❌ Erro ao adicionar pagamento');
+        }
+    })
+    .catch(error => {
+        alert('❌ Erro: ' + error.message);
+    });
+}
+
+window.deletePagamento = function(pagamentoId, doacaoId) {
+    if (!confirm('Tem certeza que deseja excluir este pagamento?')) return;
+    
+    fetch(`${API_BASE}/pagamentos/${pagamentoId}`, {
+        method: 'DELETE'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message) {
+            alert('✅ Pagamento excluído!');
+            closeHistoryModal();
+            loadDonations();
+            loadSummary();
+        } else {
+            alert('❌ Erro ao excluir pagamento');
+        }
+    })
+    .catch(error => {
+        alert('❌ Erro: ' + error.message);
+    });
 }
 
 function editDonation(id) {
-    alert('🚧 Edição em desenvolvimento. ID: ' + id);
+    console.log('📝 Editando doação ID:', id);
+    
+    // Buscar dados da doação
+    const donation = donations.find(d => d.id === id);
+    if (!donation) {
+        alert('❌ Doação não encontrada!');
+        return;
+    }
+    
+    // Criar modal de edição
+    let existingModal = document.getElementById('edit-modal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    const modalHTML = `
+        <div id="edit-modal" style="
+            display: flex;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 999999;
+            justify-content: center;
+            align-items: center;
+        ">
+            <div style="
+                background: white;
+                padding: 30px;
+                border-radius: 10px;
+                max-width: 900px;
+                width: 90%;
+                max-height: 90vh;
+                overflow-y: auto;
+            ">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <h2 style="margin: 0; font-size: 24px; font-weight: bold;">
+                        Editar Doação - ${donation.codigo_doador || 'D' + donation.doador_id}
+                    </h2>
+                    <button onclick="closeEditModal()" style="
+                        background: none;
+                        border: none;
+                        font-size: 30px;
+                        cursor: pointer;
+                        color: #666;
+                    ">&times;</button>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                    <div>
+                        <h3 style="margin: 0 0 20px 0; font-size: 18px; font-weight: bold; color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px;">
+                            👤 Dados do Doador
+                        </h3>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">Nome Completo *</label>
+                            <input type="text" id="edit-donor" value="${donation.doador_nome}" style="
+                                width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px;
+                            ">
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">CPF</label>
+                            <input type="text" id="edit-cpf" value="${donation.doador_cpf || ''}" placeholder="000.000.000-00" maxlength="14" 
+                                   oninput="formatCPFInput(event)" style="
+                                width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px;
+                            ">
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">Telefone Principal *</label>
+                            <input type="tel" id="edit-phone1" value="${donation.doador_telefone1}" style="
+                                width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px;
+                            ">
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">Telefone Alternativo</label>
+                            <input type="tel" id="edit-phone2" value="${donation.doador_telefone2 || ''}" style="
+                                width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px;
+                            ">
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">E-mail</label>
+                            <input type="email" id="edit-email" value="${donation.doador_email || ''}" style="
+                                width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px;
+                            ">
+                        </div>
+                        
+                        <h4 style="margin: 20px 0 15px 0; font-size: 16px; font-weight: bold; color: #555; border-top: 1px solid #eee; padding-top: 15px;">
+                            📍 Endereço
+                        </h4>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 10px; margin-bottom: 10px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">CEP</label>
+                                <input type="text" id="edit-cep" value="${donation.doador_cep || ''}" placeholder="00000-000" maxlength="9" 
+                                       oninput="formatCEPInput(event)" style="
+                                    width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;
+                                ">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">Logradouro</label>
+                                <input type="text" id="edit-logradouro" value="${donation.doador_logradouro || ''}" placeholder="Rua, Avenida..." style="
+                                    width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;
+                                ">
+                            </div>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 10px; margin-bottom: 10px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">Número</label>
+                                <input type="text" id="edit-numero" value="${donation.doador_numero || ''}" placeholder="123" style="
+                                    width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;
+                                ">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">Complemento</label>
+                                <input type="text" id="edit-complemento" value="${donation.doador_complemento || ''}" placeholder="Apto, Bloco, Sala..." style="
+                                    width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;
+                                ">
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 10px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">Bairro</label>
+                            <input type="text" id="edit-bairro" value="${donation.doador_bairro || ''}" placeholder="Nome do bairro" style="
+                                width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;
+                            ">
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px; margin-bottom: 10px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">Cidade</label>
+                                <input type="text" id="edit-cidade" value="${donation.doador_cidade || ''}" placeholder="Nome da cidade" style="
+                                    width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;
+                                ">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">Estado</label>
+                                <input type="text" id="edit-estado" value="${donation.doador_estado || ''}" placeholder="UF" maxlength="2" style="
+                                    width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px; text-transform: uppercase;
+                                ">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 style="margin: 0 0 20px 0; font-size: 18px; font-weight: bold; color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px;">
+                            💰 Dados da Doação
+                        </h3>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Valor (R$) *</label>
+                                <input type="number" id="edit-amount" value="${donation.valor}" step="0.01" style="
+                                    width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px;
+                                ">
+                            </div>
+                            
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Tipo *</label>
+                                <select id="edit-type" style="
+                                    width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; background: white;
+                                ">
+                                    <option value="Dinheiro" ${donation.tipo === 'Dinheiro' ? 'selected' : ''}>Dinheiro</option>
+                                    <option value="Produto" ${donation.tipo === 'Produto' ? 'selected' : ''}>Produto</option>
+                                    <option value="Serviço" ${donation.tipo === 'Serviço' ? 'selected' : ''}>Serviço</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">Data da Doação *</label>
+                            <input type="date" id="edit-date" value="${donation.data_doacao}" style="
+                                width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px;
+                            ">
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: flex; align-items: center; gap: 10px; font-weight: bold;">
+                                <input type="checkbox" id="edit-recurring" ${donation.recorrente ? 'checked' : ''} style="
+                                    width: 18px; height: 18px; cursor: pointer;
+                                ">
+                                <span>Doação recorrente</span>
+                            </label>
+                        </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">Observações</label>
+                            <textarea id="edit-notes" rows="4" style="
+                                width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; resize: vertical;
+                            ">${donation.observacoes || ''}</textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 15px; justify-content: flex-end; margin-top: 25px; padding-top: 20px; border-top: 2px solid #eee;">
+                    <button onclick="closeEditModal()" style="
+                        padding: 12px 25px; border: 2px solid #ccc; background: white; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold;
+                    ">Cancelar</button>
+                    
+                    <button onclick="saveEditedDonation(${id})" style="
+                        padding: 12px 25px; border: none; background: #3b82f6; color: white; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold;
+                    ">💾 Salvar Alterações</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+window.closeEditModal = function() {
+    const modal = document.getElementById('edit-modal');
+    if (modal) modal.remove();
+}
+
+window.saveEditedDonation = async function(id) {
+    const formData = {
+        donor: document.getElementById('edit-donor').value.trim(),
+        amount: parseFloat(document.getElementById('edit-amount').value),
+        type: document.getElementById('edit-type').value,
+        date: document.getElementById('edit-date').value,
+        phone1: document.getElementById('edit-phone1').value.trim(),
+        phone2: document.getElementById('edit-phone2').value.trim(),
+        contact: document.getElementById('edit-email').value.trim(),
+        recurring: document.getElementById('edit-recurring').checked,
+        notes: document.getElementById('edit-notes').value.trim(),
+        cpf: document.getElementById('edit-cpf').value.trim(),
+        // Campos de endereço
+        cep: document.getElementById('edit-cep').value.trim(),
+        logradouro: document.getElementById('edit-logradouro').value.trim(),
+        numero: document.getElementById('edit-numero').value.trim(),
+        complemento: document.getElementById('edit-complemento').value.trim(),
+        bairro: document.getElementById('edit-bairro').value.trim(),
+        cidade: document.getElementById('edit-cidade').value.trim(),
+        estado: document.getElementById('edit-estado').value.trim()
+    };
+    
+    if (!formData.donor || !formData.amount || !formData.date || !formData.phone1) {
+        alert('❌ Preencha todos os campos obrigatórios');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE}/doacoes/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            alert('✅ Doação atualizada com sucesso!');
+            closeEditModal();
+            loadDonations();
+            loadSummary();
+        } else {
+            alert('❌ Erro: ' + data.error);
+        }
+    } catch (error) {
+        alert('❌ Erro: ' + error.message);
+    }
 }
 
 async function deleteDonation(id) {
@@ -608,8 +1271,7 @@ function formatDate(dateString) {
 function getTypeColor(type) {
     const colors = {
         'Dinheiro': 'bg-green-100 text-green-800',
-        'Produto': 'bg-blue-100 text-blue-800',
-        'Serviço': 'bg-purple-100 text-purple-800'
+        'PIX': 'bg-blue-100 text-blue-800'
     };
     return colors[type] || 'bg-gray-100 text-gray-800';
 }
@@ -631,4 +1293,3 @@ window.toggleRecurringFieldsSimple = toggleRecurringFieldsSimple;
 window.saveSimpleModalWithDuplicateCheck = saveSimpleModalWithDuplicateCheck;
 window.formatCPFInput = formatCPFInput;
 
-console.log('🎉 Sistema completo carregado com sucesso!');ModalWithDuplicateCheck = saveSimple

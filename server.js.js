@@ -23,7 +23,7 @@ const db = new sqlite3.Database('./database/doacoes.db', (err) => {
 
 // Criar tabelas se não existirem
 db.serialize(() => {
-  // Tabela de doadores
+  // Tabela de doadores com todos os campos incluindo endereço
   db.run(`CREATE TABLE IF NOT EXISTS doadores (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nome TEXT NOT NULL,
@@ -32,6 +32,13 @@ db.serialize(() => {
     telefone2 TEXT,
     cpf TEXT,
     codigo_doador TEXT UNIQUE,
+    cep TEXT,
+    logradouro TEXT,
+    numero TEXT,
+    complemento TEXT,
+    bairro TEXT,
+    cidade TEXT,
+    estado TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
 
@@ -88,10 +95,10 @@ function generateDoadorCode(nome, id) {
     .substring(0, 3);
   
   // Formato: D + ID com padding + iniciais
-  return `D${id.toString().padStart(3, '0')}-${iniciais}`;
+  return `D${id.toString().padStart(3, '0')}-${iniciais || 'XXX'}`;
 }
 
-// Função para detectar possíveis duplicatas
+// Função para detectar possíveis duplicatas - CORRIGIDA
 function checkPossibleDuplicates(nome, telefone1, cpf, callback) {
   const queries = [];
   const params = [];
@@ -117,7 +124,13 @@ function checkPossibleDuplicates(nome, telefone1, cpf, callback) {
     LIMIT 5
   `;
   
-  db.all(query, params, callback);
+  db.all(query, params, (err, rows) => {
+    if (err) {
+      callback(err, null);
+      return;
+    }
+    callback(null, rows || []);
+  });
 }
 
 // Função para criar parcelas futuras
@@ -174,10 +187,10 @@ app.post('/api/doadores/check-duplicates', (req, res) => {
 app.get('/api/doadores/:codigo', (req, res) => {
   const { codigo } = req.params;
   
-  // Buscar por código ou ID
   const query = `
     SELECT 
       id, codigo_doador, nome, email, telefone1, telefone2, cpf,
+      cep, logradouro, numero, complemento, bairro, cidade, estado,
       (SELECT COUNT(*) FROM doacoes WHERE doador_id = doadores.id) as total_doacoes,
       (SELECT COALESCE(SUM(valor), 0) FROM historico_pagamentos hp 
        JOIN doacoes d ON hp.doacao_id = d.id 
@@ -236,7 +249,14 @@ app.get('/api/doacoes', (req, res) => {
       doador.email as doador_email,
       doador.telefone1 as doador_telefone1,
       doador.telefone2 as doador_telefone2,
-      doador.cpf as doador_cpf
+      doador.cpf as doador_cpf,
+      doador.cep as doador_cep,
+      doador.logradouro as doador_logradouro,
+      doador.numero as doador_numero,
+      doador.complemento as doador_complemento,
+      doador.bairro as doador_bairro,
+      doador.cidade as doador_cidade,
+      doador.estado as doador_estado
     FROM doacoes d
     JOIN doadores doador ON d.doador_id = doador.id
     ORDER BY d.created_at DESC
@@ -244,7 +264,16 @@ app.get('/api/doacoes', (req, res) => {
   
   db.all(query, [], (err, rows) => {
     if (err) {
-      res.status(500).json({ error: err.message });
+      console.error('❌ Erro ao buscar doações:', err);
+      res.status(500).json({ 
+        error: 'Erro ao buscar doações',
+        details: err.message 
+      });
+      return;
+    }
+    
+    if (!rows || rows.length === 0) {
+      res.json([]);
       return;
     }
     
@@ -257,7 +286,7 @@ app.get('/api/doacoes', (req, res) => {
           (err, payments) => {
             if (err) reject(err);
             else {
-              row.historico_pagamentos = payments;
+              row.historico_pagamentos = payments || [];
               resolve(row);
             }
           }
@@ -267,13 +296,20 @@ app.get('/api/doacoes', (req, res) => {
     
     Promise.all(promises)
       .then(results => res.json(results))
-      .catch(err => res.status(500).json({ error: err.message }));
+      .catch(err => {
+        console.error('❌ Erro ao buscar histórico:', err);
+        res.status(500).json({ error: err.message });
+      });
   });
 });
 
 // Criar nova doação (com proteção contra duplicatas)
 app.post('/api/doacoes', (req, res) => {
-  const { donor, amount, type, date, phone1, phone2, contact, recurring, notes, parcelas, proximaParcela, cpf, forceCreate } = req.body;
+  const { 
+    donor, amount, type, date, phone1, phone2, contact, recurring, notes, 
+    parcelas, proximaParcela, cpf, cep, logradouro, numero, complemento, 
+    bairro, cidade, estado, forceCreate 
+  } = req.body;
   
   // Se não for criação forçada, verificar duplicatas primeiro
   if (!forceCreate) {
@@ -283,7 +319,7 @@ app.post('/api/doacoes', (req, res) => {
         return;
       }
       
-      if (duplicates.length > 0) {
+      if (duplicates && duplicates.length > 0) {
         res.status(409).json({ 
           error: 'DUPLICATES_FOUND',
           message: 'Possíveis doadores duplicados encontrados',
@@ -368,8 +404,8 @@ app.post('/api/doacoes', (req, res) => {
       if (doador) {
         // Atualizar dados do doador existente
         db.run(
-          'UPDATE doadores SET nome = ?, email = ?, telefone1 = ?, telefone2 = ?, cpf = ? WHERE id = ?',
-          [donor, contact, phone1, phone2, cpf ? cpf.replace(/\D/g, '') : null, doador.id],
+          'UPDATE doadores SET nome = ?, email = ?, telefone1 = ?, telefone2 = ?, cpf = ?, cep = ?, logradouro = ?, numero = ?, complemento = ?, bairro = ?, cidade = ?, estado = ? WHERE id = ?',
+          [donor, contact, phone1, phone2, cpf ? cpf.replace(/\D/g, '') : null, cep, logradouro, numero, complemento, bairro, cidade, estado, doador.id],
           (err) => {
             if (err) {
               res.status(500).json({ error: err.message });
@@ -381,8 +417,8 @@ app.post('/api/doacoes', (req, res) => {
       } else {
         // Criar novo doador
         db.run(
-          'INSERT INTO doadores (nome, email, telefone1, telefone2, cpf) VALUES (?, ?, ?, ?, ?)',
-          [donor, contact, phone1, phone2, cpf ? cpf.replace(/\D/g, '') : null],
+          'INSERT INTO doadores (nome, email, telefone1, telefone2, cpf, cep, logradouro, numero, complemento, bairro, cidade, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          [donor, contact, phone1, phone2, cpf ? cpf.replace(/\D/g, '') : null, cep, logradouro, numero, complemento, bairro, cidade, estado],
           function(err) {
             if (err) {
               if (err.message.includes('UNIQUE constraint failed: doadores.cpf')) {
@@ -418,7 +454,10 @@ app.post('/api/doacoes', (req, res) => {
 // Atualizar doação
 app.put('/api/doacoes/:id', (req, res) => {
   const { id } = req.params;
-  const { donor, amount, type, date, phone1, phone2, contact, recurring, notes } = req.body;
+  const { 
+    donor, amount, type, date, phone1, phone2, contact, recurring, notes, 
+    cpf, cep, logradouro, numero, complemento, bairro, cidade, estado 
+  } = req.body;
   
   // Primeiro, atualizar dados do doador
   db.get('SELECT doador_id FROM doacoes WHERE id = ?', [id], (err, doacao) => {
@@ -433,8 +472,8 @@ app.put('/api/doacoes/:id', (req, res) => {
     }
     
     db.run(
-      'UPDATE doadores SET nome = ?, email = ?, telefone1 = ?, telefone2 = ? WHERE id = ?',
-      [donor, contact, phone1, phone2, doacao.doador_id],
+      'UPDATE doadores SET nome = ?, email = ?, telefone1 = ?, telefone2 = ?, cpf = ?, cep = ?, logradouro = ?, numero = ?, complemento = ?, bairro = ?, cidade = ?, estado = ? WHERE id = ?',
+      [donor, contact, phone1, phone2, cpf || null, cep || null, logradouro || null, numero || null, complemento || null, bairro || null, cidade || null, estado || null, doacao.doador_id],
       (err) => {
         if (err) {
           res.status(500).json({ error: err.message });
@@ -490,6 +529,20 @@ app.delete('/api/doacoes/:id', (req, res) => {
   });
 });
 
+// Deletar pagamento específico
+app.delete('/api/pagamentos/:id', (req, res) => {
+  const { id } = req.params;
+  
+  db.run('DELETE FROM historico_pagamentos WHERE id = ?', [id], function(err) {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+    
+    res.json({ message: 'Pagamento excluído com sucesso!' });
+  });
+});
+
 // Buscar parcelas futuras de uma doação
 app.get('/api/doacoes/:id/parcelas-futuras', (req, res) => {
   const { id } = req.params;
@@ -505,53 +558,6 @@ app.get('/api/doacoes/:id/parcelas-futuras', (req, res) => {
       res.json(rows);
     }
   );
-});
-
-// Gerar dados para carnê PDF
-app.get('/api/doacoes/:id/carne', (req, res) => {
-  const { id } = req.params;
-  
-  // Buscar dados da doação e doador
-  const query = `
-    SELECT 
-      d.*,
-      doador.nome as doador_nome,
-      doador.email as doador_email,
-      doador.telefone1 as doador_telefone1,
-      doador.telefone2 as doador_telefone2
-    FROM doacoes d
-    JOIN doadores doador ON d.doador_id = doador.id
-    WHERE d.id = ?
-  `;
-  
-  db.get(query, [id], (err, doacao) => {
-    if (err) {
-      res.status(500).json({ error: err.message });
-      return;
-    }
-    
-    if (!doacao) {
-      res.status(404).json({ error: 'Doação não encontrada' });
-      return;
-    }
-    
-    // Buscar parcelas futuras
-    db.all(
-      'SELECT * FROM parcelas_futuras WHERE doacao_id = ? ORDER BY numero_parcela',
-      [id],
-      (err, parcelas) => {
-        if (err) {
-          res.status(500).json({ error: err.message });
-          return;
-        }
-        
-        res.json({
-          doacao: doacao,
-          parcelas: parcelas
-        });
-      }
-    );
-  });
 });
 
 // Adicionar pagamento ao histórico
@@ -576,7 +582,7 @@ app.post('/api/doacoes/:id/pagamento', (req, res) => {
   );
 });
 
-// Relatórios
+// Relatórios - Resumo geral
 app.get('/api/relatorios/resumo', (req, res) => {
   const queries = [
     'SELECT COUNT(*) as total_doacoes FROM doacoes',
@@ -594,9 +600,9 @@ app.get('/api/relatorios/resumo', (req, res) => {
   }))
   .then(results => {
     res.json({
-      total_doacoes: results[0].total_doacoes,
+      total_doacoes: results[0].total_doacoes || 0,
       total_arrecadado: results[1].total_pagamentos || 0,
-      doacoes_recorrentes: results[2].doacoes_recorrentes,
+      doacoes_recorrentes: results[2].doacoes_recorrentes || 0,
       total_pagamentos: results[1].total_pagamentos || 0
     });
   })
