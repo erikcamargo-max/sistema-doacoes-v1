@@ -1,0 +1,23 @@
+[v1.1.0] Atualização - 04/09/2025 08:10:59
+
+
+📝 Arquivos modificados:
+   -  public/app.js
+   -  server.js
+
+🗑️ Arquivos removidos:
+   -  CONTROLE_VERSAO.md
+   -  README.md
+   -  README.pdf.pdf
+   -  checkduplicates-server.js
+   -  commit-msg.txt
+   -  controle-versao.pdf
+   -  corrigir-checkduplicates-server.js
+   -  criar-server.js
+   -  repair.js
+   -  teste.js
+   -  verificar-estrutura.js
+
+📊 Estatísticas:
+   - Tamanho do banco: 40.00 KB
+   - Versão do sistema: v1.1.0
