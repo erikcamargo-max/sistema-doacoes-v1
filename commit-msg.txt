@@ -1,14 +1,25 @@
-[1.0.0] Atualização - 04/09/2025 08:53:11
+[1.1.0] Atualização - 04/09/2025 22:25:49
 
 ✅ Arquivos adicionados:
-   -  .gitignore
+   -  VERSAO.txt
+   -  cleanup.js
+   -  config/database.js
+   -  public/index-old-04-09-2025-as14-26.html
+   -  server-04-09-2025-as20-26.js
+   -  server.js
+   -  utils/logger.js
+
+📝 Arquivos modificados:
    -  commit-msg.txt
-   -  git-reset-24h.js
-   -  git-sync.js
+   -  package.json
+   -  public/app.js
+   -  public/index.html
 
 🗑️ Arquivos removidos:
-   -  git-sync-v1.js
+   -  server-escrito-gpt.js
+   -  server.js.backup.1756756341148
+   -  server.js.js
 
 📊 Estatísticas:
    - Tamanho do banco: 40.00 KB
-   - Versão do sistema: 1.0.0
+   - Versão do sistema: 1.1.0
