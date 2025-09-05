@@ -1,17 +1,11 @@
-[1.1.0] Atualização - 04/09/2025 22:27:04
+[1.1.0] Atualização - 04/09/2025 22:27:33
 
 
 📝 Arquivos modificados:
    -  commit-msg.txt
 
 🗑️ Arquivos removidos:
-   -  checkduplicates-server.js
-   -  cleanup.js
-   -  corrigir-checkduplicates-server.js
-   -  repair.js
-   -  server-04-09-2025-as20-26.js
-   -  sistema-doacoes.txt
-   -  teste.js
+   -  public/index-old-04-09-2025-as14-26.html
 
 📊 Estatísticas:
    - Tamanho do banco: 40.00 KB
