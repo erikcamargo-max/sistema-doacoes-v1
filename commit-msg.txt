@@ -1,8 +1,10 @@
-[1.1.1] Atualização - 05/09/2025 11:05:57
+[1.1.1] Atualização - 05/09/2025 11:06:43
 
 
 📝 Arquivos modificados:
+   -  CONTROLE_VERSAO.md
    -  commit-msg.txt
+   - controle-versao.pdf
 
 📊 Estatísticas:
    - Tamanho do banco: 40.00 KB
