@@ -1,6 +1,6 @@
 {
   "name": "sistema-doacoes",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Sistema completo de controle de doações com Node.js e SQLite",
   "main": "server.js",
   "scripts": {
@@ -18,7 +18,12 @@
   "devDependencies": {
     "nodemon": "^3.0.1"
   },
-  "keywords": ["doações", "nodejs", "sqlite", "sistema"],
+  "keywords": [
+    "doações",
+    "nodejs",
+    "sqlite",
+    "sistema"
+  ],
   "author": "Sistema de Doações",
   "license": "MIT"
 }

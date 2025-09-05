@@ -5,13 +5,13 @@
 
 // Função para buscar CEP via ViaCEP
 window.buscarCEP = async function(cepValue, prefix = 'simple-') {
-    console.log('🔍 Buscando CEP:', cepValue, 'Prefix:', prefix);
+    // console.log removed
     
     // Remove formatação do CEP
     const cep = cepValue.replace(/\D/g, '');
     
     if (cep.length !== 8) {
-        console.log('CEP incompleto:', cep);
+        // console.log removed
         return;
     }
     
@@ -25,7 +25,7 @@ window.buscarCEP = async function(cepValue, prefix = 'simple-') {
         const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
         const data = await response.json();
         
-        console.log('Resposta ViaCEP:', data);
+        // console.log removed
         
         if (!data.erro) {
             // Preencher campos automaticamente
@@ -36,19 +36,19 @@ window.buscarCEP = async function(cepValue, prefix = 'simple-') {
             
             if (logradouroField) {
                 logradouroField.value = data.logradouro || '';
-                console.log('Logradouro preenchido:', data.logradouro);
+                // console.log removed
             }
             if (bairroField) {
                 bairroField.value = data.bairro || '';
-                console.log('Bairro preenchido:', data.bairro);
+                // console.log removed
             }
             if (cidadeField) {
                 cidadeField.value = data.localidade || '';
-                console.log('Cidade preenchida:', data.localidade);
+                // console.log removed
             }
             if (estadoField) {
                 estadoField.value = data.uf || '';
-                console.log('Estado preenchido:', data.uf);
+                // console.log removed
             }
             
             // Indicar sucesso
@@ -65,9 +65,9 @@ window.buscarCEP = async function(cepValue, prefix = 'simple-') {
                 numeroField.focus();
             }
             
-            console.log('✅ Endereço encontrado e preenchido!');
+            // console.log removed
         } else {
-            console.log('⚠️ CEP não encontrado');
+            // console.log removed
             if (cepField) {
                 cepField.style.borderColor = '#ef4444'; // Vermelho erro
                 setTimeout(() => {
@@ -111,7 +111,7 @@ window.formatCEPInput = function(event) {
             prefix = 'edit-';
         }
         
-        console.log('CEP completo, iniciando busca. Prefix:', prefix);
+        // console.log removed
         buscarCEP(value, prefix);
     }
 }
@@ -163,7 +163,7 @@ const elements = {
 // ===============================================================================
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Sistema iniciado!');
+    // console.log removed
     
     feather.replace();
     setupEventListeners();
@@ -201,25 +201,40 @@ function setupEventListeners() {
 
 async function loadDonations() {
     try {
-        const response = await fetch(`${API_BASE}/doacoes`);
+        const response = await fetch('/api/doacoes');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const data = await response.json();
         
-        if (response.ok) {
-            donations = data;
-            console.log('✅ Doações carregadas:', donations.length);
-            filterDonations();
-            createCharts();
-        } else {
-            showError('Erro ao carregar doações: ' + data.error);
-        }
+        // Garantir que data é um array
+        allDonations = Array.isArray(data) ? data : [];
+        
+        // Filtrar e renderizar
+        const filtered = filterDonations(allDonations);
+        renderDonationsTable(filtered);
+        
     } catch (error) {
         console.error('❌ Erro ao carregar doações:', error);
-        showError('Erro ao conectar com o servidor');
-    } finally {
-        if (elements.loading) elements.loading.style.display = 'none';
-        if (elements.summary) elements.summary.style.display = 'grid';
-        if (elements.controls) elements.controls.style.display = 'block';
-        if (elements.chartsSection) elements.chartsSection.style.display = 'grid';
+        
+        // Mostrar mensagem de erro na interface
+        const tbody = document.getElementById('donations-tbody');
+        const tableContainer = document.getElementById('table-container');
+        const emptyState = document.getElementById('empty-state');
+        
+        tableContainer.style.display = 'none';
+        emptyState.style.display = 'block';
+        emptyState.innerHTML = `
+            <i data-feather="alert-circle" class="mx-auto h-12 w-12 text-red-400"></i>
+            <h3 class="mt-2 text-sm font-medium text-gray-900">Erro ao carregar doações</h3>
+            <p class="mt-1 text-sm text-gray-500">${error.message}</p>
+            <button onclick="loadDonations()" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                Tentar Novamente
+            </button>
+        `;
+        feather.replace();
     }
 }
 
@@ -243,110 +258,128 @@ async function loadSummary() {
 // FILTROS E RENDERIZAÇÃO
 // ===============================================================================
 
-function filterDonations() {
-    const searchTerm = elements.searchInput ? elements.searchInput.value.toLowerCase() : '';
-    const typeFilter = elements.filterType ? elements.filterType.value : '';
-    const recurringFilter = elements.filterRecurring ? elements.filterRecurring.value : '';
+function filterDonations(donations) {
+    const searchTerm = document.getElementById('search-input').value.toLowerCase();
+    const filterType = document.getElementById('filter-type').value;
+    const filterRecurrent = document.getElementById('filter-recurrent').value;
     
-    filteredDonations = donations.filter(donation => {
-        const matchesSearch = donation.doador_nome.toLowerCase().includes(searchTerm) ||
-                            donation.doador_telefone1.includes(searchTerm) ||
-                            (donation.doador_telefone2 && donation.doador_telefone2.includes(searchTerm));
+    return donations.filter(donation => {
+        // Verificar se os campos existem antes de usar toLowerCase()
+        const donorName = (donation.nome_doador || '').toLowerCase();
+        const donorCode = (donation.codigo_doador || '').toLowerCase();
+        const phone1 = (donation.telefone1 || '').toLowerCase();
+        const phone2 = (donation.telefone2 || '').toLowerCase();
         
-        const matchesType = !typeFilter || donation.tipo === typeFilter;
-        const matchesRecurring = !recurringFilter || donation.recorrente.toString() === recurringFilter;
+        // Filtro de busca
+        const matchSearch = !searchTerm || 
+            donorName.includes(searchTerm) ||
+            donorCode.includes(searchTerm) ||
+            phone1.includes(searchTerm) ||
+            phone2.includes(searchTerm);
         
-        return matchesSearch && matchesType && matchesRecurring;
+        // Filtro de tipo
+        const matchType = !filterType || donation.tipo === filterType;
+        
+        // Filtro de recorrência
+        const matchRecurrent = filterRecurrent === '' || 
+            donation.recorrente === parseInt(filterRecurrent);
+        
+        return matchSearch && matchType && matchRecurrent;
     });
-    
-    renderDonations();
 }
 
-function renderDonations() {
-    if (!elements.donationsTbody) return;
+function renderDonationsTable(donations) {
+    const tbody = document.getElementById('donations-tbody');
+    const tableContainer = document.getElementById('table-container');
+    const emptyState = document.getElementById('empty-state');
     
-    if (filteredDonations.length === 0) {
-        if (elements.tableContainer) elements.tableContainer.style.display = 'none';
-        if (elements.emptyState) elements.emptyState.style.display = 'block';
+    if (!donations || donations.length === 0) {
+        tableContainer.style.display = 'none';
+        emptyState.style.display = 'block';
         return;
     }
     
-    if (elements.tableContainer) elements.tableContainer.style.display = 'block';
-    if (elements.emptyState) elements.emptyState.style.display = 'none';
+    tableContainer.style.display = 'block';
+    emptyState.style.display = 'none';
     
-    elements.donationsTbody.innerHTML = filteredDonations.map(donation => `
-        <tr class="hover:bg-gray-50">
-            <td class="px-6 py-4 whitespace-nowrap">
-                <div class="flex items-center">
-                    <i data-feather="user" class="h-5 w-5 text-gray-400 mr-3"></i>
-                    <div>
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                                ${donation.codigo_doador || `D${donation.doador_id.toString().padStart(3, '0')}`}
-                            </span>
-                            <span class="text-sm font-medium text-gray-900">${donation.doador_nome}</span>
-                        </div>
-                        <div class="text-sm text-gray-500">${donation.doador_email || ''}</div>
-                        ${donation.doador_cpf ? `<div class="text-xs text-gray-400">CPF: ${formatCPF(donation.doador_cpf)}</div>` : ''}
+    tbody.innerHTML = donations.map(donation => {
+        // Garantir que todos os campos existem com valores padrão
+        const nome = donation.nome_doador || 'Doador não identificado';
+        const codigo = donation.codigo_doador || `D${String(donation.doador_id || 0).padStart(3, '0')}`;
+        const valor = (donation.valor || 0).toFixed(2).replace('.', ',');
+        const tipo = donation.tipo || 'N/A';
+        const data = formatDate(donation.data_doacao || new Date().toISOString());
+        const telefone1 = donation.telefone1 || 'Não informado';
+        const telefone2 = donation.telefone2 || '';
+        const recorrente = donation.recorrente ? 'Sim' : 'Não';
+        const observacoes = donation.observacoes || '';
+        
+        return `
+            <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-6 py-4">
+                    <div class="text-sm">
+                        <div class="font-medium text-gray-900">${nome}</div>
+                        <div class="text-gray-500">${codigo}</div>
                     </div>
-                </div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-gray-900">R$ ${donation.valor.toFixed(2).replace('.', ',')}</div>
-                ${donation.parcelas_totais > 1 ? `<div class="text-xs text-gray-500">${donation.parcelas_totais} parcelas</div>` : ''}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getTypeColor(donation.tipo)}">
-                    ${donation.tipo}
-                </span>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                ${formatDate(donation.data_doacao)}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                <div class="flex items-center gap-1">
-                    <i data-feather="phone" class="h-3 w-3 text-gray-400"></i>
-                    <span>${donation.doador_telefone1}</span>
-                </div>
-                ${donation.doador_telefone2 ? `
-                <div class="flex items-center gap-1 text-gray-500">
-                    <i data-feather="phone" class="h-3 w-3 text-gray-400"></i>
-                    <span>${donation.doador_telefone2}</span>
-                </div>
-                ` : ''}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-                ${donation.recorrente ? 
-                    '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Sim</span>' :
-                    '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">Não</span>'
-                }
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                <button class="history-btn text-blue-600 hover:text-blue-900 flex items-center gap-1 cursor-pointer" data-id="${donation.id}">
-                    <i data-feather="clock" class="h-4 w-4"></i>
-                    ${donation.historico_pagamentos ? donation.historico_pagamentos.length : 0} pagamentos
-                </button>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                <div class="flex space-x-2">
-                    <button class="edit-btn text-blue-600 hover:text-blue-900" data-id="${donation.id}" title="Editar">
-                        <i data-feather="edit" class="h-4 w-4"></i>
+                </td>
+                <td class="px-6 py-4">
+                    <div class="text-sm font-semibold text-green-600">
+                        R$ ${valor}
+                    </div>
+                </td>
+                <td class="px-6 py-4">
+                    <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                        ${tipo === 'Dinheiro' ? 'bg-green-100 text-green-800' : 
+                          tipo === 'PIX' ? 'bg-blue-100 text-blue-800' : 
+                          'bg-gray-100 text-gray-800'}">
+                        ${tipo}
+                    </span>
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-500">
+                    ${data}
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-500">
+                    <div>${telefone1}</div>
+                    ${telefone2 ? `<div class="text-xs">${telefone2}</div>` : ''}
+                </td>
+                <td class="px-6 py-4">
+                    <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                        ${donation.recorrente ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'}">
+                        ${recorrente}
+                    </span>
+                </td>
+                <td class="px-6 py-4 text-center">
+                    <button onclick="viewHistory(${donation.id})" 
+                        class="text-indigo-600 hover:text-indigo-900 transition-colors"
+                        title="Ver histórico">
+                        <i data-feather="clock" class="h-4 w-4"></i>
                     </button>
-                    ${donation.recorrente && donation.parcelas_totais > 1 ? 
-                        `<button class="carne-btn text-purple-600 hover:text-purple-900" data-id="${donation.id}" title="Gerar Carnê">
+                </td>
+                <td class="px-6 py-4 text-sm font-medium">
+                    <div class="flex gap-2">
+                        <button onclick="editDonation(${donation.id})" 
+                            class="text-blue-600 hover:text-blue-900 transition-colors"
+                            title="Editar">
+                            <i data-feather="edit" class="h-4 w-4"></i>
+                        </button>
+                        <button onclick="generateCarne(${donation.id})" 
+                            class="text-green-600 hover:text-green-900 transition-colors"
+                            title="Gerar carnê">
                             <i data-feather="file-text" class="h-4 w-4"></i>
-                        </button>` : ''
-                    }
-                    <button class="delete-btn text-red-600 hover:text-red-900" data-id="${donation.id}" title="Excluir">
-                        <i data-feather="trash-2" class="h-4 w-4"></i>
-                    </button>
-                </div>
-            </td>
-        </tr>
-    `).join('');
+                        </button>
+                        <button onclick="deleteDonation(${donation.id})" 
+                            class="text-red-600 hover:text-red-900 transition-colors"
+                            title="Excluir">
+                            <i data-feather="trash-2" class="h-4 w-4"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
     
+    // Re-renderizar ícones do Feather
     feather.replace();
-    attachTableEventListeners();
 }
 
 function attachTableEventListeners() {
@@ -392,7 +425,7 @@ function attachTableEventListeners() {
 // ===============================================================================
 
 function openModal() {
-    console.log('📝 Abrindo modal...');
+    // console.log removed
     createSimpleModal();
 }
 
@@ -620,7 +653,7 @@ function createSimpleModal() {
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('simple-date').value = today;
     
-    console.log('✅ Modal criado');
+    // console.log removed
     document.getElementById('simple-donor').focus();
 }
 
@@ -717,7 +750,7 @@ async function saveSimpleModalWithDuplicateCheck() {
 // ===============================================================================
 
 async function showSimpleHistory(id) {
-    console.log('📊 Exibindo histórico da doação ID:', id);
+    // console.log removed
     
     // Buscar doação e seu histórico
     const donation = donations.find(d => d.id === id);
@@ -936,7 +969,7 @@ window.deletePagamento = function(pagamentoId, doacaoId) {
 }
 
 function editDonation(id) {
-    console.log('📝 Editando doação ID:', id);
+    // console.log removed
     
     // Buscar dados da doação
     const donation = donations.find(d => d.id === id);
@@ -1225,17 +1258,500 @@ async function deleteDonation(id) {
     }
 }
 
-async function generateCarne(id) {
-    alert('🚧 Carnê em desenvolvimento. ID: ' + id);
+// Função para gerar carnê (SUBSTITUIR A EXISTENTE)
+async function generateCarne(doacaoId) {
+    try {
+        showNotification('Gerando carnê...', 'info');
+        
+        // Buscar dados da doação
+        const doacaoResponse = await fetch(`/api/doacoes/${doacaoId}`);
+        if (!doacaoResponse.ok) throw new Error('Erro ao buscar doação');
+        const doacao = await doacaoResponse.json();
+        
+        // Buscar dados do doador
+        const doadorResponse = await fetch(`/api/doadores/${doacao.doador_id}`);
+        if (!doadorResponse.ok) throw new Error('Erro ao buscar doador');
+        const doador = await doadorResponse.json();
+        
+        // Buscar histórico de pagamentos
+        const historicoResponse = await fetch(`/api/doacoes/${doacaoId}/historico`);
+        const historico = await historicoResponse.json();
+        
+        // Criar janela temporária para geração do PDF
+        const printWindow = window.open('', '_blank');
+        
+        // HTML do carnê
+        const carneHTML = `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Carnê - ${doador.nome}</title>
+    <style>
+        @media print {
+            body { margin: 0; }
+            .parcela-wrapper { page-break-inside: avoid; }
+            .no-print { display: none !important; }
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f5f5f5;
+            border: 2px solid #333;
+        }
+        .parcela-wrapper {
+            margin-bottom: 30px;
+            page-break-inside: avoid;
+        }
+        .parcela-container {
+            display: flex;
+            border: 2px solid #333;
+            min-height: 200px;
+        }
+        .canhoto {
+            width: 40%;
+            padding: 15px;
+            border-right: 2px dashed #666;
+            background: #f9f9f9;
+        }
+        .recibo {
+            width: 60%;
+            padding: 15px;
+        }
+        .titulo {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #ccc;
+        }
+        .campo {
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        .campo strong {
+            display: inline-block;
+            min-width: 120px;
+        }
+        .valor {
+            color: #d32f2f;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .status-pago {
+            background: #4caf50;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        .status-pendente {
+            background: #ff9800;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        .confirmacao {
+            margin-top: 15px;
+            padding: 10px;
+            background: #e8f5e9;
+            border-radius: 3px;
+            color: #2e7d32;
+            font-size: 12px;
+        }
+        @page {
+            size: A4;
+            margin: 10mm;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>CARNÊ DE PAGAMENTO</h1>
+        <h2>${doador.nome.toUpperCase()}</h2>
+        <div style="margin-top: 10px; font-size: 14px;">
+            <strong>Código:</strong> ${doador.codigo_doador || 'D' + String(doador.id).padStart(3, '0')}
+            ${doador.cpf ? ' | <strong>CPF:</strong> ' + formatCPF(doador.cpf) : ''}
+        </div>
+    </div>
+`;
+        
+        // Gerar parcelas
+        const valorParcela = doacao.valor;
+        const totalParcelas = doacao.parcelas_totais || (doacao.recorrente ? 12 : 1);
+        let htmlParcelas = '';
+        
+        for (let i = 1; i <= totalParcelas; i++) {
+            const dataVencimento = calcularVencimento(doacao.data_doacao, i - 1, doacao.recorrente);
+            const pagamento = buscarPagamentoHistorico(historico, dataVencimento);
+            const isPago = !!pagamento;
+            
+            htmlParcelas += `
+    <div class="parcela-wrapper">
+        <div class="parcela-container">
+            <!-- Canhoto Controle -->
+            <div class="canhoto">
+                <div class="titulo">CANHOTO - CONTROLE</div>
+                <div class="campo">
+                    <strong>Cód. Contribuinte:</strong> 
+                    <span style="color: #0066cc; font-weight: bold;">
+                        ${doador.codigo_doador || 'D' + String(doador.id).padStart(3, '0')}
+                    </span>
+                </div>
+                <div class="campo">
+                    <strong>Valor Parcela:</strong> 
+                    <span class="valor">R$ ${valorParcela.toFixed(2).replace('.', ',')}</span>
+                </div>
+                <div class="campo">
+                    <strong>Vencimento:</strong> ${formatDate(dataVencimento)}
+                </div>
+                <div class="campo">
+                    <strong>Status:</strong> 
+                    <span class="${isPago ? 'status-pago' : 'status-pendente'}">
+                        ${isPago ? 'PAGO' : 'PENDENTE'}
+                    </span>
+                </div>
+                ${isPago ? `
+                <div class="campo">
+                    <strong>Data Pgto:</strong> ${formatDate(pagamento.data_pagamento)}
+                </div>
+                ` : ''}
+            </div>
+            
+            <!-- Recibo de Pagamento -->
+            <div class="recibo">
+                <div class="titulo">
+                    RECIBO DE PAGAMENTO
+                    <span style="float: right; font-size: 14px; font-weight: normal;">
+                        Parcela: ${String(i).padStart(2, '0')}/${String(totalParcelas).padStart(2, '0')}
+                    </span>
+                </div>
+                <div class="campo">
+                    <strong>Recebemos de:</strong> ${doador.nome.toUpperCase()}
+                </div>
+                <div class="campo">
+                    <strong>A importância de:</strong> 
+                    <span class="valor">R$ ${valorParcela.toFixed(2).replace('.', ',')}</span>
+                </div>
+                <div class="campo">
+                    <strong>Data Pagamento:</strong> 
+                    ${isPago ? formatDate(pagamento.data_pagamento) : '___/___/_____'}
+                </div>
+                <div class="campo">
+                    <strong>Vencimento:</strong> ${formatDate(dataVencimento)}
+                </div>
+                <div class="campo" style="font-size: 12px; color: #666;">
+                    <strong>Endereço:</strong> 
+                    ${montarEndereco(doador)}
+                </div>
+                <div class="campo" style="font-size: 12px; color: #666;">
+                    <strong>Telefone:</strong> ${doador.telefone1}
+                    ${doador.telefone2 ? ' / ' + doador.telefone2 : ''}
+                </div>
+                ${isPago ? `
+                <div class="confirmacao">
+                    ✓ Pagamento confirmado em ${formatDate(pagamento.data_pagamento)}
+                </div>
+                ` : ''}
+            </div>
+        </div>
+    </div>
+`;
+        }
+        
+        const finalHTML = carneHTML + htmlParcelas + `
+    <div class="no-print" style="text-align: center; margin: 30px;">
+        <button onclick="window.print()" style="padding: 10px 30px; font-size: 16px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">
+            Imprimir Carnê
+        </button>
+    </div>
+</body>
+</html>`;
+        
+        // Escrever HTML na nova janela
+        printWindow.document.write(finalHTML);
+        printWindow.document.close();
+        
+        showNotification('Carnê gerado com sucesso!', 'success');
+        
+    } catch (error) {
+        console.error('Erro ao gerar carnê:', error);
+        showNotification('Erro ao gerar carnê', 'error');
+    }
 }
 
-function exportData() {
-    alert('🚧 Exportação em desenvolvimento.');
+// Função auxiliar para calcular vencimento
+function calcularVencimento(dataInicial, mesesAdicionais, recorrente) {
+    const data = new Date(dataInicial);
+    if (recorrente) {
+        data.setMonth(data.getMonth() + mesesAdicionais);
+    }
+    return data.toISOString().substring(0, 10);
 }
 
-function createCharts() {
-    console.log('📊 Gráficos em desenvolvimento');
+// Função auxiliar para buscar pagamento no histórico
+function buscarPagamentoHistorico(historico, dataVencimento) {
+    const vencimento = new Date(dataVencimento);
+    
+    for (let pgto of historico) {
+        const dataPgto = new Date(pgto.data_pagamento);
+        const diff = Math.abs((dataPgto - vencimento) / (1000 * 60 * 60 * 24));
+        if (diff <= 5) { // Tolerância de 5 dias
+            return pgto;
+        }
+    }
+    return null;
 }
+
+// Função auxiliar para montar endereço
+function montarEndereco(doador) {
+    const parts = [];
+    if (doador.logradouro) parts.push(doador.logradouro);
+    if (doador.numero) parts.push(doador.numero);
+    if (doador.complemento) parts.push(doador.complemento);
+    if (doador.bairro) parts.push(doador.bairro);
+    if (doador.cidade) parts.push(doador.cidade);
+    if (doador.estado) parts.push(doador.estado);
+    if (doador.cep) parts.push(`CEP: ${doador.cep}`);
+    
+    return parts.length > 0 ? parts.join(', ') : 'Endereço não informado';
+}
+
+// Função para exportar dados em PDF (SUBSTITUIR A EXISTENTE)
+async function exportData() {
+    try {
+        showNotification('Gerando relatório PDF...', 'info');
+        
+        // Buscar dados do resumo
+        const resumoResponse = await fetch('/api/relatorios/resumo');
+        const resumo = await resumoResponse.json();
+        
+        // Buscar lista de doações
+        const doacoesResponse = await fetch('/api/doacoes');
+        const doacoes = await doacoesResponse.json();
+        
+        // Criar janela para PDF
+        const printWindow = window.open('', '_blank');
+        
+        // HTML do relatório
+        const relatorioHTML = `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de Doações - ${new Date().toLocaleDateString('pt-BR')}</title>
+    <style>
+        @media print {
+            body { margin: 0; }
+            .no-print { display: none !important; }
+            .page-break { page-break-after: always; }
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            color: #333;
+            line-height: 1.6;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f5f5f5;
+            border: 2px solid #333;
+        }
+        .header h1 {
+            margin: 0;
+            color: #333;
+        }
+        .section {
+            margin: 30px 0;
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #333;
+        }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .summary-card {
+            padding: 15px;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .summary-card h3 {
+            margin: 0 0 10px 0;
+            color: #555;
+            font-size: 14px;
+        }
+        .summary-card .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th {
+            background: #333;
+            color: white;
+            padding: 10px;
+            text-align: left;
+            font-size: 14px;
+        }
+        td {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+            font-size: 13px;
+        }
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+        @page {
+            size: A4;
+            margin: 15mm;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>RELATÓRIO DE DOAÇÕES</h1>
+        <p>Gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}</p>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">RESUMO GERAL</div>
+        <div class="summary-grid">
+            <div class="summary-card">
+                <h3>Total Arrecadado</h3>
+                <div class="value">R$ ${(resumo.total_arrecadado || 0).toFixed(2).replace('.', ',')}</div>
+            </div>
+            <div class="summary-card">
+                <h3>Total de Doações</h3>
+                <div class="value">${resumo.total_doacoes || 0}</div>
+            </div>
+            <div class="summary-card">
+                <h3>Doações Recorrentes</h3>
+                <div class="value">${resumo.doacoes_recorrentes || 0}</div>
+            </div>
+            <div class="summary-card">
+                <h3>Total de Pagamentos</h3>
+                <div class="value">${resumo.total_pagamentos || 0}</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">DETALHAMENTO DAS DOAÇÕES</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Doador</th>
+                    <th>Valor</th>
+                    <th>Tipo</th>
+                    <th>Data</th>
+                    <th>Recorrente</th>
+                    <th>Telefone</th>
+                </tr>
+            </thead>
+            <tbody>`;
+        
+        // Adicionar linhas da tabela
+        let tabelaRows = '';
+        doacoes.forEach(doacao => {
+            tabelaRows += `
+                <tr>
+                    <td>${doacao.codigo_doador || 'D' + String(doacao.doador_id).padStart(3, '0')}</td>
+                    <td>${doacao.nome_doador || 'N/A'}</td>
+                    <td>R$ ${doacao.valor.toFixed(2).replace('.', ',')}</td>
+                    <td>${doacao.tipo}</td>
+                    <td>${formatDate(doacao.data_doacao)}</td>
+                    <td>${doacao.recorrente ? 'Sim' : 'Não'}</td>
+                    <td>${doacao.telefone1 || 'N/A'}</td>
+                </tr>`;
+        });
+        
+        const finalHTML = relatorioHTML + tabelaRows + `
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="footer">
+        <p>Sistema de Controle de Doações - Relatório Oficial</p>
+        <p>Este documento foi gerado automaticamente e contém informações confidenciais.</p>
+    </div>
+    
+    <div class="no-print" style="text-align: center; margin: 30px;">
+        <button onclick="window.print()" style="padding: 10px 30px; font-size: 16px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">
+            Imprimir Relatório
+        </button>
+    </div>
+</body>
+</html>`;
+        
+        // Escrever HTML na nova janela
+        printWindow.document.write(finalHTML);
+        printWindow.document.close();
+        
+        showNotification('Relatório PDF gerado com sucesso!', 'success');
+        
+    } catch (error) {
+        console.error('Erro ao exportar dados:', error);
+        showNotification('Erro ao gerar relatório PDF', 'error');
+    }
+}
+
+
+// Função loadDashboard MODIFICADA (REMOVER CHAMADA PARA createCharts)
+async function loadDashboard() {
+    try {
+        const response = await fetch('/api/relatorios/resumo');
+        const data = await response.json();
+        
+        // Atualizar cards do resumo
+        document.getElementById('total-arrecadado').textContent = 
+            `R$ ${(data.total_arrecadado || 0).toFixed(2).replace('.', ',')}`;
+        document.getElementById('total-doacoes').textContent = data.total_doacoes || 0;
+        document.getElementById('doacoes-recorrentes').textContent = data.doacoes_recorrentes || 0;
+        document.getElementById('total-pagamentos').textContent = data.total_pagamentos || 0;
+        
+        // NÃO CHAMAR createCharts() - REMOVIDO
+        // createCharts(); // REMOVER ESTA LINHA
+        
+        // Mostrar dashboard
+        document.getElementById('summary').style.display = 'grid';
+        
+    } catch (error) {
+        console.error('Erro ao carregar dashboard:', error);
+    }
+}
+
+
+
 
 // ===============================================================================
 // FUNÇÕES UTILITÁRIAS
@@ -1264,8 +1780,22 @@ function formatCPFInput(event) {
 }
 
 function formatDate(dateString) {
-    const date = new Date(dateString + 'T00:00:00');
-    return date.toLocaleDateString('pt-BR');
+    if (!dateString) return 'Data não informada';
+    
+    try {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) {
+            return dateString; // Retorna a string original se não for uma data válida
+        }
+        
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        
+        return `${day}/${month}/${year}`;
+    } catch (error) {
+        return dateString;
+    }
 }
 
 function getTypeColor(type) {
