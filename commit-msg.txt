@@ -1,12 +1,8 @@
-[1.1.1] Atualização - 05/09/2025 10:55:52
+[1.1.1] Atualização - 05/09/2025 11:05:57
 
-✅ Arquivos adicionados:
-   -  public/app_backup_restore_2025-09-05T14-54-15.js
-   -  restore-edit-carne-functions.js
 
 📝 Arquivos modificados:
    -  commit-msg.txt
-   -  public/app.js
 
 📊 Estatísticas:
    - Tamanho do banco: 40.00 KB
