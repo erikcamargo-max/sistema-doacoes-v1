@@ -1,12 +1,15 @@
-[1.1.0] Atualização - 04/09/2025 22:27:33
+[1.1.1] Atualização - 05/09/2025 10:32:59
 
+✅ Arquivos adicionados:
+   -  public/app-bkp-05-09-2025-as-09-40.js
+   -  public/app_backup_2025-09-05T14-31-12.js
+   -  {
 
 📝 Arquivos modificados:
+   -  VERSAO.txt
    -  commit-msg.txt
-
-🗑️ Arquivos removidos:
-   -  public/index-old-04-09-2025-as14-26.html
+   -  public/app.js
 
 📊 Estatísticas:
    - Tamanho do banco: 40.00 KB
-   - Versão do sistema: 1.1.0
+   - Versão do sistema: 1.1.1
