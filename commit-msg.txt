@@ -1,12 +1,10 @@
-[1.1.1] Atualização - 05/09/2025 10:32:59
+[1.1.1] Atualização - 05/09/2025 10:55:52
 
 ✅ Arquivos adicionados:
-   -  public/app-bkp-05-09-2025-as-09-40.js
-   -  public/app_backup_2025-09-05T14-31-12.js
-   -  {
+   -  public/app_backup_restore_2025-09-05T14-54-15.js
+   -  restore-edit-carne-functions.js
 
 📝 Arquivos modificados:
-   -  VERSAO.txt
    -  commit-msg.txt
    -  public/app.js
 
