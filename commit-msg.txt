@@ -1,22 +1,23 @@
-[1.1.5] Atualização - 06/09/2025 15:14:56
+[1.1.5] Atualização - 06/09/2025 15:25:33
 
+✅ Arquivos adicionados:
+   -  public/app_backup_2025-09-06T19-22-42-455Z.js
+   -  public/app_backup_antes_ajustes_1757186288886.js
 
 📝 Arquivos modificados:
    -  commit-msg.txt
+   -  public/app.js
 
 🗑️ Arquivos removidos:
-   -  public/app-bkp-05-09-2025-as-09-40.js
-   -  public/app_backup_2025-09-05T14-31-12.js
-   -  public/app_backup_2025-09-06T02-15-08.js
-   -  public/app_backup_2025-09-06T02-27-31.js
-   -  public/app_backup_final_1757126960118.js
-   -  public/app_backup_restore_2025-09-05T14-54-15.js
-   -  public/app_backup_selo_1757125902229.js
-   -  public/app_backup_selo_qr_1757126669337.js
-   -  public/app_backup_teste_1757127338448.js
-   -  public/app_backup_teste_1757184290605.js
-   -  public/app_com_erro_1757126055312.js
-   -  public/app_com_erro_1757184774272.js
+   -  ADICIONAR-SELO-AUTENTICIDADE.js
+   -  CONTROLE_VERSAO_backup_2025-09-06.md
+   -  LIMPAR-E-IMPLEMENTAR-FINAL.js
+   -  README.md
+   -  VALIDAR-SISTEMA-COMPLETO.js
+   -  VERIFICAR-FUNCIONALIDADES-IMPLEMENTADAS.js
+   -  analisar-carne-atual-v1.1.5.js
+   -  implement_professional_carne.js
+   -  restore-edit-carne-functions.js
 
 📊 Estatísticas:
    - Tamanho do banco: 40.00 KB
