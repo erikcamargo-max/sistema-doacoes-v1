@@ -396,5 +396,27 @@
         // Inicializar Feather Icons
         feather.replace();
     </script>
+
+    <!-- Script de Teste ViaCEP v1.1.4 -->
+    <script>
+        // Função para testar ViaCEP manualmente
+        window.testarViaCEP = function() {
+            console.log('🧪 Testando ViaCEP...');
+            if (typeof window.buscarCEP === 'function') {
+                window.buscarCEP('01310-100', 'input');
+                console.log('✅ Teste iniciado - CEP: 01310-100');
+            } else {
+                console.error('❌ Função buscarCEP não encontrada');
+            }
+        }
+        
+        // Auto-teste ao carregar a página
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔍 Verificando funções ViaCEP...');
+            console.log('buscarCEP disponível:', typeof window.buscarCEP === 'function');
+            console.log('formatCEPInput disponível:', typeof window.formatCEPInput === 'function');
+            console.log('💡 Para testar manualmente: testarViaCEP()');
+        });
+    </script>
 </body>
 </html>
