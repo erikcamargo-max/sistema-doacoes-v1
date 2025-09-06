@@ -1,27 +1,16 @@
-[1.1.5] Atualização - 06/09/2025 17:20:18
+[1.1.5] Atualização - 06/09/2025 17:33:42
 
 ✅ Arquivos adicionados:
-   -  ADICIONAR-EVENT-LISTENERS-MODAL-V1.1.5.js
-   -  corrigir-apenas-botoes-modal.js
-   -  fix-async-direct.js
-   -  public/app_backup_2025-09-06T21-08-04-558Z.js
-   -  public/app_backup_await_fix_2025-09-06T21-00-43-838Z.js
-   -  public/app_backup_before_restore_2025-09-06T21-13-17-792Z.js
-   -  public/app_backup_chaves_fix_2025-09-06T20-29-46-824Z.js
-   -  public/app_backup_colon_fix_2025-09-06T21-03-56-612Z.js
-   -  public/app_backup_export_fix_2025-09-06T19-29-28-653Z.js
-   -  public/app_backup_fetch_fix_2025-09-06T21-05-28-980Z.js
-   -  public/app_backup_modal_completo_2025-09-06T20-18-40-571Z.js
-   -  public/app_backup_modal_fix_2025-09-06T19-38-41-447Z.js
-   -  public/app_backup_modal_fix_2025-09-06T19-41-32-445Z.js
-   -  public/app_backup_printwindow_fix_2025-09-06T19-33-52-298Z.js
-   -  public/app_backup_remove_2025-09-06T20-52-00-631Z.js
-   -  public/app_backup_return_fix_2025-09-06T20-24-53-789Z.js
-   -  public/app_backup_simple_2025-09-06T20-49-24-551Z.js
-   -  public/index_backup_modal_completo_2025-09-06T20-18-40-571Z.html
+   -  corrigir-onclick-botoes.js
+   -  debug-botoes-modal.js
+   -  public/app_backup_antes_botoes_2025-09-06T21-20-35-074Z.js
+   -  public/index_backup_2025-09-06T21-28-43-329Z.html
 
 📝 Arquivos modificados:
    -  commit-msg.txt
+   -  database/doacoes.db
+   -  public/app.js
+   -  public/index.html
 
 📊 Estatísticas:
    - Tamanho do banco: 40.00 KB
