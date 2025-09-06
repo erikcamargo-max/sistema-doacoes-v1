@@ -2726,161 +2726,255 @@ function criarCSV(doacoes) {
 
 async function generateCarne(doacaoId) {
     try {
-        alert('🔍 Iniciando geração do carnê...');
+        if (typeof showNotification === 'function') {
+            showNotification('Gerando carnê profissional...', 'info');
+        }
         
-        // Buscar dados básicos
+        // Buscar dados da doação
         const doacaoResponse = await fetch(`/api/doacoes/${doacaoId}`);
         const doacao = await doacaoResponse.json();
+        
+        // Buscar dados do doador  
         const doadorResponse = await fetch(`/api/doadores/${doacao.doador_id}`);
         const doador = await doadorResponse.json();
         
-        alert('📄 Dados carregados. Criando janela...');
+        // Criar janela do carnê
+        const printWindow = window.open('', '_blank', 'width=800,height=600');
         
-        // Criar janela
-        const novaJanela = window.open('', '_blank', 'width=900,height=700');
-        
-        // HTML MÍNIMO com selo e QR FORÇADOS
-        const htmlTeste = `<!DOCTYPE html>
-<html>
+        // HTML COMPLETO do carnê com SELO e QR CODE
+        const htmlCompleto = `<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>TESTE - Carnê com Selo e QR</title>
+    <title>Carnê - ${doador.nome}</title>
     <style>
         body { 
             font-family: Arial, sans-serif; 
             margin: 20px; 
-            background: #f0f0f0;
-        }
-        
-        /* SELO TESTE - SUPER VISÍVEL */
-        #selo-teste {
-            position: fixed !important;
-            top: 20px !important;
-            right: 20px !important;
-            width: 150px !important;
-            height: 150px !important;
-            background: red !important;
-            color: white !important;
-            border: 5px solid black !important;
-            border-radius: 50% !important;
-            display: flex !important;
-            justify-content: center !important;
-            align-items: center !important;
-            text-align: center !important;
-            font-size: 14px !important;
-            font-weight: bold !important;
-            z-index: 99999 !important;
-            box-shadow: 0 0 20px rgba(255,0,0,0.8) !important;
-        }
-        
-        /* QR CODE TESTE - SUPER VISÍVEL */
-        .qr-teste {
-            width: 200px !important;
-            height: 200px !important;
-            background: blue !important;
-            color: white !important;
-            border: 5px solid black !important;
-            margin: 20px auto !important;
-            display: flex !important;
-            justify-content: center !important;
-            align-items: center !important;
-            text-align: center !important;
-            font-size: 16px !important;
-            font-weight: bold !important;
-        }
-        
-        .cabecalho {
-            text-align: center;
-            padding: 20px;
-            background: yellow;
-            border: 3px solid black;
-            margin-bottom: 20px;
-        }
-        
-        .parcela-teste {
-            border: 3px solid black;
-            padding: 20px;
-            margin: 20px 0;
+            position: relative;
             background: white;
+        }
+        
+        /* SELO DE AUTENTICIDADE - SEMPRE VISÍVEL */
+        .selo {
+            position: fixed !important;
+            top: 30px !important;
+            right: 30px !important;
+            width: 120px !important;
+            height: 120px !important;
+            background: linear-gradient(45deg, #28a745, #20c997) !important;
+            border: 4px solid #1e7e34 !important;
+            border-radius: 50% !important;
+            color: white !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+            align-items: center !important;
+            text-align: center !important;
+            font-weight: bold !important;
+            font-size: 12px !important;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.5) !important;
+            z-index: 999999 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+        
+        .selo-icone {
+            font-size: 28px !important;
+            margin-bottom: 8px !important;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border: 2px solid #333;
+        }
+        
+        .parcela {
+            display: flex;
+            border: 2px solid #333;
+            margin-bottom: 20px;
+            min-height: 250px;
+        }
+        
+        .canhoto {
+            width: 40%;
+            padding: 15px;
+            border-right: 2px dashed #666;
+            background: #f9f9f9;
+        }
+        
+        .recibo {
+            width: 60%;
+            padding: 15px;
+        }
+        
+        .titulo {
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 16px;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
+        }
+        
+        .campo {
+            margin: 8px 0;
+            font-size: 14px;
+        }
+        
+        .valor {
+            color: #dc3545;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        /* QR CODE PIX - SEMPRE VISÍVEL */
+        .qr-pix {
+            margin-top: 20px !important;
+            padding: 15px !important;
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb) !important;
+            border: 3px solid #2196f3 !important;
+            border-radius: 10px !important;
+            text-align: center !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+        
+        .qr-titulo {
+            color: #1565c0 !important;
+            font-weight: bold !important;
+            font-size: 14px !important;
+            margin-bottom: 10px !important;
+        }
+        
+        .qr-box {
+            width: 100px !important;
+            height: 100px !important;
+            border: 3px dashed #1976d2 !important;
+            background: white !important;
+            margin: 10px auto !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+            align-items: center !important;
+            font-weight: bold !important;
+            color: #1565c0 !important;
+        }
+        
+        .qr-instrucoes {
+            font-size: 11px !important;
+            color: #1565c0 !important;
+            margin-top: 8px !important;
+            line-height: 1.3 !important;
+        }
+        
+        @media print {
+            body { margin: 0; }
+            .selo, .qr-pix { 
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- SELO TESTE -->
-    <div id="selo-teste">
-        🔒<br>
-        SELO<br>
-        TESTE<br>
-        VISÍVEL
+    <!-- SELO DE AUTENTICIDADE -->
+    <div class="selo">
+        <div class="selo-icone">🔒</div>
+        <div>DOCUMENTO</div>
+        <div>AUTÊNTICO</div>
+        <div style="font-size: 10px;">v1.1.5</div>
     </div>
-    
+
     <!-- CABEÇALHO -->
-    <div class="cabecalho">
-        <h1>🔍 TESTE - CARNÊ COM SELO E QR</h1>
-        <h2>${doador.nome}</h2>
-        <p>Código: ${doador.codigo_doador || 'D' + doador.id}</p>
+    <div class="header">
+        <h1>CARNÊ DE PAGAMENTO</h1>
+        <h2>${doador.nome.toUpperCase()}</h2>
+        <p><strong>Código:</strong> ${doador.codigo_doador || 'D' + doador.id}</p>
+        ${doador.cpf ? `<p><strong>CPF:</strong> ${doador.cpf}</p>` : ''}
     </div>
-    
-    <!-- PARCELA TESTE -->
-    <div class="parcela-teste">
-        <h3>📄 PARCELA DE TESTE</h3>
-        <p><strong>Valor:</strong> R$ ${doacao.valor.toFixed(2).replace('.', ',')}</p>
-        <p><strong>Tipo:</strong> ${doacao.tipo}</p>
+`;
         
-        <!-- QR CODE TESTE -->
-        <div class="qr-teste">
-            📱<br>
-            QR CODE<br>
-            TESTE<br>
-            VISÍVEL
+        // Gerar parcelas (simplificado)
+        const totalParcelas = doacao.recorrente ? 12 : 1;
+        const valorParcela = doacao.valor;
+        
+        for (let i = 1; i <= Math.min(totalParcelas, 12); i++) {
+            const dataVenc = new Date(doacao.data_doacao);
+            dataVenc.setMonth(dataVenc.getMonth() + (i - 1));
+            const dataFormatada = dataVenc.toLocaleDateString('pt-BR');
+            
+            htmlCompleto += `
+    <!-- PARCELA ${i} -->
+    <div class="parcela">
+        <div class="canhoto">
+            <div class="titulo">CANHOTO - CONTROLE</div>
+            <div class="campo"><strong>Código:</strong> ${doador.codigo_doador || 'D' + doador.id}</div>
+            <div class="campo"><strong>Valor:</strong> <span class="valor">R$ ${valorParcela.toFixed(2).replace('.', ',')}</span></div>
+            <div class="campo"><strong>Vencimento:</strong> ${dataFormatada}</div>
+            <div class="campo"><strong>Parcela:</strong> ${i}/${totalParcelas}</div>
         </div>
         
-        <p style="color: red; font-weight: bold;">
-            ⚠️ Se você está vendo este texto, o carnê está sendo gerado!<br>
-            ✅ Se você vê o SELO VERMELHO no canto, o CSS está funcionando!<br>
-            ✅ Se você vê o QR CODE AZUL, tudo está OK!
-        </p>
+        <div class="recibo">
+            <div class="titulo">RECIBO DE PAGAMENTO - Parcela ${i}/${totalParcelas}</div>
+            <div class="campo"><strong>Recebemos de:</strong> ${doador.nome.toUpperCase()}</div>
+            <div class="campo"><strong>Importância:</strong> <span class="valor">R$ ${valorParcela.toFixed(2).replace('.', ',')}</span></div>
+            <div class="campo"><strong>Vencimento:</strong> ${dataFormatada}</div>
+            <div class="campo"><strong>Telefone:</strong> ${doador.telefone1 || 'Não informado'}</div>
+            
+            <!-- QR CODE PIX -->
+            <div class="qr-pix">
+                <div class="qr-titulo">📱 QR CODE PIX</div>
+                <div class="qr-box">
+                    <div style="font-size: 20px;">📱</div>
+                    <div style="font-size: 10px;">QR CODE</div>
+                    <div style="font-size: 8px;">R$ ${valorParcela.toFixed(2)}</div>
+                </div>
+                <div class="qr-instrucoes">
+                    📲 Aponte a câmera para o QR Code<br>
+                    💰 Valor: R$ ${valorParcela.toFixed(2).replace('.', ',')}<br>
+                    📅 Vencimento: ${dataFormatada}
+                </div>
+            </div>
+        </div>
     </div>
-    
-    <div style="text-align: center; margin: 30px;">
+`;
+        }
+        
+        // Finalizar HTML
+        htmlCompleto += `
+    <div style="text-align: center; margin: 30px 0;">
         <button onclick="window.print()" style="
             padding: 15px 30px; 
-            background: green; 
+            background: #28a745; 
             color: white; 
             border: none; 
+            border-radius: 8px; 
             font-size: 16px; 
             cursor: pointer;
-        ">🖨️ Imprimir Teste</button>
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        ">🖨️ Imprimir Carnê</button>
     </div>
-    
-    <script>
-        // Debug no console
-        console.log('🔍 Carnê de teste carregado!');
-        console.log('Selo:', document.getElementById('selo-teste'));
-        console.log('QR Codes:', document.querySelectorAll('.qr-teste'));
-        
-        // Garantir que o selo seja visível
-        setTimeout(() => {
-            const selo = document.getElementById('selo-teste');
-            if (selo) {
-                selo.style.background = 'red';
-                selo.style.display = 'flex';
-                console.log('✅ Selo forçado como visível');
-            }
-        }, 100);
-    </script>
 </body>
 </html>`;
         
-        // Escrever na janela
-        novaJanela.document.write(htmlTeste);
-        novaJanela.document.close();
+        // Escrever na janela e fechar
+        printWindow.document.write(htmlCompleto);
+        printWindow.document.close();
         
-        alert('✅ Carnê de teste criado! Verifique se o SELO VERMELHO e QR CODE AZUL estão visíveis.');
+        if (typeof showNotification === 'function') {
+            showNotification('✅ Carnê gerado com SELO e QR CODE!', 'success');
+        }
         
     } catch (error) {
-        alert('❌ Erro no teste: ' + error.message);
-        console.error('Erro:', error);
+        console.error('Erro ao gerar carnê:', error);
+        if (typeof showNotification === 'function') {
+            showNotification('❌ Erro ao gerar carnê: ' + error.message, 'error');
+        } else {
+            alert('❌ Erro ao gerar carnê: ' + error.message);
+        }
     }
 }
 

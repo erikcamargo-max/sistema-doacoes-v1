@@ -6,11 +6,11 @@
 - **Nome do Sistema:** Sistema de Controle de Doações
 - **Versão Atual:** 1.1.2 ✅
 - **Data de Início:** Agosto/2025
-- **Última Atualização:** 05/09/2025Setembro/2025
+- **Última Atualização:** 05/Setembro/2025
 - **Repositório:** https://github.com/erikcamargo-max/sistema-doacoes-v1
 - **Stack Tecnológica:** Node.js + Express + SQLite + Vanilla JS
 - **Ambiente:** Desenvolvimento/Produção Local
-- **Status:** ✅ 100% OPERACIONAL COM CARNÊ PROFISSIONAL
+- **Status:** ✅ 100% OPERACIONAL - TODAS AS FUNCIONALIDADES PRINCIPAIS IMPLEMENTADAS
 
 ### Responsáveis
 - **Desenvolvedor Principal:** Erik Camargo
@@ -251,103 +251,6 @@
 ---
 
 ## 🔄 HISTÓRICO DE VERSÕES
-
-## ✨ v1.1.5 (06/Setembro/2025) ✅ ATUAL - CARNÊ PROFISSIONAL
-**Tipo:** Major Release - Sistema Completo com Carnê e Exportação Profissional
-**Mudanças Principais:**
-- ✅ **CARNÊ PROFISSIONAL COMPLETO** - Geração de carnês em PDF de alta qualidade
-- ✅ **QR CODE PIX INTEGRADO** - Pagamentos via PIX com QR Code automático
-- ✅ **EXPORTAÇÃO MELHORADA** - PDF, CSV e JSON com design profissional
-- ✅ **SISTEMA DE NOTIFICAÇÕES** - Feedback visual moderno e responsivo
-- ✅ **DESIGN RESPONSIVO** - 100% mobile-friendly e tablet-friendly
-- ✅ **SELO DE AUTENTICIDADE** - Documentos com validação visual
-- ✅ **INSTRUÇÕES DE PAGAMENTO** - Detalhadas para cada tipo de pagamento
-
-**Funcionalidades do Carnê:**
-- 🎨 **Design Premium:** Layout profissional com cores e tipografia moderna
-- 📱 **Responsividade Total:** Adaptação automática para todos os dispositivos
-- 🖨️ **Otimização para Impressão:** CSS específico para impressão em PDF
-- 💳 **QR Code PIX:** Geração automática de código PIX para pagamentos
-- 📋 **Tabela de Parcelas:** Visualização completa de todas as parcelas
-- 🔒 **Selo de Autenticidade:** Validação visual do documento
-- 📞 **Dados de Contato:** Informações completas do doador
-- 💰 **Cálculos Automáticos:** Valores e datas calculados automaticamente
-
-**Funcionalidades da Exportação:**
-- 📊 **Relatório PDF Profissional:** Design executivo com gráficos e tabelas
-- 📈 **Múltiplos Formatos:** PDF para apresentação, CSV para planilhas, JSON para sistemas
-- 🎯 **Dados Consolidados:** Resumos financeiros e estatísticas detalhadas
-- 🔍 **Filtros Avançados:** Exportação por período, tipo e status
-- 💼 **Layout Executivo:** Apropriado para apresentações e reuniões
-
-**Sistema de Notificações:**
-- 🔔 **Feedback Visual:** Notificações de sucesso, erro e informação
-- ⏱️ **Auto-dismiss:** Notificações desaparecem automaticamente
-- 🎨 **Design Moderno:** Cores e animações suaves
-- 📱 **Mobile-friendly:** Adaptação automática para mobile
-
-**Melhorias Técnicas:**
-- ✅ **Código Otimizado:** Funções refatoradas para melhor performance
-- 🔧 **Gerenciamento de Estado:** Melhor controle de modais e interface
-- 🛡️ **Tratamento de Erros:** Sistema robusto de captura e exibição de erros
-- 📦 **Compatibilidade:** Mantém 100% de compatibilidade com versões anteriores
-
-**Arquivos Modificados:**
-```
-public/app.js          # Novas funções generateCarne() e exportData()
-public/index.html      # Interface atualizada (sem modificações visuais)
-```
-
-**Scripts de Implementação Aplicados:**
-```bash
-EXECUTAR-IMPLEMENTACAO-COMPLETA.js  # Implementação completa v1.1.5
-VALIDAR-SISTEMA-COMPLETO.js         # Validação do sistema
-```
-
-**Estatísticas do Sistema v1.1.5:**
-- 📊 **Total de funcionalidades:** 25+ recursos implementados
-- 💾 **Tamanho do app.js:** ~45KB (código otimizado)
-- 🔧 **Linhas de código:** 1500+ linhas bem documentadas
-- ✅ **Taxa de sucesso:** 100% das funcionalidades operacionais
-- 📱 **Dispositivos suportados:** Desktop, Tablet, Mobile
-
-**Status de Implementação:**
-- ✅ **Carnê Profissional:** 100% FUNCIONAL
-- ✅ **Exportação PDF/CSV/JSON:** 100% FUNCIONAL  
-- ✅ **Sistema de Notificações:** 100% FUNCIONAL
-- ✅ **Design Responsivo:** 100% FUNCIONAL
-- ✅ **QR Code PIX:** 100% FUNCIONAL
-- ✅ **Compatibilidade:** 100% MANTIDA
-
-**Comandos de Teste:**
-```bash
-# Validar sistema completo
-node VALIDAR-SISTEMA-COMPLETO.js
-
-# Iniciar servidor
-npm start
-
-# Acessar sistema
-http://localhost:3001
-```
-
-**Próximas Implementações Sugeridas (v1.2.0):**
-1. **Dashboard Analytics** - Gráficos interativos com Chart.js
-2. **Sistema de Backup Automático** - Backup agendado do banco
-3. **Autenticação de Usuários** - Login e níveis de acesso
-4. **API REST Completa** - Endpoints para integração externa
-5. **PWA (Progressive Web App)** - Funcionalidade offline
-
----
-
-### v1.1.4 (05/Setembro/2025)
-**Tipo:** Minor Release - Preparação para Carnê
-**Mudanças:**
-- 🔧 Refatoração do código base
-- 📋 Preparação da estrutura para carnê
-- 🛠️ Otimizações de performance
-
-
 
 ### v1.1.2 (05/Setembro/2025) ✅ ATUAL
 **Tipo:** Patch Release - Correções Críticas + Restauração de Funcionalidades
@@ -715,9 +618,9 @@ FROM historico_pagamentos WHERE doacao_id NOT IN (SELECT id FROM doacoes);
 
 ---
 
-**Última Atualização:** 05/09/2025Setembro/2025
-**Próxima Revisão:** Outubro/2025
-**Documento Versão:** 1.1.5
+**Última Atualização:** 05/Setembro/2025
+**Próxima Revisão:** Dezembro/2025
+**Documento Versão:** 1.1.2
 
 ## 📌 NOTAS DA VERSÃO 1.1.2
 

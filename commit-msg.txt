@@ -1,23 +1,22 @@
-[1.1.3] Atualização - 05/09/2025 21:05:46
+[1.1.4] Atualização - 05/09/2025 22:19:52
 
 ✅ Arquivos adicionados:
-   -  correcao-forcada-modal-v1.1.3.js
-   -  corrigir-campos-endereco-duplicatas.js
-   -  corrigir-modal-nova-doacao-v1.1.2.js
-   -  debug-modal-atual.html
-   -  debug-modal-nova-doacao.js
-   -  diagnostico-sistema-v1.1.1.js
+   -  EXECUTAR-IMPLEMENTACAO-COMPLETA.js
+   -  analisar-carne-atual-v1.1.5.js
+   -  corrigir-viacep-definitivo-v1.1.4.js
+   -  debug-buscarcep-atual.js
+   -  debug-viacep-v1.1.4.js
+   -  implement_professional_carne.js
+   -  logo-apae.png
+   -  public/app_backup_2025-09-06T02-15-08.js
 
 📝 Arquivos modificados:
-   -  CONTROLE_VERSAO.md
    -  VERSAO.txt
    -  commit-msg.txt
-   -  database/doacoes.db
    -  package.json
    -  public/app.js
    -  public/index.html
-   -  server.js
 
 📊 Estatísticas:
    - Tamanho do banco: 40.00 KB
-   - Versão do sistema: 1.1.3
+   - Versão do sistema: 1.1.4

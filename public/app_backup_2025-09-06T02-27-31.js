@@ -2120,7 +2120,45 @@ window.exportData = async function() {
 // Data: 05/09/2025
 // ===============================================================================
 
-
+async function generateCarne(doacaoId) {
+    try {
+        console.log('🎨 Gerando carnê profissional para doação:', doacaoId);
+        showNotification('Gerando carnê profissional...', 'info');
+        
+        // Buscar dados da doação
+        const doacaoResponse = await fetch(`/api/doacoes/${doacaoId}`);
+        if (!doacaoResponse.ok) throw new Error('Erro ao buscar doação');
+        const doacao = await doacaoResponse.json();
+        
+        // Buscar dados do doador
+        const doadorResponse = await fetch(`/api/doadores/${doacao.doador_id}`);
+        if (!doadorResponse.ok) throw new Error('Erro ao buscar doador');
+        const doador = await doadorResponse.json();
+        
+        // Buscar histórico
+        const historicoResponse = await fetch(`/api/doacoes/${doacaoId}/historico`);
+        const historico = await historicoResponse.json();
+        
+        // Criar janela
+        const printWindow = window.open('', '_blank', 'width=1200,height=800');
+        if (!printWindow) {
+            throw new Error('Popup bloqueado! Permita popups para gerar o carnê.');
+        }
+        
+        // HTML do carnê
+        const carneHTML = criarHTMLCarne(doacao, doador, historico);
+        
+        printWindow.document.write(carneHTML);
+        printWindow.document.close();
+        printWindow.focus();
+        
+        showNotification('Carnê profissional gerado com sucesso!', 'success');
+        
+    } catch (error) {
+        console.error('❌ Erro ao gerar carnê:', error);
+        showNotification('Erro ao gerar carnê: ' + error.message, 'error');
+    }
+}
 
 function criarHTMLCarne(doacao, doador, historico) {
     const agora = new Date();
@@ -2418,7 +2456,19 @@ function criarHTMLCarne(doacao, doador, historico) {
 // Data: 05/09/2025
 // ===============================================================================
 
-
+async function exportData() {
+    try {
+        console.log('📊 Iniciando exportação...');
+        showNotification('Preparando exportação...', 'info');
+        
+        // Mostrar modal de opções
+        mostrarModalExportacao();
+        
+    } catch (error) {
+        console.error('❌ Erro ao exportar:', error);
+        showNotification('Erro ao exportar: ' + error.message, 'error');
+    }
+}
 
 function mostrarModalExportacao() {
     // Remover modal existente
@@ -2717,172 +2767,6 @@ function criarCSV(doacoes) {
 }
 
 
-
-
-// ===============================================================================
-// GERAÇÃO DE CARNÊ PROFISSIONAL - Versão 1.1.5 FINAL
-// Data: 05/09/2025
-// ===============================================================================
-
-async function generateCarne(doacaoId) {
-    try {
-        alert('🔍 Iniciando geração do carnê...');
-        
-        // Buscar dados básicos
-        const doacaoResponse = await fetch(`/api/doacoes/${doacaoId}`);
-        const doacao = await doacaoResponse.json();
-        const doadorResponse = await fetch(`/api/doadores/${doacao.doador_id}`);
-        const doador = await doadorResponse.json();
-        
-        alert('📄 Dados carregados. Criando janela...');
-        
-        // Criar janela
-        const novaJanela = window.open('', '_blank', 'width=900,height=700');
-        
-        // HTML MÍNIMO com selo e QR FORÇADOS
-        const htmlTeste = `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>TESTE - Carnê com Selo e QR</title>
-    <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            margin: 20px; 
-            background: #f0f0f0;
-        }
-        
-        /* SELO TESTE - SUPER VISÍVEL */
-        #selo-teste {
-            position: fixed !important;
-            top: 20px !important;
-            right: 20px !important;
-            width: 150px !important;
-            height: 150px !important;
-            background: red !important;
-            color: white !important;
-            border: 5px solid black !important;
-            border-radius: 50% !important;
-            display: flex !important;
-            justify-content: center !important;
-            align-items: center !important;
-            text-align: center !important;
-            font-size: 14px !important;
-            font-weight: bold !important;
-            z-index: 99999 !important;
-            box-shadow: 0 0 20px rgba(255,0,0,0.8) !important;
-        }
-        
-        /* QR CODE TESTE - SUPER VISÍVEL */
-        .qr-teste {
-            width: 200px !important;
-            height: 200px !important;
-            background: blue !important;
-            color: white !important;
-            border: 5px solid black !important;
-            margin: 20px auto !important;
-            display: flex !important;
-            justify-content: center !important;
-            align-items: center !important;
-            text-align: center !important;
-            font-size: 16px !important;
-            font-weight: bold !important;
-        }
-        
-        .cabecalho {
-            text-align: center;
-            padding: 20px;
-            background: yellow;
-            border: 3px solid black;
-            margin-bottom: 20px;
-        }
-        
-        .parcela-teste {
-            border: 3px solid black;
-            padding: 20px;
-            margin: 20px 0;
-            background: white;
-        }
-    </style>
-</head>
-<body>
-    <!-- SELO TESTE -->
-    <div id="selo-teste">
-        🔒<br>
-        SELO<br>
-        TESTE<br>
-        VISÍVEL
-    </div>
-    
-    <!-- CABEÇALHO -->
-    <div class="cabecalho">
-        <h1>🔍 TESTE - CARNÊ COM SELO E QR</h1>
-        <h2>${doador.nome}</h2>
-        <p>Código: ${doador.codigo_doador || 'D' + doador.id}</p>
-    </div>
-    
-    <!-- PARCELA TESTE -->
-    <div class="parcela-teste">
-        <h3>📄 PARCELA DE TESTE</h3>
-        <p><strong>Valor:</strong> R$ ${doacao.valor.toFixed(2).replace('.', ',')}</p>
-        <p><strong>Tipo:</strong> ${doacao.tipo}</p>
-        
-        <!-- QR CODE TESTE -->
-        <div class="qr-teste">
-            📱<br>
-            QR CODE<br>
-            TESTE<br>
-            VISÍVEL
-        </div>
-        
-        <p style="color: red; font-weight: bold;">
-            ⚠️ Se você está vendo este texto, o carnê está sendo gerado!<br>
-            ✅ Se você vê o SELO VERMELHO no canto, o CSS está funcionando!<br>
-            ✅ Se você vê o QR CODE AZUL, tudo está OK!
-        </p>
-    </div>
-    
-    <div style="text-align: center; margin: 30px;">
-        <button onclick="window.print()" style="
-            padding: 15px 30px; 
-            background: green; 
-            color: white; 
-            border: none; 
-            font-size: 16px; 
-            cursor: pointer;
-        ">🖨️ Imprimir Teste</button>
-    </div>
-    
-    <script>
-        // Debug no console
-        console.log('🔍 Carnê de teste carregado!');
-        console.log('Selo:', document.getElementById('selo-teste'));
-        console.log('QR Codes:', document.querySelectorAll('.qr-teste'));
-        
-        // Garantir que o selo seja visível
-        setTimeout(() => {
-            const selo = document.getElementById('selo-teste');
-            if (selo) {
-                selo.style.background = 'red';
-                selo.style.display = 'flex';
-                console.log('✅ Selo forçado como visível');
-            }
-        }, 100);
-    </script>
-</body>
-</html>`;
-        
-        // Escrever na janela
-        novaJanela.document.write(htmlTeste);
-        novaJanela.document.close();
-        
-        alert('✅ Carnê de teste criado! Verifique se o SELO VERMELHO e QR CODE AZUL estão visíveis.');
-        
-    } catch (error) {
-        alert('❌ Erro no teste: ' + error.message);
-        console.error('Erro:', error);
-    }
-}
 
 // ===============================================================================
 
