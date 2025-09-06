@@ -1,22 +1,30 @@
-[1.1.4] Atualização - 05/09/2025 22:19:52
+[1.1.5] Atualização - 06/09/2025 14:40:35
 
 ✅ Arquivos adicionados:
-   -  EXECUTAR-IMPLEMENTACAO-COMPLETA.js
-   -  analisar-carne-atual-v1.1.5.js
-   -  corrigir-viacep-definitivo-v1.1.4.js
-   -  debug-buscarcep-atual.js
-   -  debug-viacep-v1.1.4.js
-   -  implement_professional_carne.js
-   -  logo-apae.png
-   -  public/app_backup_2025-09-06T02-15-08.js
+   -  ADICIONAR-SELO-AUTENTICIDADE.js
+   -  CHANGELOG.md
+   -  CONTROLE_VERSAO_backup_2025-09-06.md
+   -  CORRIGIR-ERRO-SINTAXE.js
+   -  CORRIGIR-SELO-QR-FALTANTES.js
+   -  DEBUG-E-CORRIGIR-FINAL.js
+   -  DEBUG-ULTRA-ESPECIFICO.js
+   -  VALIDAR-SISTEMA-COMPLETO.js
+   -  VERIFICAR-FUNCIONALIDADES-IMPLEMENTADAS.js
+   -  public/app_backup_2025-09-06T02-27-31.js
+   -  public/app_backup_final_1757126960118.js
+   -  public/app_backup_selo_1757125902229.js
+   -  public/app_backup_selo_qr_1757126669337.js
+   -  public/app_backup_teste_1757127338448.js
+   -  public/app_com_erro_1757126055312.js
+   -  validation_report_2025-09-06.json
 
 📝 Arquivos modificados:
+   -  CONTROLE_VERSAO.md
    -  VERSAO.txt
    -  commit-msg.txt
-   -  package.json
+   -  database/doacoes.db
    -  public/app.js
-   -  public/index.html
 
 📊 Estatísticas:
    - Tamanho do banco: 40.00 KB
-   - Versão do sistema: 1.1.4
+   - Versão do sistema: 1.1.5
