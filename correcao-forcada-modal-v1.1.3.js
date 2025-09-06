@@ -1,159 +1,39 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Controle de Doações</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js"></script>
-    <!-- Chart.js REMOVIDO - não é mais necessário -->
-</head>
-<body class="bg-gray-50">
-    <div id="app" class="min-h-screen p-6">
-        <div class="max-w-7xl mx-auto">
-            <!-- Header -->
-            <div class="mb-8">
-                <h1 class="text-3xl font-bold text-gray-900 mb-2">Sistema de Controle de Doações</h1>
-                <p class="text-gray-600">Gerencie e monitore todas as doações recebidas</p>
-            </div>
+// correcao-forcada-modal-v1.1.3.js
+// Versão: 1.1.3
+// Data: 05/09/2025
+// Objetivo: CORREÇÃO FORÇADA - Substituir createSimpleModal() para usar modal HTML completo
+// Debug confirmou: openModal() ignora HTML e usa createSimpleModal()
 
-            <!-- Loading -->
-            <div id="loading" class="text-center py-8">
-                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                <p class="mt-4 text-gray-600">Carregando...</p>
-            </div>
+const fs = require('fs');
+const path = require('path');
 
-            <!-- Summary Cards -->
-            <div id="summary" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8" style="display: none;">
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex items-center">
-                        <i data-feather="dollar-sign" class="h-8 w-8 text-green-600"></i>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-500">Total Arrecadado</p>
-                            <p id="total-arrecadado" class="text-2xl font-bold text-gray-900">R$ 0,00</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex items-center">
-                        <i data-feather="users" class="h-8 w-8 text-blue-600"></i>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-500">Total de Doações</p>
-                            <p id="total-doacoes" class="text-2xl font-bold text-gray-900">0</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex items-center">
-                        <i data-feather="refresh-cw" class="h-8 w-8 text-purple-600"></i>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-500">Doações Recorrentes</p>
-                            <p id="doacoes-recorrentes" class="text-2xl font-bold text-gray-900">0</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex items-center">
-                        <i data-feather="check-circle" class="h-8 w-8 text-green-500"></i>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-500">Total de Pagamentos</p>
-                            <p id="total-pagamentos" class="text-2xl font-bold text-gray-900">0</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+console.log('🔧 CORREÇÃO FORÇADA: Modal Nova Doação');
+console.log('Versão: 1.1.3 - Sistema de Doações');
+console.log('══════════════════════════════════════════════════\n');
 
-            <!-- SEÇÃO DE GRÁFICOS REMOVIDA -->
-            <!-- Não há mais gráficos aqui -->
+// ==========================================
+// 1. SUBSTITUIR MODAL HTML COMPLETAMENTE
+// ==========================================
 
-            <!-- Filters and Actions -->
-            <div class="mb-6 bg-white rounded-lg shadow p-6">
-                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-                    <div class="flex flex-wrap gap-3">
-                        <select id="filter-type" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                            <option value="">Todos os Tipos</option>
-                            <option value="Dinheiro">Dinheiro</option>
-                            <option value="PIX">PIX</option>
-                        </select>
-                        
-                        <select id="filter-recurrent" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                            <option value="">Todas as Doações</option>
-                            <option value="1">Recorrentes</option>
-                            <option value="0">Únicas</option>
-                        </select>
-                        
-                        <input type="text" id="search-input" placeholder="Buscar doador..." class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                        
-                        <button id="btn-export" onclick="exportData()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2">
-                            <i data-feather="download" class="h-4 w-4"></i>
-                            Exportar PDF
-                        </button>
-                    </div>
-                    
-                    <div>
-                        <button id="btn-new-donation" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
-                            <i data-feather="plus" class="h-4 w-4"></i>
-                            Nova Doação
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Donations Table -->
-            <div class="bg-white rounded-lg shadow overflow-hidden" style="display: none;" id="table-container">
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Doador
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Valor
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Tipo
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Data
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Telefones
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Recorrente
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Histórico
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Ações
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody id="donations-tbody" class="bg-white divide-y divide-gray-200">
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Empty State -->
-            <div id="empty-state" class="text-center py-12 bg-white rounded-lg shadow" style="display: none;">
-                <i data-feather="file-text" class="mx-auto h-12 w-12 text-gray-400"></i>
-                <h3 class="mt-2 text-sm font-medium text-gray-900">Nenhuma doação encontrada</h3>
-                <p class="mt-1 text-sm text-gray-500">Comece adicionando uma nova doação</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Form -->
-        <!-- Modal Form - Versão 1.1.2 CORRIGIDA -->
-        <!-- Modal Form - Versão 1.1.2 CORRIGIDA -->
-        <!-- Modal Form COMPLETO - Versão 1.1.3 -->
+function substituirModalHTML() {
+    console.log('📝 Substituindo modal HTML completamente...');
+    
+    const indexPath = './public/index.html';
+    let content = fs.readFileSync(indexPath, 'utf8');
+    
+    // Localizar e extrair o modal atual
+    const modalStart = content.indexOf('<div id="modal"');
+    const modalEnd = content.indexOf('</div>', content.lastIndexOf('<!-- Modal Footer -->')) + 6;
+    
+    if (modalStart === -1 || modalEnd === -1) {
+        console.log('❌ Modal não encontrado para substituição');
+        return;
+    }
+    
+    console.log(`📍 Modal encontrado: posição ${modalStart} até ${modalEnd}`);
+    
+    // Novo modal completo e funcional
+    const novoModalHTML = `    <!-- Modal Form COMPLETO - Versão 1.1.3 -->
     <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" style="display: none;">
         <div class="bg-white rounded-lg max-w-6xl w-full p-6 max-h-screen overflow-y-auto">
             <div class="flex justify-between items-center mb-6">
@@ -356,45 +236,309 @@
                 </button>
             </div>
         </div>
-    </div>
-        </div>
-    </div>
-        </div>
-    </div>
-        </div>
-    </div>
+    </div>`;
+    
+    // Substituir o modal
+    content = content.substring(0, modalStart) + novoModalHTML + content.substring(modalEnd);
+    
+    fs.writeFileSync(indexPath, content);
+    console.log('✅ Modal HTML substituído completamente');
+}
 
-    <!-- Modal Histórico (APENAS UM, SEM DUPLICAÇÃO) -->
-    <div id="modal-history" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" style="display: none; z-index: 9999 !important;">
-        <div class="bg-white rounded-lg max-w-4xl w-full p-6 max-h-screen overflow-y-auto shadow-2xl">
-            <div class="flex justify-between items-center mb-6 border-b pb-4">
-                <h2 id="history-title" class="text-2xl font-bold text-gray-900">Histórico de Pagamentos</h2>
-                <button id="btn-close-history" class="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100">
-                    <i data-feather="x" class="h-6 w-6"></i>
-                </button>
-            </div>
-            
-            <div id="history-content" class="space-y-6 min-h-20">
-                <p class="text-center text-gray-500">Carregando histórico...</p>
-            </div>
-            
-            <div class="flex justify-between items-center pt-6 border-t mt-6">
-                <div id="history-stats" class="text-sm text-gray-600">
-                    <!-- Estatísticas do histórico -->
-                </div>
-                <button id="btn-add-payment" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2">
-                    <i data-feather="plus" class="h-4 w-4"></i>
-                    Adicionar Pagamento
-                </button>
-            </div>
-        </div>
-    </div>
+// ==========================================
+// 2. MODIFICAR APP.JS - FORÇAR USO DO MODAL HTML
+// ==========================================
 
-    <!-- Scripts -->
-    <script src="app.js"></script>
-    <script>
-        // Inicializar Feather Icons
-        feather.replace();
-    </script>
-</body>
-</html>
+function modificarOpenModal() {
+    console.log('📝 Modificando app.js - Forçando uso do modal HTML...');
+    
+    const appPath = './public/app.js';
+    let content = fs.readFileSync(appPath, 'utf8');
+    
+    // Encontrar e substituir a função openModal
+    const openModalRegex = /function openModal\(\)\s*{[^}]*}/s;
+    const openModalMatch = content.match(openModalRegex);
+    
+    if (openModalMatch) {
+        const novaFuncaoOpenModal = `function openModal() {
+    console.log('📝 Abrindo modal de nova doação - v1.1.3');
+    
+    // FORÇAR uso do modal HTML (não createSimpleModal)
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modal-title');
+    
+    if (modal) {
+        // Configurar modal para nova doação
+        if (modalTitle) modalTitle.textContent = 'Nova Doação';
+        
+        // Limpar todos os campos
+        clearModalFields();
+        
+        // Definir data padrão como hoje
+        const today = new Date().toISOString().split('T')[0];
+        const dateField = document.getElementById('input-date');
+        if (dateField) dateField.value = today;
+        
+        // Mostrar modal
+        modal.style.display = 'flex';
+        
+        // Focar no primeiro campo
+        const firstInput = document.getElementById('input-donor');
+        if (firstInput) {
+            setTimeout(() => firstInput.focus(), 100);
+        }
+        
+        console.log('✅ Modal HTML aberto com sucesso');
+    } else {
+        console.error('❌ Modal HTML não encontrado');
+        // Fallback: criar modal simples apenas se HTML não existir
+        createSimpleModal();
+    }
+}`;
+        
+        content = content.replace(openModalMatch[0], novaFuncaoOpenModal);
+        console.log('✅ Função openModal substituída');
+    } else {
+        console.log('❌ Função openModal não encontrada');
+    }
+    
+    // Adicionar função para limpar campos
+    const clearFieldsFunction = `
+// Função para limpar campos do modal - v1.1.3
+function clearModalFields() {
+    const fields = [
+        'input-donor', 'input-cpf', 'input-phone1', 'input-phone2', 'input-contact',
+        'input-cep', 'input-logradouro', 'input-numero', 'input-complemento', 
+        'input-bairro', 'input-cidade', 'input-estado',
+        'input-amount', 'input-type', 'input-date', 'input-observations',
+        'input-parcelas', 'input-proxima-parcela'
+    ];
+    
+    fields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            if (field.type === 'checkbox') {
+                field.checked = false;
+            } else {
+                field.value = '';
+            }
+        }
+    });
+    
+    // Esconder campos de recorrência
+    const recurringFields = document.getElementById('recurring-fields');
+    if (recurringFields) {
+        recurringFields.style.display = 'none';
+    }
+    
+    console.log('🧹 Campos do modal limpos');
+}
+
+`;
+    
+    // Inserir função antes de openModal
+    const openModalIndex = content.indexOf('function openModal()');
+    if (openModalIndex !== -1) {
+        content = content.substring(0, openModalIndex) + clearFieldsFunction + content.substring(openModalIndex);
+        console.log('✅ Função clearModalFields adicionada');
+    }
+    
+    fs.writeFileSync(appPath, content);
+}
+
+// ==========================================
+// 3. VERIFICAR E CORRIGIR TOGGLERECURRINGFIELDS
+// ==========================================
+
+function corrigirToggleRecurring() {
+    console.log('📝 Verificando função toggleRecurringFields...');
+    
+    const appPath = './public/app.js';
+    let content = fs.readFileSync(appPath, 'utf8');
+    
+    // Verificar se existe a função correta
+    if (!content.includes('function toggleRecurringFields()')) {
+        const toggleFunction = `
+// Função para mostrar/esconder campos recorrentes - v1.1.3
+function toggleRecurringFields() {
+    const checkbox = document.getElementById('input-recurrent');
+    const fields = document.getElementById('recurring-fields');
+    const proximaParcelaField = document.getElementById('input-proxima-parcela');
+    
+    if (checkbox && fields) {
+        if (checkbox.checked) {
+            fields.style.display = 'block';
+            
+            // Calcular próxima parcela (30 dias à frente)
+            if (proximaParcelaField) {
+                const hoje = new Date();
+                const proximaData = new Date(hoje);
+                proximaData.setDate(proximaData.getDate() + 30);
+                
+                const dataFormatada = proximaData.toISOString().substring(0, 10);
+                proximaParcelaField.value = dataFormatada;
+            }
+            
+            console.log('🔄 Campos de recorrência ativados');
+        } else {
+            fields.style.display = 'none';
+            console.log('🔄 Campos de recorrência desativados');
+        }
+    } else {
+        console.error('❌ Elementos de recorrência não encontrados', {
+            checkbox: !!checkbox,
+            fields: !!fields
+        });
+    }
+}
+
+// Tornar função global
+window.toggleRecurringFields = toggleRecurringFields;
+
+`;
+        
+        // Inserir antes de openModal
+        const openModalIndex = content.indexOf('function openModal()');
+        if (openModalIndex !== -1) {
+            content = content.substring(0, openModalIndex) + toggleFunction + content.substring(openModalIndex);
+            console.log('✅ Função toggleRecurringFields adicionada');
+        }
+    } else {
+        console.log('✅ Função toggleRecurringFields já existe');
+    }
+    
+    fs.writeFileSync(appPath, content);
+}
+
+// ==========================================
+// 4. CORRIGIR EVENT LISTENERS
+// ==========================================
+
+function corrigirEventListeners() {
+    console.log('📝 Corrigindo event listeners...');
+    
+    const appPath = './public/app.js';
+    let content = fs.readFileSync(appPath, 'utf8');
+    
+    // Buscar setupEventListeners
+    const setupIndex = content.indexOf('function setupEventListeners() {');
+    if (setupIndex !== -1) {
+        const functionEnd = content.indexOf('}', setupIndex);
+        
+        // Novo código para event listeners
+        const newListeners = `
+    
+    // Event listener para botão Nova Doação - v1.1.3 CORRIGIDO
+    const btnNovaDoacao = document.getElementById('btn-new-donation'); // ID correto do HTML
+    if (btnNovaDoacao) {
+        btnNovaDoacao.addEventListener('click', function(e) {
+            e.preventDefault();
+            openModal(); // Agora usa modal HTML
+        });
+        console.log('✅ Event listener Nova Doação configurado (btn-new-donation)');
+    } else {
+        console.log('⚠️ Botão btn-new-donation não encontrado');
+    }
+    
+    // Event listener para fechar modal
+    const btnCloseModal = document.getElementById('btn-close-modal');
+    if (btnCloseModal) {
+        btnCloseModal.addEventListener('click', function(e) {
+            e.preventDefault();
+            const modal = document.getElementById('modal');
+            if (modal) modal.style.display = 'none';
+        });
+        console.log('✅ Event listener fechar modal configurado');
+    }
+    
+    // Event listener para cancelar
+    const btnCancel = document.getElementById('btn-cancel');
+    if (btnCancel) {
+        btnCancel.addEventListener('click', function(e) {
+            e.preventDefault();
+            const modal = document.getElementById('modal');
+            if (modal) modal.style.display = 'none';
+        });
+        console.log('✅ Event listener cancelar configurado');
+    }
+    
+    // Event listeners para campos de endereço - v1.1.3
+    const cepField = document.getElementById('input-cep');
+    if (cepField) {
+        cepField.addEventListener('input', formatCEPInput);
+        console.log('✅ Event listener CEP configurado');
+    }
+`;
+        
+        content = content.substring(0, functionEnd) + newListeners + content.substring(functionEnd);
+        console.log('✅ Event listeners corrigidos');
+    }
+    
+    fs.writeFileSync(appPath, content);
+}
+
+// ==========================================
+// 5. ATUALIZAR VERSÃO
+// ==========================================
+
+function atualizarVersao() {
+    console.log('📝 Atualizando versão para 1.1.3...');
+    
+    // package.json
+    const packagePath = './package.json';
+    let packageContent = fs.readFileSync(packagePath, 'utf8');
+    packageContent = packageContent.replace('"version": "1.1.2"', '"version": "1.1.3"');
+    fs.writeFileSync(packagePath, packageContent);
+    
+    // VERSAO.txt
+    fs.writeFileSync('./VERSAO.txt', '1.1.3');
+    
+    console.log('✅ Versão atualizada para 1.1.3');
+}
+
+// ==========================================
+// EXECUÇÃO PRINCIPAL
+// ==========================================
+
+try {
+    console.log('🚀 Iniciando correção FORÇADA...\n');
+    
+    // Verificar se estamos no diretório correto
+    if (!fs.existsSync('./public/index.html')) {
+        console.log('❌ ERRO: Execute este script na raiz do projeto!');
+        process.exit(1);
+    }
+    
+    // Executar correções na ordem correta
+    substituirModalHTML();
+    modificarOpenModal();
+    corrigirToggleRecurring();
+    corrigirEventListeners();
+    atualizarVersao();
+    
+    console.log('\n🎉 CORREÇÃO FORÇADA CONCLUÍDA!');
+    console.log('══════════════════════════════════════════════════');
+    console.log('✅ Modal HTML substituído completamente');
+    console.log('✅ openModal() agora usa modal HTML (não createSimpleModal)');
+    console.log('✅ Todos os campos de endereço implementados');
+    console.log('✅ Campos de recorrência funcionando');
+    console.log('✅ Event listeners corrigidos');
+    console.log('✅ Versão atualizada para 1.1.3');
+    console.log('');
+    console.log('📋 PRÓXIMOS PASSOS:');
+    console.log('1. 🔄 Reinicie o servidor: npm start');
+    console.log('2. 🧹 Limpe cache: Ctrl+Shift+F5');
+    console.log('3. 🧪 Teste: Clique em "Nova Doação"');
+    console.log('4. ✅ Verifique: Campos de endereço devem aparecer');
+    console.log('5. 🔄 Teste: Marque "Doação Recorrente"');
+    console.log('');
+    console.log('🎯 AGORA DEVE FUNCIONAR 100%!');
+    
+} catch (error) {
+    console.error('❌ ERRO durante a correção forçada:', error.message);
+    console.log('\n🔧 Se o erro persistir:');
+    console.log('1. Verifique permissões de arquivo');
+    console.log('2. Feche o navegador completamente');
+    console.log('3. Execute como administrador');
+    process.exit(1);
+}

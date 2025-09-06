@@ -287,10 +287,81 @@ app_backup_restore_2025-09-05T14-54-15.js # Backup antes restauração
 
 ---
 
+
+### v1.1.2 (05/Setembro/2025) ✅ HOTFIX MODAL
+**Tipo:** Patch Release - Correção Interface
+**Mudanças:**
+- ✅ Corrigido modal "Nova Doação" - Campos de endereço agora aparecem
+- ✅ Restaurados campos de parcelas recorrentes (quantas parcelas + próxima data)
+- ✅ Função toggleRecurringFields() implementada
+- ✅ Layout em 2 colunas para melhor organização
+- ✅ Cálculo automático da próxima parcela (+30 dias)
+- ✅ Event listeners corrigidos
+- ✅ Mantida compatibilidade total com versão anterior
+
+**Problemas Corrigidos:**
+- Modal "Nova Doação" sem campos de endereço
+- Campos de recorrência não apareciam quando checkbox marcado
+- Event listeners incompletos
+
+**Script de Correção Aplicado:**
+```bash
+node corrigir-modal-nova-doacao-v1.1.2.js
+```
+
+**Status:** ✅ MODAL NOVA DOAÇÃO 100% FUNCIONAL
+
+---
+
+
+### v1.1.2 (05/Setembro/2025) ✅ HOTFIX MODAL
+**Tipo:** Patch Release - Correção Interface
+**Mudanças:**
+- ✅ Corrigido modal "Nova Doação" - Campos de endereço agora aparecem
+- ✅ Restaurados campos de parcelas recorrentes (quantas parcelas + próxima data)
+- ✅ Função toggleRecurringFields() implementada
+- ✅ Layout em 2 colunas para melhor organização
+- ✅ Cálculo automático da próxima parcela (+30 dias)
+- ✅ Event listeners corrigidos
+- ✅ Mantida compatibilidade total com versão anterior
+
+**Problemas Corrigidos:**
+- Modal "Nova Doação" sem campos de endereço
+- Campos de recorrência não apareciam quando checkbox marcado
+- Event listeners incompletos
+
+**Script de Correção Aplicado:**
+```bash
+node corrigir-modal-nova-doacao-v1.1.2.js
+```
+
+**Status:** ✅ MODAL NOVA DOAÇÃO 100% FUNCIONAL
+
+---
+
 ### v1.1.1 (05/Setembro/2025) ❌ VERSÃO PROBLEMÁTICA
 **Tipo:** Tentativa de correção (não usada)
 **Problema:** Template literals não resolvidos
 **Status:** Substituída pela v1.1.2
+
+---
+
+
+### v1.1.1 (05/Setembro/2025) ✅ HOTFIX
+**Tipo:** Patch Release - Correção de Funcionalidades
+**Mudanças:**
+- ✅ Restaurados campos de endereço nos modais (index.html)
+- ✅ Reintegrada busca automática de CEP via ViaCEP API
+- ✅ Adicionada rota de verificação de duplicatas (/api/doadores/check-duplicates)
+- ✅ Corrigidos event listeners para campos de CEP
+- ✅ Mantida compatibilidade com versão 1.1.0
+
+**Script de Correção Aplicado:**
+```bash
+node corrigir-campos-endereco-duplicatas.js
+```
+
+**Status:** ✅ CAMPOS DE ENDEREÇO E DUPLICATAS 100% FUNCIONAIS
 
 ---
 

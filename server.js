@@ -431,6 +431,22 @@ app.get('/api/doacoes/:id/parcelas', (req, res) => {
 });
 
 // ==============================
+
+// Rota para verificar duplicatas - Versão 1.1.1
+app.post('/api/doadores/check-duplicates', (req, res) => {
+  const { nome, telefone1, cpf } = req.body;
+  
+  checkPossibleDuplicates(nome, telefone1, cpf, (err, duplicates) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+    
+    res.json(duplicates || []);
+  });
+});
+
+// ==============================
 // ROTAS DA API - RELATÓRIOS
 // ==============================
 

@@ -99,6 +99,41 @@ window.formatCEPInput = function(event) {
 // SISTEMA DE CONTROLE DE DOAÇÕES - APP.JS CORRIGIDO v1.1.1
 // ===============================================================================
 
+
+// ===============================================================================
+// FUNÇÃO PARA CAMPOS RECORRENTES - Versão 1.1.2
+// ===============================================================================
+
+function toggleRecurringFields() {
+    const checkbox = document.getElementById('input-recurrent');
+    const fields = document.getElementById('recurring-fields');
+    const proximaParcelaField = document.getElementById('input-proxima-parcela');
+    
+    if (checkbox && fields) {
+        if (checkbox.checked) {
+            fields.style.display = 'block';
+            
+            // Calcular próxima parcela (30 dias à frente)
+            if (proximaParcelaField) {
+                const hoje = new Date();
+                const proximaData = new Date(hoje);
+                proximaData.setDate(proximaData.getDate() + 30);
+                
+                const dataFormatada = proximaData.toISOString().substring(0, 10);
+                proximaParcelaField.value = dataFormatada;
+            }
+            
+            console.log('🔄 Campos de recorrência ativados');
+        } else {
+            fields.style.display = 'none';
+            console.log('🔄 Campos de recorrência desativados');
+        }
+    }
+}
+
+// Tornar função global
+window.toggleRecurringFields = toggleRecurringFields;
+
 // Variáveis globais - CORREÇÃO: Declaração adequada
 let allDonations = []; // Array principal de doações
 let filteredDonations = []; // Array filtrado
@@ -195,8 +230,86 @@ function setupEventListeners() {
         elements.btnNovaDoacao.addEventListener('click', function(e) {
             e.preventDefault();
             openModal();
+        
+    
+    // Event listener para botão Nova Doação - Versão 1.1.2
+    const btnNovaDoacao = document.getElementById('btn-nova-doacao') || document.getElementById('btn-new-donation');
+    if (btnNovaDoacao) {
+        btnNovaDoacao.addEventListener('click', function(e) {
+            e.preventDefault();
+            openModal();
+        
+    
+    // Event listener para botão Nova Doação - v1.1.3 CORRIGIDO
+    const btnNovaDoacao = document.getElementById('btn-new-donation'); // ID correto do HTML
+    if (btnNovaDoacao) {
+        btnNovaDoacao.addEventListener('click', function(e) {
+            e.preventDefault();
+            openModal(); // Agora usa modal HTML
+        });
+        console.log('✅ Event listener Nova Doação configurado (btn-new-donation)');
+    } else {
+        console.log('⚠️ Botão btn-new-donation não encontrado');
+    }
+    
+    // Event listener para fechar modal
+    const btnCloseModal = document.getElementById('btn-close-modal');
+    if (btnCloseModal) {
+        btnCloseModal.addEventListener('click', function(e) {
+            e.preventDefault();
+            const modal = document.getElementById('modal');
+            if (modal) modal.style.display = 'none';
+        });
+        console.log('✅ Event listener fechar modal configurado');
+    }
+    
+    // Event listener para cancelar
+    const btnCancel = document.getElementById('btn-cancel');
+    if (btnCancel) {
+        btnCancel.addEventListener('click', function(e) {
+            e.preventDefault();
+            const modal = document.getElementById('modal');
+            if (modal) modal.style.display = 'none';
+        });
+        console.log('✅ Event listener cancelar configurado');
+    }
+    
+    // Event listeners para campos de endereço - v1.1.3
+    const cepField = document.getElementById('input-cep');
+    if (cepField) {
+        cepField.addEventListener('input', formatCEPInput);
+        console.log('✅ Event listener CEP configurado');
+    }
+});
+        console.log('✅ Event listener Nova Doação configurado');
+    } else {
+        console.log('⚠️ Botão Nova Doação não encontrado');
+    }
+    
+    // Event listeners para campos de endereço - Versão 1.1.2
+    const cepField = document.getElementById('input-cep');
+    if (cepField) {
+        cepField.addEventListener('input', formatCEPInput);
+        console.log('✅ Event listener CEP configurado');
+    }
+});
+    
+    // Event listeners para campos de endereço - Versão 1.1.1
+    const cepField = document.getElementById('input-cep');
+    if (cepField) {
+        cepField.addEventListener('input', formatCEPInput);
+    }
+    
+    const btnBuscarCep = document.getElementById('btn-buscar-cep');
+    if (btnBuscarCep) {
+        btnBuscarCep.addEventListener('click', function() {
+            const cep = document.getElementById('input-cep').value;
+            if (cep) {
+                buscarCEP(cep, 'input');
+            }
         });
     }
+}
     
     if (elements.btnExport) {
         elements.btnExport.addEventListener('click', function(e) {
@@ -469,9 +582,71 @@ function renderDonationsTable(donations) {
  * Abre modal de nova doação
  * Versão: 1.1.1 - Modal simplificado
  */
+
+// Função para limpar campos do modal - v1.1.3
+function clearModalFields() {
+    const fields = [
+        'input-donor', 'input-cpf', 'input-phone1', 'input-phone2', 'input-contact',
+        'input-cep', 'input-logradouro', 'input-numero', 'input-complemento', 
+        'input-bairro', 'input-cidade', 'input-estado',
+        'input-amount', 'input-type', 'input-date', 'input-observations',
+        'input-parcelas', 'input-proxima-parcela'
+    ];
+    
+    fields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            if (field.type === 'checkbox') {
+                field.checked = false;
+            } else {
+                field.value = '';
+            }
+        }
+    });
+    
+    // Esconder campos de recorrência
+    const recurringFields = document.getElementById('recurring-fields');
+    if (recurringFields) {
+        recurringFields.style.display = 'none';
+    }
+    
+    console.log('🧹 Campos do modal limpos');
+}
+
 function openModal() {
-    console.log('📝 Abrindo modal de nova doação');
-    createSimpleModal();
+    console.log('📝 Abrindo modal de nova doação - v1.1.3');
+    
+    // FORÇAR uso do modal HTML (não createSimpleModal)
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modal-title');
+    
+    if (modal) {
+        // Configurar modal para nova doação
+        if (modalTitle) modalTitle.textContent = 'Nova Doação';
+        
+        // Limpar todos os campos
+        clearModalFields();
+        
+        // Definir data padrão como hoje
+        const today = new Date().toISOString().split('T')[0];
+        const dateField = document.getElementById('input-date');
+        if (dateField) dateField.value = today;
+        
+        // Mostrar modal
+        modal.style.display = 'flex';
+        
+        // Focar no primeiro campo
+        const firstInput = document.getElementById('input-donor');
+        if (firstInput) {
+            setTimeout(() => firstInput.focus(), 100);
+        }
+        
+        console.log('✅ Modal HTML aberto com sucesso');
+    } else {
+        console.error('❌ Modal HTML não encontrado');
+        // Fallback: criar modal simples apenas se HTML não existir
+        createSimpleModal();
+    }
 }
 
 /**
