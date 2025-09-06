@@ -1,28 +1,17 @@
-[1.1.5] Atualização - 06/09/2025 14:40:35
+[1.1.5] Atualização - 06/09/2025 15:13:40
 
 ✅ Arquivos adicionados:
-   -  ADICIONAR-SELO-AUTENTICIDADE.js
-   -  CHANGELOG.md
-   -  CONTROLE_VERSAO_backup_2025-09-06.md
-   -  CORRIGIR-ERRO-SINTAXE.js
-   -  CORRIGIR-SELO-QR-FALTANTES.js
-   -  DEBUG-E-CORRIGIR-FINAL.js
-   -  DEBUG-ULTRA-ESPECIFICO.js
-   -  VALIDAR-SISTEMA-COMPLETO.js
-   -  VERIFICAR-FUNCIONALIDADES-IMPLEMENTADAS.js
-   -  public/app_backup_2025-09-06T02-27-31.js
-   -  public/app_backup_final_1757126960118.js
-   -  public/app_backup_selo_1757125902229.js
-   -  public/app_backup_selo_qr_1757126669337.js
-   -  public/app_backup_teste_1757127338448.js
-   -  public/app_com_erro_1757126055312.js
-   -  validation_report_2025-09-06.json
+   -  CORRECAO-EMERGENCIA.js
+   -  LIMPAR-E-IMPLEMENTAR-FINAL.js
+   -  public/app-bkp-06-09-2025.js
+   -  public/app_backup_antes_limpeza_1757184551039.js
+   -  public/app_backup_teste_1757184290605.js
+   -  public/app_com_erro_1757184774222.js
+   -  public/app_com_erro_1757184774251.js
+   -  public/app_com_erro_1757184774272.js
 
 📝 Arquivos modificados:
-   -  CONTROLE_VERSAO.md
-   -  VERSAO.txt
    -  commit-msg.txt
-   -  database/doacoes.db
    -  public/app.js
 
 📊 Estatísticas:
