@@ -1,19 +1,35 @@
-[1.1.5] Atualização - 06/09/2025 20:35:45
+[1.1.5] Atualização - 06/09/2025 22:23:27
 
 ✅ Arquivos adicionados:
-   -  public/app_backup_carne_completo_1757204075811.js
-   -  public/app_com_erro_sintaxe_1757204933658.js
+   -  ANALISAR-PARCELAS-SIMPLES.js
+   -  ANALISAR-PROBLEMA-PARCELAS.js
+   -  CORRECAO-PARCELAS-SEGURA.js
+   -  CORRIGIR-BACKEND-PARCELAS.js
+   -  CORRIGIR-SALVAMENTO-PARCELAS.js
+   -  DIAGNOSTICO-ERRO-RAPIDO.js
+   -  analisar-funcao-real.js
+   -  consultar-banco-parcelas.js
+   -  correcao-especifica.js
+   -  corrigir_frontend_apenas.js
+   -  donations.db
+   -  encontrar-banco.js
+   -  fix-frontend-simple.js
+   -  inicializar-banco-completo.js
+   -  public/app_backup_1757208160112.js
+   -  public/app_backup_1757208189001.js
+   -  public/app_backup_correcao_parcelas_1757206414389.js
+   -  public/app_backup_final_1757209234336.js
+   -  public/app_backup_seguro_1757206848852.js
+   -  server_backup_parcelas_1757207367351.js
+   -  verificar-estrutura-banco.js
+   -  verificar_inicializacao_banco.js
 
 📝 Arquivos modificados:
    -  CONTROLE_VERSAO.md
    -  commit-msg.txt
    -  database/doacoes.db
-
-🗑️ Arquivos removidos:
-   -  ADICIONAR-EVENT-LISTENERS-MODAL-V1.1.5.js
-   -  corrigir-apenas-botoes-modal.js
-   -  corrigir-onclick-botoes.js
-   -  debug-botoes-modal.js
+   -  public/app.js
+   -  server.js
 
 📊 Estatísticas:
    - Tamanho do banco: 40.00 KB
