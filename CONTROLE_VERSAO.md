@@ -340,6 +340,31 @@ http://localhost:3001
 
 ---
 
+
+### v1.1.5 (06/09/2025) ✅ RECUPERAÇÃO COMPLETA
+**Tipo:** Recovery Release - Restauração de Sistema Funcional
+**Mudanças:**
+- 🔧 **RECUPERAÇÃO CRÍTICA:** Backup funcional restaurado
+- ✅ **Erro de sintaxe resolvido:** "Unexpected token 'class'" corrigido
+- ✅ **Carnê profissional restaurado:** Com selo e QR Code
+- ✅ **Todas as funcionalidades operacionais:** 4/4 funções essenciais
+- ✅ **Sistema de notificações:** showNotification funcional
+- ✅ **Edição de doações:** Modal completo restaurado
+
+**Backup Restaurado:**
+```
+app_backup_carne_completo_1757204075811.js  # Versão funcional 100%
+```
+
+**Problemas Resolvidos:**
+- ❌ Dashboard travado em "Carregando..."
+- ❌ Modais não funcionavam
+- ❌ Erro de sintaxe JavaScript
+- ❌ Funcionalidades inacessíveis
+
+**Data da recuperação:** 06/09/2025 às 20:28:53
+**Script utilizado:** RECUPERACAO-SISTEMA-LIMPA.js
+
 ### v1.1.4 (05/Setembro/2025)
 **Tipo:** Minor Release - Preparação para Carnê
 **Mudanças:**

@@ -1,16 +1,8 @@
-[1.1.5] Atualização - 06/09/2025 17:33:42
+[1.1.5] Atualização - 06/09/2025 19:52:22
 
-✅ Arquivos adicionados:
-   -  corrigir-onclick-botoes.js
-   -  debug-botoes-modal.js
-   -  public/app_backup_antes_botoes_2025-09-06T21-20-35-074Z.js
-   -  public/index_backup_2025-09-06T21-28-43-329Z.html
 
 📝 Arquivos modificados:
    -  commit-msg.txt
-   -  database/doacoes.db
-   -  public/app.js
-   -  public/index.html
 
 📊 Estatísticas:
    - Tamanho do banco: 40.00 KB
