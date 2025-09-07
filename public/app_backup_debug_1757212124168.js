@@ -2985,16 +2985,7 @@ window.addDonation = async function() {
         }
         
         // Enviar para servidor
-        const response = await 
-        
-        // DEBUG: Mostrar dados que serão enviados
-        console.log('=== DEBUG DADOS ENVIADOS ===');
-        console.log('Checkbox recorrente:', document.getElementById('input-recurrent')?.checked);
-        console.log('Campo parcelas:', document.getElementById('input-parcelas')?.value);
-        console.log('FormData completo:', formData);
-        console.log('JSON que será enviado:', JSON.stringify(formData, null, 2));
-        console.log('==============================');
-        fetch('/api/doacoes', {
+        const response = await fetch('/api/doacoes', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(formData)
