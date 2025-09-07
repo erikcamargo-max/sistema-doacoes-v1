@@ -341,6 +341,24 @@ http://localhost:3001
 ---
 
 
+
+### v1.1.6 (06/09/2025) 🔧 CORREÇÃO PARCELAS
+**Tipo:** Hotfix - Correção de Funcionalidade Crítica
+**Mudanças:**
+- 🔧 **CORREÇÃO CRÍTICA:** Função addDonation corrigida para coletar parcelas
+- ✅ **Dados de recorrência:** Campos recorrente/parcelas agora são enviados
+- ✅ **Validação melhorada:** Verificação de parcelas mínimas
+- ✅ **Feedback aprimorado:** Notificações específicas para recorrentes
+- 📊 **Dashboard atualizado:** Contagem correta de doações recorrentes
+
+**Problema Resolvido:**
+- ❌ Doações marcadas como recorrentes salvavam como "Não"
+- ❌ Carnês geravam apenas 1 parcela mesmo com 12 configuradas
+- ❌ Dashboard não contabilizava recorrentes corretamente
+
+**Data da correção:** 06/09/2025 às 20:53:34
+**Script utilizado:** CORRIGIR-SALVAMENTO-PARCELAS.js
+
 ### v1.1.5 (06/09/2025) ✅ RECUPERAÇÃO COMPLETA
 **Tipo:** Recovery Release - Restauração de Sistema Funcional
 **Mudanças:**

@@ -196,8 +196,7 @@ app.post('/api/doacoes', (req, res) => {
     amount, type, date, recurrent, observations,
     forceCreate,
     cep, logradouro, numero, complemento, bairro, cidade, estado
-  ,
-    recorrente, parcelas, proxima_parcela} = req.body;
+  } = req.body;
 
   const insertDoacao = (doadorId) => {
     const parcelas = recurrent ? 12 : 1;

@@ -1,8 +1,19 @@
-[1.1.5] Atualização - 06/09/2025 19:52:22
+[1.1.5] Atualização - 06/09/2025 20:35:45
 
+✅ Arquivos adicionados:
+   -  public/app_backup_carne_completo_1757204075811.js
+   -  public/app_com_erro_sintaxe_1757204933658.js
 
 📝 Arquivos modificados:
+   -  CONTROLE_VERSAO.md
    -  commit-msg.txt
+   -  database/doacoes.db
+
+🗑️ Arquivos removidos:
+   -  ADICIONAR-EVENT-LISTENERS-MODAL-V1.1.5.js
+   -  corrigir-apenas-botoes-modal.js
+   -  corrigir-onclick-botoes.js
+   -  debug-botoes-modal.js
 
 📊 Estatísticas:
    - Tamanho do banco: 40.00 KB

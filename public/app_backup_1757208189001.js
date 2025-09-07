@@ -2964,11 +2964,7 @@ window.addDonation = async function() {
             notes: document.getElementById('input-notes')?.value?.trim() || '',
             contact: document.getElementById('input-contact')?.value?.trim() || '',
             cpf: document.getElementById('input-cpf')?.value?.trim() || ''
-        ,
-        // Campos de parcelas recorrentes
-        recorrente: document.getElementById('input-recurrent')?.checked || false,
-        parcelas: parseInt(document.getElementById('input-parcelas')?.value || 1),
-        proxima_parcela: document.getElementById('input-proxima-parcela')?.value || null};
+        };
         
         // Validação básica
         if (!formData.donor) {
