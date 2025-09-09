@@ -303,11 +303,7 @@ window.formatCEPInput = window.formatCEPInput;
 console.log('✅ Funções ViaCEP 1.1.4 carregadas com sucesso');
 
 // Variáveis globais - CORREÇÃO: Declaração adequada
-let allDonations = [];
-let allDonors = [];
-let currentEditingId = null;
-let currentDonationId = null;
-let duplicateCheckModal = null; // Array principal de doações
+let allDonations = []; // Array principal de doações
 let filteredDonations = []; // Array filtrado
 let editingId = null;
 let currentHistoryId = null;
@@ -2894,6 +2890,13 @@ async function generateCarne(doacaoId) {
  * Calcular data de vencimento para parcelas
  * Versão: 1.1.2
  */
+function calcularVencimento(dataInicial, mesesAdicionais, recorrente) {
+    const data = new Date(dataInicial);
+    if (recorrente) {
+        data.setMonth(data.getMonth() + mesesAdicionais);
+    }
+    return data.toISOString().substring(0, 10);
+}
 
 /**
  * Buscar pagamento no histórico por data próxima

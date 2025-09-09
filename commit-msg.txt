@@ -1,27 +1,44 @@
-[1.1.5] Atualização - 06/09/2025 22:27:13
+[1.1.5] Atualização - 08/09/2025 20:37:41
 
-
-📝 Arquivos modificados:
-   -  commit-msg.txt
-   -  database/doacoes.db
 
 🗑️ Arquivos removidos:
-   -  ANALISAR-PARCELAS-SIMPLES.js
-   -  ANALISAR-PROBLEMA-PARCELAS.js
-   -  CORRECAO-PARCELAS-SEGURA.js
-   -  CORRIGIR-BACKEND-PARCELAS.js
-   -  CORRIGIR-SALVAMENTO-PARCELAS.js
-   -  DIAGNOSTICO-ERRO-RAPIDO.js
-   -  analisar-funcao-real.js
-   -  consultar-banco-parcelas.js
-   -  correcao-especifica.js
-   -  corrigir_frontend_apenas.js
-   -  encontrar-banco.js
-   -  fix-async-direct.js
-   -  fix-frontend-simple.js
-   -  inicializar-banco-completo.js
-   -  verificar-estrutura-banco.js
-   -  verificar_inicializacao_banco.js
+   -  backups/doacoes_backup_2025-09-01T02-56-44.db
+   -  backups/doacoes_v1.1.0_2025-09-02T01-44-00.db
+   -  corrigir-backend-definitivo.js
+   -  debug-tempo-real.js
+   -  public/app-bkp-06-09-2025.js
+   -  public/app_backup_1757208160112.js
+   -  public/app_backup_1757208189001.js
+   -  public/app_backup_2025-09-06T19-22-42-455Z.js
+   -  public/app_backup_2025-09-06T21-08-04-558Z.js
+   -  public/app_backup_antes_ajustes_1757186288886.js
+   -  public/app_backup_antes_botoes_2025-09-06T21-20-35-074Z.js
+   -  public/app_backup_antes_limpeza_1757184551039.js
+   -  public/app_backup_await_fix_2025-09-06T21-00-43-838Z.js
+   -  public/app_backup_before_restore_2025-09-06T21-13-17-792Z.js
+   -  public/app_backup_carne_completo_1757204075811.js
+   -  public/app_backup_chaves_fix_2025-09-06T20-29-46-824Z.js
+   -  public/app_backup_colon_fix_2025-09-06T21-03-56-612Z.js
+   -  public/app_backup_correcao_parcelas_1757206414389.js
+   -  public/app_backup_debug_1757212124168.js
+   -  public/app_backup_export_fix_2025-09-06T19-29-28-653Z.js
+   -  public/app_backup_fetch_fix_2025-09-06T21-05-28-980Z.js
+   -  public/app_backup_final_1757209234336.js
+   -  public/app_backup_modal_completo_2025-09-06T20-18-40-571Z.js
+   -  public/app_backup_modal_fix_2025-09-06T19-38-41-447Z.js
+   -  public/app_backup_modal_fix_2025-09-06T19-41-32-445Z.js
+   -  public/app_backup_printwindow_fix_2025-09-06T19-33-52-298Z.js
+   -  public/app_backup_remove_2025-09-06T20-52-00-631Z.js
+   -  public/app_backup_return_fix_2025-09-06T20-24-53-789Z.js
+   -  public/app_backup_seguro_1757206848852.js
+   -  public/app_backup_simple_2025-09-06T20-49-24-551Z.js
+   -  public/app_com_erro_1757184774222.js
+   -  public/app_com_erro_1757184774251.js
+   -  public/app_com_erro_sintaxe_1757204933658.js
+   -  public/index_backup_2025-09-06T21-28-43-329Z.html
+   -  public/index_backup_modal_completo_2025-09-06T20-18-40-571Z.html
+   -  server_backup_final_1757212354893.js
+   -  server_backup_parcelas_1757207367351.js
 
 📊 Estatísticas:
    - Tamanho do banco: 40.00 KB

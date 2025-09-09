@@ -1,0 +1,38 @@
+{
+  "timestamp": "2025-09-09T01:07:54.262Z",
+  "file": "C:\\Users\\Doutor PC\\OneDrive\\sistema-doacoes-v1\\public\\app.js",
+  "statistics": {
+    "total_lines": 3044,
+    "total_functions": 41,
+    "duplicate_functions": 1,
+    "console_logs": 86,
+    "todos": 0,
+    "debug_comments": 3,
+    "syntax_issues": 0
+  },
+  "duplicates": [
+    "calcularVencimento"
+  ],
+  "missing_globals": [
+    "allDonors",
+    "currentEditingId",
+    "currentDonationId",
+    "duplicateCheckModal"
+  ],
+  "missing_functions": [
+    "loadDonors",
+    "saveDonation",
+    "editDonation",
+    "deleteDonation",
+    "exportData",
+    "showHistory",
+    "closeModal"
+  ],
+  "syntax_issues": [],
+  "recommendation": {
+    "needs_refactoring": true,
+    "needs_modularization": true,
+    "needs_cleanup": true,
+    "critical_issues": true
+  }
+}
