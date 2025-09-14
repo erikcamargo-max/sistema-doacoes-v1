@@ -1,0 +1,717 @@
+{
+  "timestamp": "2025-09-09T21:43:32.663Z",
+  "statistics": {
+    "totalLines": 3041,
+    "totalFunctions": 36,
+    "totalGlobals": 9,
+    "categories": 7
+  },
+  "modules": {
+    "config.js": {
+      "description": "Configurações e constantes globais",
+      "functions": [],
+      "globals": [],
+      "estimatedLines": 50
+    },
+    "api.js": {
+      "description": "Chamadas à API e comunicação com backend",
+      "functions": [
+        "loadDashboard",
+        "loadSummary",
+        "loadDonations",
+        "getTypeColor",
+        "carregarEstatisticas"
+      ],
+      "globals": [],
+      "estimatedLines": 300
+    },
+    "doadores.js": {
+      "description": "Gestão de doadores",
+      "functions": [],
+      "globals": [
+        "allDonors"
+      ],
+      "estimatedLines": 400
+    },
+    "doacoes.js": {
+      "description": "Gestão de doações",
+      "functions": [
+        "renderDonationsTable"
+      ],
+      "globals": [
+        "allDonations",
+        "currentDonationId"
+      ],
+      "estimatedLines": 600
+    },
+    "historico.js": {
+      "description": "Histórico de pagamentos",
+      "functions": [
+        "buscarPagamentoHistorico"
+      ],
+      "globals": [],
+      "estimatedLines": 300
+    },
+    "modals.js": {
+      "description": "Gerenciamento de modais",
+      "functions": [
+        "showNotification",
+        "toggleRecurringFields",
+        "initializeElements",
+        "setupEventListeners",
+        "clearModalFields",
+        "openModal",
+        "createSimpleModal",
+        "showHistoryModal",
+        "showErrorState",
+        "showError",
+        "mostrarModalExportacao",
+        "fecharModalExportacao"
+      ],
+      "globals": [
+        "currentEditingId",
+        "duplicateCheckModal"
+      ],
+      "estimatedLines": 500
+    },
+    "filters.js": {
+      "description": "Sistema de filtros e busca",
+      "functions": [
+        "applyFilters",
+        "buscarPagamento"
+      ],
+      "globals": [],
+      "estimatedLines": 200
+    },
+    "exports.js": {
+      "description": "Exportação e geração de documentos",
+      "functions": [
+        "criarHTMLCarne",
+        "exportarPDF",
+        "exportarCSV",
+        "exportarJSON",
+        "criarRelatorioPDF",
+        "generateCarne"
+      ],
+      "globals": [],
+      "estimatedLines": 400
+    },
+    "utils.js": {
+      "description": "Funções utilitárias",
+      "functions": [
+        "formatDate",
+        "formatCPFInput",
+        "formatarCPF",
+        "formatarData",
+        "gerarParcelasHTML",
+        "calcularVencimento",
+        "criarCSV",
+        "montarEndereco",
+        "formatCPFDisplay"
+      ],
+      "globals": [],
+      "estimatedLines": 150
+    },
+    "init.js": {
+      "description": "Inicialização do sistema",
+      "functions": [
+        "DOMContentLoaded",
+        "setupEventListeners"
+      ],
+      "globals": [],
+      "estimatedLines": 100
+    }
+  },
+  "dependencies": {
+    "showNotification": {
+      "name": "showNotification",
+      "type": "function",
+      "line": 7,
+      "calls": [],
+      "calledBy": [
+        "exportarPDF",
+        "exportarCSV",
+        "exportarJSON"
+      ],
+      "domAccess": [],
+      "apiCalls": [],
+      "category": "modals"
+    },
+    "toggleRecurringFields": {
+      "name": "toggleRecurringFields",
+      "type": "function",
+      "line": 92,
+      "calls": [],
+      "calledBy": [],
+      "domAccess": [
+        {
+          "method": "getElementById",
+          "selector": "input-recurrent"
+        },
+        {
+          "method": "getElementById",
+          "selector": "recurring-fields"
+        },
+        {
+          "method": "getElementById",
+          "selector": "input-proxima-parcela"
+        }
+      ],
+      "apiCalls": [],
+      "category": "modals"
+    },
+    "initializeElements": {
+      "name": "initializeElements",
+      "type": "function",
+      "line": 375,
+      "calls": [],
+      "calledBy": [],
+      "domAccess": [
+        {
+          "method": "getElementById",
+          "selector": "loading"
+        },
+        {
+          "method": "getElementById",
+          "selector": "summary"
+        },
+        {
+          "method": "getElementById",
+          "selector": "table-container"
+        },
+        {
+          "method": "getElementById",
+          "selector": "empty-state"
+        },
+        {
+          "method": "getElementById",
+          "selector": "modal"
+        },
+        {
+          "method": "getElementById",
+          "selector": "modal-history"
+        },
+        {
+          "method": "getElementById",
+          "selector": "search-input"
+        },
+        {
+          "method": "getElementById",
+          "selector": "filter-type"
+        },
+        {
+          "method": "getElementById",
+          "selector": "filter-recurrent"
+        },
+        {
+          "method": "getElementById",
+          "selector": "donations-tbody"
+        },
+        {
+          "method": "getElementById",
+          "selector": "btn-new-donation"
+        },
+        {
+          "method": "getElementById",
+          "selector": "btn-export"
+        },
+        {
+          "method": "getElementById",
+          "selector": "total-arrecadado"
+        },
+        {
+          "method": "getElementById",
+          "selector": "total-doacoes"
+        },
+        {
+          "method": "getElementById",
+          "selector": "doacoes-recorrentes"
+        },
+        {
+          "method": "getElementById",
+          "selector": "total-pagamentos"
+        }
+      ],
+      "apiCalls": [],
+      "category": "modals"
+    },
+    "setupEventListeners": {
+      "name": "setupEventListeners",
+      "type": "function",
+      "line": 400,
+      "calls": [
+        "openModal"
+      ],
+      "calledBy": [],
+      "domAccess": [
+        {
+          "method": "getElementById",
+          "selector": "btn-nova-doacao"
+        },
+        {
+          "method": "getElementById",
+          "selector": "btn-new-donation"
+        },
+        {
+          "method": "getElementById",
+          "selector": "btn-new-donation"
+        },
+        {
+          "method": "getElementById",
+          "selector": "input-cep"
+        }
+      ],
+      "apiCalls": [],
+      "category": "modals"
+    },
+    "loadDashboard": {
+      "name": "loadDashboard",
+      "type": "function",
+      "line": 543,
+      "calls": [
+        "loadSummary",
+        "loadDonations"
+      ],
+      "calledBy": [
+        "showErrorState",
+        "showError"
+      ],
+      "domAccess": [],
+      "apiCalls": [],
+      "category": "api"
+    },
+    "loadSummary": {
+      "name": "loadSummary",
+      "type": "function",
+      "line": 573,
+      "calls": [],
+      "calledBy": [
+        "loadDashboard"
+      ],
+      "domAccess": [],
+      "apiCalls": [],
+      "category": "api"
+    },
+    "loadDonations": {
+      "name": "loadDonations",
+      "type": "function",
+      "line": 609,
+      "calls": [],
+      "calledBy": [
+        "loadDashboard"
+      ],
+      "domAccess": [],
+      "apiCalls": [],
+      "category": "api"
+    },
+    "applyFilters": {
+      "name": "applyFilters",
+      "type": "function",
+      "line": 646,
+      "calls": [],
+      "calledBy": [],
+      "domAccess": [],
+      "apiCalls": [],
+      "category": "filters"
+    },
+    "renderDonationsTable": {
+      "name": "renderDonationsTable",
+      "type": "function",
+      "line": 685,
+      "calls": [],
+      "calledBy": [],
+      "domAccess": [],
+      "apiCalls": [],
+      "category": "doacoes"
+    },
+    "clearModalFields": {
+      "name": "clearModalFields",
+      "type": "function",
+      "line": 786,
+      "calls": [],
+      "calledBy": [
+        "openModal"
+      ],
+      "domAccess": [],
+      "apiCalls": [],
+      "category": "modals"
+    },
+    "openModal": {
+      "name": "openModal",
+      "type": "function",
+      "line": 815,
+      "calls": [
+        "clearModalFields"
+      ],
+      "calledBy": [
+        "setupEventListeners"
+      ],
+      "domAccess": [
+        {
+          "method": "getElementById",
+          "selector": "modal"
+        },
+        {
+          "method": "getElementById",
+          "selector": "modal-title"
+        },
+        {
+          "method": "getElementById",
+          "selector": "input-date"
+        },
+        {
+          "method": "getElementById",
+          "selector": "input-donor"
+        }
+      ],
+      "apiCalls": [],
+      "category": "modals"
+    },
+    "createSimpleModal": {
+      "name": "createSimpleModal",
+      "type": "function",
+      "line": 855,
+      "calls": [],
+      "calledBy": [],
+      "domAccess": [
+        {
+          "method": "getElementById",
+          "selector": "simple-modal"
+        }
+      ],
+      "apiCalls": [],
+      "category": "modals"
+    },
+    "showHistoryModal": {
+      "name": "showHistoryModal",
+      "type": "function",
+      "line": 1104,
+      "calls": [],
+      "calledBy": [],
+      "domAccess": [
+        {
+          "method": "getElementById",
+          "selector": "history-modal-simple"
+        }
+      ],
+      "apiCalls": [],
+      "category": "modals"
+    },
+    "formatDate": {
+      "name": "formatDate",
+      "type": "function",
+      "line": 1289,
+      "calls": [],
+      "calledBy": [],
+      "domAccess": [],
+      "apiCalls": [],
+      "category": "utils"
+    },
+    "getTypeColor": {
+      "name": "getTypeColor",
+      "type": "function",
+      "line": 1308,
+      "calls": [],
+      "calledBy": [],
+      "domAccess": [],
+      "apiCalls": [],
+      "category": "api"
+    },
+    "formatCPFInput": {
+      "name": "formatCPFInput",
+      "type": "function",
+      "line": 1322,
+      "calls": [],
+      "calledBy": [],
+      "domAccess": [],
+      "apiCalls": [],
+      "category": "utils"
+    },
+    "showErrorState": {
+      "name": "showErrorState",
+      "type": "function",
+      "line": 1342,
+      "calls": [
+        "loadDashboard"
+      ],
+      "calledBy": [
+        "showError"
+      ],
+      "domAccess": [],
+      "apiCalls": [],
+      "category": "modals"
+    },
+    "showError": {
+      "name": "showError",
+      "type": "function",
+      "line": 1360,
+      "calls": [
+        "loadDashboard",
+        "showErrorState"
+      ],
+      "calledBy": [],
+      "domAccess": [],
+      "apiCalls": [],
+      "category": "modals"
+    },
+    "criarHTMLCarne": {
+      "name": "criarHTMLCarne",
+      "type": "function",
+      "line": 2129,
+      "calls": [],
+      "calledBy": [],
+      "domAccess": [],
+      "apiCalls": [],
+      "category": "exports"
+    },
+    "formatarCPF": {
+      "name": "formatarCPF",
+      "type": "function",
+      "line": 2358,
+      "calls": [],
+      "calledBy": [],
+      "domAccess": [],
+      "apiCalls": [],
+      "category": "utils"
+    },
+    "formatarData": {
+      "name": "formatarData",
+      "type": "function",
+      "line": 2362,
+      "calls": [],
+      "calledBy": [],
+      "domAccess": [],
+      "apiCalls": [],
+      "category": "utils"
+    },
+    "gerarParcelasHTML": {
+      "name": "gerarParcelasHTML",
+      "type": "function",
+      "line": 2366,
+      "calls": [
+        "calcularVencimento",
+        "buscarPagamento"
+      ],
+      "calledBy": [],
+      "domAccess": [],
+      "apiCalls": [],
+      "category": "utils"
+    },
+    "calcularVencimento": {
+      "name": "calcularVencimento",
+      "type": "function",
+      "line": 2393,
+      "calls": [],
+      "calledBy": [
+        "gerarParcelasHTML"
+      ],
+      "domAccess": [],
+      "apiCalls": [],
+      "category": "utils"
+    },
+    "buscarPagamento": {
+      "name": "buscarPagamento",
+      "type": "function",
+      "line": 2401,
+      "calls": [],
+      "calledBy": [
+        "gerarParcelasHTML"
+      ],
+      "domAccess": [],
+      "apiCalls": [],
+      "category": "filters"
+    },
+    "mostrarModalExportacao": {
+      "name": "mostrarModalExportacao",
+      "type": "function",
+      "line": 2427,
+      "calls": [
+        "carregarEstatisticas",
+        "fecharModalExportacao",
+        "exportarPDF",
+        "exportarCSV",
+        "exportarJSON"
+      ],
+      "calledBy": [],
+      "domAccess": [
+        {
+          "method": "getElementById",
+          "selector": "export-modal"
+        }
+      ],
+      "apiCalls": [],
+      "category": "modals"
+    },
+    "carregarEstatisticas": {
+      "name": "carregarEstatisticas",
+      "type": "function",
+      "line": 2504,
+      "calls": [],
+      "calledBy": [
+        "mostrarModalExportacao"
+      ],
+      "domAccess": [
+        {
+          "method": "getElementById",
+          "selector": "export-stats"
+        }
+      ],
+      "apiCalls": [
+        "/api/relatorios/resumo",
+        "/api/doacoes"
+      ],
+      "category": "api"
+    },
+    "fecharModalExportacao": {
+      "name": "fecharModalExportacao",
+      "type": "function",
+      "line": 2534,
+      "calls": [],
+      "calledBy": [
+        "mostrarModalExportacao",
+        "exportarPDF"
+      ],
+      "domAccess": [
+        {
+          "method": "getElementById",
+          "selector": "export-modal"
+        }
+      ],
+      "apiCalls": [],
+      "category": "modals"
+    },
+    "exportarPDF": {
+      "name": "exportarPDF",
+      "type": "function",
+      "line": 2539,
+      "calls": [
+        "showNotification",
+        "fecharModalExportacao",
+        "criarRelatorioPDF"
+      ],
+      "calledBy": [
+        "mostrarModalExportacao"
+      ],
+      "domAccess": [],
+      "apiCalls": [
+        "/api/relatorios/resumo",
+        "/api/doacoes"
+      ],
+      "category": "exports"
+    },
+    "exportarCSV": {
+      "name": "exportarCSV",
+      "type": "function",
+      "line": 2566,
+      "calls": [
+        "showNotification",
+        "criarCSV"
+      ],
+      "calledBy": [
+        "mostrarModalExportacao"
+      ],
+      "domAccess": [],
+      "apiCalls": [
+        "/api/doacoes"
+      ],
+      "category": "exports"
+    },
+    "exportarJSON": {
+      "name": "exportarJSON",
+      "type": "function",
+      "line": 2589,
+      "calls": [
+        "showNotification"
+      ],
+      "calledBy": [
+        "mostrarModalExportacao"
+      ],
+      "domAccess": [],
+      "apiCalls": [
+        "/api/relatorios/resumo",
+        "/api/doacoes"
+      ],
+      "category": "exports"
+    },
+    "criarRelatorioPDF": {
+      "name": "criarRelatorioPDF",
+      "type": "function",
+      "line": 2625,
+      "calls": [],
+      "calledBy": [
+        "exportarPDF"
+      ],
+      "domAccess": [],
+      "apiCalls": [],
+      "category": "exports"
+    },
+    "criarCSV": {
+      "name": "criarCSV",
+      "type": "function",
+      "line": 2702,
+      "calls": [],
+      "calledBy": [
+        "exportarCSV"
+      ],
+      "domAccess": [],
+      "apiCalls": [],
+      "category": "utils"
+    },
+    "generateCarne": {
+      "name": "generateCarne",
+      "type": "function",
+      "line": 2731,
+      "calls": [],
+      "calledBy": [],
+      "domAccess": [],
+      "apiCalls": [],
+      "category": "exports"
+    },
+    "buscarPagamentoHistorico": {
+      "name": "buscarPagamentoHistorico",
+      "type": "function",
+      "line": 2902,
+      "calls": [],
+      "calledBy": [],
+      "domAccess": [],
+      "apiCalls": [],
+      "category": "historico"
+    },
+    "montarEndereco": {
+      "name": "montarEndereco",
+      "type": "function",
+      "line": 2920,
+      "calls": [],
+      "calledBy": [],
+      "domAccess": [],
+      "apiCalls": [],
+      "category": "utils"
+    },
+    "formatCPFDisplay": {
+      "name": "formatCPFDisplay",
+      "type": "function",
+      "line": 2937,
+      "calls": [],
+      "calledBy": [],
+      "domAccess": [],
+      "apiCalls": [],
+      "category": "utils"
+    }
+  },
+  "globalVariables": [
+    "allDonations",
+    "allDonors",
+    "currentEditingId",
+    "currentDonationId",
+    "duplicateCheckModal",
+    "filteredDonations",
+    "editingId",
+    "currentHistoryId",
+    "modalState"
+  ],
+  "complexFunctions": [],
+  "recommendations": [
+    "✅ Estrutura modular proposta com 10 arquivos",
+    "✅ Estimativa de redução: 3041 → ~300 linhas por módulo"
+  ]
+}

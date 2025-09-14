@@ -4,3 +4,10 @@ backups/
 *.tmp
 .env
 .DS_Store
+
+backups/daily/
+Thumbs.db
+.estado
+database/*.db-journal
+logs/
+temp/

@@ -1,0 +1,93 @@
+{
+  "data": "2025-09-12T15:37:28.379Z",
+  "arquivos": {
+    "appJs": {
+      "linhas": 3041,
+      "funcoes": 49
+    },
+    "modulos": [
+      {
+        "nome": "core.js",
+        "existe": true,
+        "funcoes": 6
+      },
+      {
+        "nome": "loader.js",
+        "existe": true,
+        "funcoes": 6
+      },
+      {
+        "nome": "api-module.js",
+        "existe": true,
+        "funcoes": 19
+      }
+    ]
+  },
+  "analise": {
+    "totalFuncoes": 49,
+    "funcoesDuplicadas": 6,
+    "funcoesUnicas": 43,
+    "percentualDuplicadas": "12.2",
+    "reducaoEstimada": 372,
+    "linhasFinais": 2669
+  },
+  "duplicadas": [
+    "showNotification",
+    "loadSummary",
+    "loadDonations",
+    "formatDate",
+    "generateCarne",
+    "deleteDonation"
+  ],
+  "unicas": [
+    "toggleRecurringFields",
+    "initializeElements",
+    "setupEventListeners",
+    "loadDashboard",
+    "applyFilters",
+    "renderDonationsTable",
+    "clearModalFields",
+    "openModal",
+    "createSimpleModal",
+    "showHistoryModal",
+    "getTypeColor",
+    "formatCPFInput",
+    "showErrorState",
+    "showError",
+    "criarHTMLCarne",
+    "formatarCPF",
+    "formatarData",
+    "gerarParcelasHTML",
+    "calcularVencimento",
+    "buscarPagamento",
+    "mostrarModalExportacao",
+    "carregarEstatisticas",
+    "fecharModalExportacao",
+    "exportarPDF",
+    "exportarCSV",
+    "exportarJSON",
+    "criarRelatorioPDF",
+    "criarCSV",
+    "buscarPagamentoHistorico",
+    "montarEndereco",
+    "formatCPFDisplay",
+    "formatCEPInput",
+    "closeSimpleModal",
+    "closeHistoryModal",
+    "closeEditModal",
+    "closeModal",
+    "buscarCEP",
+    "saveSimpleDonation",
+    "viewHistory",
+    "editDonation",
+    "saveEditedDonation",
+    "exportData",
+    "addDonation"
+  ],
+  "riscos": [
+    "16 event listeners podem ser perdidos",
+    "19 funções globais podem ser perdidas",
+    "Sistema de inicialização pode ser afetado"
+  ],
+  "recomendacao": "limpeza_moderada"
+}

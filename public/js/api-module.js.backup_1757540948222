@@ -1,0 +1,407 @@
+/**
+ * ================================================================
+ * MÓDULO: API do Sistema de Doações
+ * ================================================================
+ * 
+ * VERSÃO: 1.2.1
+ * DATA: 10/09/2025
+ * 
+ * DESCRIÇÃO:
+ * Centraliza todas as chamadas à API do backend
+ * 
+ * ================================================================
+ */
+
+// Namespace do módulo
+window.SistemaDoacao = window.SistemaDoacao || {};
+window.SistemaDoacao.api = window.SistemaDoacao.api || {};
+
+(function(api) {
+    'use strict';
+    
+    // ================================================================
+    // CONFIGURAÇÃO DA API
+    // ================================================================
+    
+    const API_BASE = window.location.origin;
+    const API_TIMEOUT = 30000; // 30 segundos
+    
+    /**
+     * Função auxiliar para fazer requisições
+     * VERSÃO: 1.0.0 - 10/09/2025
+     */
+    function apiRequest(url, options = {}) {
+        // Adiciona timeout e headers padrão
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
+        
+        const defaultOptions = {
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            },
+            signal: controller.signal,
+            ...options
+        };
+        
+        return fetch(url, defaultOptions)
+            .then(response => {
+                clearTimeout(timeoutId);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .catch(error => {
+                clearTimeout(timeoutId);
+                if (error.name === 'AbortError') {
+                    throw new Error('Requisição expirou (timeout)');
+                }
+                throw error;
+            });
+    }
+    
+    // ================================================================
+    // FUNÇÕES DE DOAÇÕES
+    // ================================================================
+    
+    /**
+     * Carrega todas as doações
+     * VERSÃO: 1.0.0 - 10/09/2025
+     */
+    api.loadDonations = function() {
+        console.log('[API] Carregando doações...');
+        
+        return apiRequest(`${API_BASE}/api/donations`)
+            .then(data => {
+                console.log(`[API] ${data.length} doações carregadas`);
+                
+                // Atualiza variável global se existir
+                if (window.allDonations !== undefined) {
+                    window.allDonations = data;
+                }
+                
+                // Chama função de renderização se existir
+                if (typeof window.renderDonations === 'function') {
+                    window.renderDonations(data);
+                }
+                
+                // Atualiza dashboard se existir
+                if (typeof window.updateDashboard === 'function') {
+                    window.updateDashboard();
+                }
+                
+                return data;
+            })
+            .catch(error => {
+                console.error('[API] Erro ao carregar doações:', error);
+                if (typeof window.showNotification === 'function') {
+                    window.showNotification('Erro ao carregar doações', 'error');
+                }
+                throw error;
+            });
+    };
+    
+    /**
+     * Salva uma nova doação
+     * VERSÃO: 1.0.0 - 10/09/2025
+     */
+    api.saveDonation = function(donationData) {
+        console.log('[API] Salvando doação...', donationData);
+        
+        return apiRequest(`${API_BASE}/api/donations`, {
+            method: 'POST',
+            body: JSON.stringify(donationData)
+        })
+        .then(result => {
+            console.log('[API] Doação salva com ID:', result.id);
+            
+            // Recarrega doações
+            if (typeof api.loadDonations === 'function') {
+                api.loadDonations();
+            }
+            
+            // Notifica sucesso
+            if (typeof window.showNotification === 'function') {
+                window.showNotification('Doação salva com sucesso!', 'success');
+            }
+            
+            return result;
+        })
+        .catch(error => {
+            console.error('[API] Erro ao salvar doação:', error);
+            if (typeof window.showNotification === 'function') {
+                window.showNotification('Erro ao salvar doação', 'error');
+            }
+            throw error;
+        });
+    };
+    
+    /**
+     * Atualiza uma doação existente
+     * VERSÃO: 1.0.0 - 10/09/2025
+     */
+    api.updateDonation = function(id, donationData) {
+        console.log('[API] Atualizando doação ID:', id);
+        
+        return apiRequest(`${API_BASE}/api/donations/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(donationData)
+        })
+        .then(result => {
+            console.log('[API] Doação atualizada');
+            
+            // Recarrega doações
+            if (typeof api.loadDonations === 'function') {
+                api.loadDonations();
+            }
+            
+            // Notifica sucesso
+            if (typeof window.showNotification === 'function') {
+                window.showNotification('Doação atualizada com sucesso!', 'success');
+            }
+            
+            return result;
+        })
+        .catch(error => {
+            console.error('[API] Erro ao atualizar doação:', error);
+            if (typeof window.showNotification === 'function') {
+                window.showNotification('Erro ao atualizar doação', 'error');
+            }
+            throw error;
+        });
+    };
+    
+    /**
+     * Deleta uma doação
+     * VERSÃO: 1.0.0 - 10/09/2025
+     */
+    api.deleteDonation = function(id) {
+        console.log('[API] Deletando doação ID:', id);
+        
+        return apiRequest(`${API_BASE}/api/donations/${id}`, {
+            method: 'DELETE'
+        })
+        .then(result => {
+            console.log('[API] Doação deletada');
+            
+            // Recarrega doações
+            if (typeof api.loadDonations === 'function') {
+                api.loadDonations();
+            }
+            
+            // Notifica sucesso
+            if (typeof window.showNotification === 'function') {
+                window.showNotification('Doação excluída com sucesso!', 'success');
+            }
+            
+            return result;
+        })
+        .catch(error => {
+            console.error('[API] Erro ao deletar doação:', error);
+            if (typeof window.showNotification === 'function') {
+                window.showNotification('Erro ao excluir doação', 'error');
+            }
+            throw error;
+        });
+    };
+    
+    // ================================================================
+    // FUNÇÕES DE DOADORES
+    // ================================================================
+    
+    /**
+     * Carrega todos os doadores
+     * VERSÃO: 1.0.0 - 10/09/2025
+     */
+    api.loadDonors = function() {
+        console.log('[API] Carregando doadores...');
+        
+        return apiRequest(`${API_BASE}/api/donors`)
+            .then(data => {
+                console.log(`[API] ${data.length} doadores carregados`);
+                
+                // Atualiza variável global se existir
+                if (window.allDonors !== undefined) {
+                    window.allDonors = data;
+                }
+                
+                return data;
+            })
+            .catch(error => {
+                console.error('[API] Erro ao carregar doadores:', error);
+                if (typeof window.showNotification === 'function') {
+                    window.showNotification('Erro ao carregar doadores', 'error');
+                }
+                throw error;
+            });
+    };
+    
+    /**
+     * Salva um novo doador
+     * VERSÃO: 1.0.0 - 10/09/2025
+     */
+    api.saveDonor = function(donorData) {
+        console.log('[API] Salvando doador...', donorData);
+        
+        return apiRequest(`${API_BASE}/api/donors`, {
+            method: 'POST',
+            body: JSON.stringify(donorData)
+        })
+        .then(result => {
+            console.log('[API] Doador salvo com ID:', result.id);
+            
+            // Recarrega doadores
+            if (typeof api.loadDonors === 'function') {
+                api.loadDonors();
+            }
+            
+            // Notifica sucesso
+            if (typeof window.showNotification === 'function') {
+                window.showNotification('Doador salvo com sucesso!', 'success');
+            }
+            
+            return result;
+        })
+        .catch(error => {
+            console.error('[API] Erro ao salvar doador:', error);
+            if (typeof window.showNotification === 'function') {
+                window.showNotification('Erro ao salvar doador', 'error');
+            }
+            throw error;
+        });
+    };
+    
+    /**
+     * Atualiza um doador existente
+     * VERSÃO: 1.0.0 - 10/09/2025
+     */
+    api.updateDonor = function(id, donorData) {
+        console.log('[API] Atualizando doador ID:', id);
+        
+        return apiRequest(`${API_BASE}/api/donors/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(donorData)
+        })
+        .then(result => {
+            console.log('[API] Doador atualizado');
+            
+            // Recarrega doadores
+            if (typeof api.loadDonors === 'function') {
+                api.loadDonors();
+            }
+            
+            // Notifica sucesso
+            if (typeof window.showNotification === 'function') {
+                window.showNotification('Doador atualizado com sucesso!', 'success');
+            }
+            
+            return result;
+        })
+        .catch(error => {
+            console.error('[API] Erro ao atualizar doador:', error);
+            if (typeof window.showNotification === 'function') {
+                window.showNotification('Erro ao atualizar doador', 'error');
+            }
+            throw error;
+        });
+    };
+    
+    /**
+     * Deleta um doador
+     * VERSÃO: 1.0.0 - 10/09/2025
+     */
+    api.deleteDonor = function(id) {
+        console.log('[API] Deletando doador ID:', id);
+        
+        return apiRequest(`${API_BASE}/api/donors/${id}`, {
+            method: 'DELETE'
+        })
+        .then(result => {
+            console.log('[API] Doador deletado');
+            
+            // Recarrega doadores
+            if (typeof api.loadDonors === 'function') {
+                api.loadDonors();
+            }
+            
+            // Notifica sucesso
+            if (typeof window.showNotification === 'function') {
+                window.showNotification('Doador excluído com sucesso!', 'success');
+            }
+            
+            return result;
+        })
+        .catch(error => {
+            console.error('[API] Erro ao deletar doador:', error);
+            if (typeof window.showNotification === 'function') {
+                window.showNotification('Erro ao excluir doador', 'error');
+            }
+            throw error;
+        });
+    };
+    
+    /**
+     * Busca doadores
+     * VERSÃO: 1.0.0 - 10/09/2025
+     */
+    api.searchDonors = function(query) {
+        console.log('[API] Buscando doadores:', query);
+        
+        return apiRequest(`${API_BASE}/api/donors/search?q=${encodeURIComponent(query)}`)
+            .then(data => {
+                console.log(`[API] ${data.length} doadores encontrados`);
+                return data;
+            })
+            .catch(error => {
+                console.error('[API] Erro ao buscar doadores:', error);
+                throw error;
+            });
+    };
+    
+    // ================================================================
+    // FUNÇÕES DE EXPORTAÇÃO
+    // ================================================================
+    
+    /**
+     * Gera carnê de pagamento
+     * VERSÃO: 1.0.0 - 10/09/2025
+     */
+    api.generateCarne = function(donationId) {
+        console.log('[API] Gerando carnê para doação ID:', donationId);
+        
+        // Abre em nova janela
+        const url = `${API_BASE}/api/donations/${donationId}/carne`;
+        window.open(url, '_blank');
+        
+        if (typeof window.showNotification === 'function') {
+            window.showNotification('Carnê gerado com sucesso!', 'success');
+        }
+    };
+    
+    /**
+     * Exporta relatório em PDF
+     * VERSÃO: 1.0.0 - 10/09/2025
+     */
+    api.exportToPDF = function(filters = {}) {
+        console.log('[API] Exportando relatório PDF...', filters);
+        
+        // Monta query string
+        const params = new URLSearchParams(filters);
+        const url = `${API_BASE}/api/reports/pdf?${params.toString()}`;
+        
+        // Abre em nova janela
+        window.open(url, '_blank');
+        
+        if (typeof window.showNotification === 'function') {
+            window.showNotification('Relatório gerado com sucesso!', 'success');
+        }
+    };
+    
+    // ================================================================
+    // INICIALIZAÇÃO
+    // ================================================================
+    
+    console.log('[API Module] Módulo de API carregado - v1.2.1');
+    
+})(window.SistemaDoacao.api);

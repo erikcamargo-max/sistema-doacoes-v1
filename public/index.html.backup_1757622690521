@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Controle de Doações</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js"></script>
+    <style>
+        /* Estilos para as abas */
+        .tab-button {
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            color: #6b7280;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .tab-button:hover {
+            color: #3b82f6;
+        }
+        
+        .tab-button.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="app" class="min-h-screen p-6">
+        <div class="max-w-7xl mx-auto">
+            <!-- Header -->
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">Sistema de Controle de Doações</h1>
+                <p class="text-gray-600">Gerencie e monitore todas as doações recebidas</p>
+            </div>
+
+            <!-- Sistema de Abas -->
+            <div class="bg-white shadow-sm border-b mb-6">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="flex space-x-8" id="tab-buttons">
+                        <button class="tab-button active" data-tab="doacoes">
+                            <div class="flex items-center space-x-2">
+                                <i data-feather="gift" class="h-5 w-5"></i>
+                                <span>Doações</span>
+                            </div>
+                        </button>
+                        <button class="tab-button" data-tab="doadores">
+                            <div class="flex items-center space-x-2">
+                                <i data-feather="users" class="h-5 w-5"></i>
+                                <span>Doadores</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab de Doações -->
+            <div id="tab-doacoes" class="tab-content active">
+                <!-- Loading -->
+                <div id="loading" class="text-center py-8">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                    <p class="mt-4 text-gray-600">Carregando...</p>
+                </div>
+
+                <!-- Summary Cards -->
+                <div id="summary" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8" style="display: none;">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center">
+                            <i data-feather="dollar-sign" class="h-8 w-8 text-green-600"></i>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-500">Total Arrecadado</p>
+                                <p id="total-arrecadado" class="text-2xl font-bold text-gray-900">R$ 0,00</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center">
+                            <i data-feather="users" class="h-8 w-8 text-blue-600"></i>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-500">Total de Doações</p>
+                                <p id="total-doacoes" class="text-2xl font-bold text-gray-900">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center">
+                            <i data-feather="refresh-cw" class="h-8 w-8 text-purple-600"></i>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-500">Doações Recorrentes</p>
+                                <p id="doacoes-recorrentes" class="text-2xl font-bold text-gray-900">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center">
+                            <i data-feather="check-circle" class="h-8 w-8 text-green-500"></i>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-500">Total de Pagamentos</p>
+                                <p id="total-pagamentos" class="text-2xl font-bold text-gray-900">0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters and Actions -->
+                <div class="mb-6 bg-white rounded-lg shadow p-6">
+                    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                        <div class="flex flex-wrap gap-3">
+                            <select id="filter-type" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                <option value="">Todos os Tipos</option>
+                                <option value="Dinheiro">Dinheiro</option>
+                                <option value="PIX">PIX</option>
+                            </select>
+                            
+                            <select id="filter-recurrent" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                <option value="">Todas as Doações</option>
+                                <option value="1">Recorrentes</option>
+                                <option value="0">Únicas</option>
+                            </select>
+                            
+                            <input type="text" id="search-input" placeholder="Buscar doador..." class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            
+                            <button id="btn-export" onclick="exportData()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2">
+                                <i data-feather="download" class="h-4 w-4"></i>
+                                Exportar PDF
+                            </button>
+                        </div>
+                        
+                        <div>
+                            <button id="btn-new-donation" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+                                <i data-feather="plus" class="h-4 w-4"></i>
+                                Nova Doação
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Donations Table -->
+                <div class="bg-white rounded-lg shadow overflow-hidden" style="display: none;" id="table-container">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Doador
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Valor
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Tipo
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Data
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Telefones
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Recorrente
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Histórico
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Ações
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="donations-tbody" class="bg-white divide-y divide-gray-200">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div id="empty-state" class="text-center py-12 bg-white rounded-lg shadow" style="display: none;">
+                    <i data-feather="file-text" class="mx-auto h-12 w-12 text-gray-400"></i>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900">Nenhuma doação encontrada</h3>
+                    <p class="mt-1 text-sm text-gray-500">Comece adicionando uma nova doação</p>
+                </div>
+            </div>
+
+            <!-- Tab de Doadores -->
+            <div id="tab-doadores" class="tab-content">
+                <div class="max-w-7xl mx-auto">
+                    <!-- Controles de Doadores -->
+                    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+                            <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 flex-1">
+                                <input type="text" id="search-doador" placeholder="Buscar por nome, CPF ou telefone..." 
+                                    class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent flex-1">
+                            </div>
+                            <button id="btn-novo-doador" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
+                                <i data-feather="user-plus" class="h-5 w-5"></i>
+                                <span>Novo Doador</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Tabela de Doadores -->
+                    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Código
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Nome
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            CPF
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Telefone
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Email
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Total Doado
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Ações
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody id="doadores-tbody" class="bg-white divide-y divide-gray-200">
+                                    <!-- Doadores serão inseridos aqui -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Estado vazio -->
+                        <div id="empty-doadores" class="text-center py-12" style="display: none;">
+                            <i data-feather="users" class="mx-auto h-12 w-12 text-gray-400"></i>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900">Nenhum doador cadastrado</h3>
+                            <p class="mt-1 text-sm text-gray-500">Comece adicionando um novo doador</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Form de Doação (mantido original) -->
+    <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" style="display: none;">
+        <div class="bg-white rounded-lg max-w-6xl w-full p-6 max-h-screen overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="modal-title" class="text-2xl font-bold text-gray-900">Nova Doação</h2>
+                <button id="btn-close-modal" onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+                    <i data-feather="x" class="h-6 w-6"></i>
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- COLUNA 1: DADOS DO DOADOR + ENDEREÇO -->
+                <div class="space-y-4">
+                    <h3 class="text-lg font-medium text-gray-900 border-b pb-2 flex items-center gap-2">
+                        👤 Dados do Doador
+                    </h3>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Nome Completo *
+                        </label>
+                        <input type="text" id="input-donor" required placeholder="Digite o nome completo"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            CPF
+                        </label>
+                        <input type="text" id="input-cpf" placeholder="000.000.000-00" maxlength="14"
+                               oninput="formatCPFInput(event)"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Telefone Principal *
+                        </label>
+                        <input type="text" id="input-phone1" required placeholder="(11) 99999-9999"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Telefone Alternativo
+                        </label>
+                        <input type="text" id="input-phone2" placeholder="(11) 88888-8888"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            E-mail
+                        </label>
+                        <input type="email" id="input-contact" placeholder="email@exemplo.com"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    
+                    <!-- SEÇÃO DE ENDEREÇO COMPLETO -->
+                    <div class="pt-4 border-t border-gray-200">
+                        <h4 class="text-md font-medium text-gray-800 mb-3 flex items-center gap-2">
+                            📍 Endereço Completo
+                        </h4>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">CEP</label>
+                                <input type="text" id="input-cep" placeholder="00000-000" maxlength="9"
+                                    oninput="formatCEPInput(event)"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Logradouro</label>
+                                <input type="text" id="input-logradouro" placeholder="Rua, Avenida..."
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Número</label>
+                                <input type="text" id="input-numero" placeholder="123"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Complemento</label>
+                                <input type="text" id="input-complemento" placeholder="Apto, Bloco..."
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Bairro</label>
+                                <input type="text" id="input-bairro" placeholder="Nome do bairro"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Cidade</label>
+                                <input type="text" id="input-cidade" placeholder="Nome da cidade"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                                <input type="text" id="input-estado" placeholder="UF" maxlength="2"
+                                    style="text-transform: uppercase;"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- COLUNA 2: DADOS DA DOAÇÃO + RECORRÊNCIA -->
+                <div class="space-y-4">
+                    <h3 class="text-lg font-medium text-gray-900 border-b pb-2 flex items-center gap-2">
+                        💰 Dados da Doação
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                Valor (R$) *
+                            </label>
+                            <input type="number" id="input-amount" required step="0.01" min="0.01" placeholder="0.00"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                Tipo *
+                            </label>
+                            <select id="input-type" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="Dinheiro">Dinheiro</option>
+                                <option value="PIX">PIX</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Data da Doação *
+                        </label>
+                        <input type="date" id="input-date" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    
+                    <!-- CHECKBOX RECORRENTE -->
+                    <div class="flex items-center space-x-2">
+                        <input type="checkbox" id="input-recurrent" onchange="toggleRecurringFields()"
+                            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <label for="input-recurrent" class="block text-sm font-medium text-gray-900">
+                            Doação Recorrente (Mensal)
+                        </label>
+                    </div>
+                    
+                    <!-- CAMPOS RECORRENTES -->
+                    <div id="recurring-fields" style="display: none;" 
+                         class="bg-blue-50 p-4 rounded-lg border border-blue-200 space-y-3">
+                        <h4 class="text-sm font-medium text-blue-800 flex items-center gap-2">
+                            🔄 Configuração de Parcelas
+                        </h4>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-blue-700 mb-1">
+                                    Quantas parcelas? *
+                                </label>
+                                <input type="number" id="input-parcelas" min="2" max="60" placeholder="12" value="12"
+                                    class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-blue-700 mb-1">
+                                    Próxima parcela em: *
+                                </label>
+                                <input type="date" id="input-proxima-parcela"
+                                    class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                        </div>
+                        
+                        <p class="text-xs text-blue-600">
+                            💡 A primeira parcela será registrada na data da doação acima
+                        </p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Observações
+                        </label>
+                        <textarea id="input-observations" rows="4" placeholder="Informações adicionais sobre a doação..."
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical"></textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Modal Footer -->
+            <div class="flex justify-end gap-3 mt-6 pt-6 border-t">
+                <button id="btn-cancel" onclick="closeModal()"
+                    class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                    Cancelar
+                </button>
+                <button id="btn-save" onclick="addDonation()"
+                    class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+                    <i data-feather="save" class="h-4 w-4"></i>
+                    <span id="btn-save-text">Salvar Doação</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Histórico -->
+    <div id="modal-history" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" style="display: none; z-index: 9999 !important;">
+        <div class="bg-white rounded-lg max-w-4xl w-full p-6 max-h-screen overflow-y-auto shadow-2xl">
+            <div class="flex justify-between items-center mb-6 border-b pb-4">
+                <h2 id="history-title" class="text-2xl font-bold text-gray-900">Histórico de Pagamentos</h2>
+                <button id="btn-close-history" class="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100">
+                    <i data-feather="x" class="h-6 w-6"></i>
+                </button>
+            </div>
+            
+            <div id="history-content" class="space-y-6 min-h-20">
+                <p class="text-center text-gray-500">Carregando histórico...</p>
+            </div>
+            
+            <div class="flex justify-between items-center pt-6 border-t mt-6">
+                <div id="history-stats" class="text-sm text-gray-600">
+                    <!-- Estatísticas do histórico -->
+                </div>
+                <button id="btn-add-payment" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2">
+                    <i data-feather="plus" class="h-4 w-4"></i>
+                    Adicionar Pagamento
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/core.js"></script>
+    <script src="js/api-module.js"></script>
+    <script src="app.js"></script>
+    <script src="js/loader.js"></script>
+    
+    <script>
+        // Variáveis globais de doadores
+        let allDonors = [];
+        let editingDonorId = null;
+
+        // Configurar sistema de abas
+        function setupDonorTabs() {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetTab = button.dataset.tab;
+                    
+                    // Remover active de todos
+                    tabButtons.forEach(b => b.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+                    
+                    // Adicionar active ao clicado
+                    button.classList.add('active');
+                    document.getElementById('tab-' + targetTab).classList.add('active');
+                    
+                    // Substituir ícones
+                    feather.replace();
+                    
+                    // Carregar dados da aba
+                    if (targetTab === 'doadores') {
+                        loadDonors();
+                    }
+                });
+            });
+        }
+
+        // Carregar doadores
+        async function loadDonors() {
+            try {
+                const response = await fetch('/api/doadores');
+                if (!response.ok) throw new Error('Erro ao carregar doadores');
+                
+                allDonors = await response.json();
+                renderDonors(allDonors);
+            } catch (error) {
+                console.error('Erro ao carregar doadores:', error);
+                showNotification('Erro ao carregar doadores', 'error');
+            }
+        }
+
+        // Renderizar doadores na tabela
+        function renderDonors(donors) {
+            const tbody = document.getElementById('doadores-tbody');
+            const emptyState = document.getElementById('empty-doadores');
+            
+            if (!donors || donors.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            
+            tbody.innerHTML = donors.map(donor => `
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="text-sm font-medium text-gray-900">${donor.codigo_doador || 'N/A'}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">${donor.nome}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="text-sm text-gray-500">${formatCPF(donor.cpf) || 'N/A'}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="text-sm text-gray-500">${formatPhone(donor.telefone1) || 'N/A'}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="text-sm text-gray-500">${donor.email || 'N/A'}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="text-sm font-medium text-gray-900">R$ ${calculateDonorTotal(donor.id)}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="editDonor(${donor.id})" class="text-blue-600 hover:text-blue-900 mr-2">
+                            <i data-feather="edit-2" class="h-4 w-4 inline"></i>
+                        </button>
+                        <button onclick="viewDonorHistory(${donor.id})" class="text-green-600 hover:text-green-900 mr-2">
+                            <i data-feather="eye" class="h-4 w-4 inline"></i>
+                        </button>
+                        <button onclick="deleteDonor(${donor.id})" class="text-red-600 hover:text-red-900">
+                            <i data-feather="trash-2" class="h-4 w-4 inline"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+            
+            feather.replace();
+        }
+
+        // Calcular total doado por doador
+        function calculateDonorTotal(donorId) {
+            if (typeof allDonations === 'undefined') return '0,00';
+            const total = allDonations
+                .filter(d => d.doador_id === donorId)
+                .reduce((sum, d) => sum + (parseFloat(d.valor) || 0), 0);
+            return total.toFixed(2).replace('.', ',');
+        }
+
+        // Formatar CPF
+        function formatCPF(cpf) {
+            if (!cpf) return '';
+            return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+        }
+
+        // Formatar telefone
+        function formatPhone(phone) {
+            if (!phone) return '';
+            return phone.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+        }
+
+        // Deletar doador
+        async function deleteDonor(id) {
+            if (!confirm('Tem certeza que deseja excluir este doador?')) return;
+            
+            try {
+                const response = await fetch(`/api/doadores/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(result.error || 'Erro ao excluir doador');
+                }
+                
+                showNotification(result.message || 'Doador excluído com sucesso!', 'success');
+                loadDonors();
+                
+            } catch (error) {
+                console.error('Erro ao excluir doador:', error);
+                showNotification(error.message || 'Erro ao excluir doador', 'error');
+            }
+        }
+
+        // Inicializar sistema de doadores
+        document.addEventListener('DOMContentLoaded', function() {
+            setupDonorTabs();
+            feather.replace();
+        });
+        
+        // Função de teste ViaCEP
+        window.testarViaCEP = function() {
+            console.log('🧪 Testando ViaCEP...');
+            if (typeof window.buscarCEP === 'function') {
+                window.buscarCEP('01310-100', 'input');
+                console.log('✅ Teste iniciado - CEP: 01310-100');
+            } else {
+                console.error('❌ Função buscarCEP não encontrada');
+            }
+        }
+    </script>
+</body>
+</html>

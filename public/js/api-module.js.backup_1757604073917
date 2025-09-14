@@ -1,0 +1,470 @@
+/**
+ * ================================================================
+ * MÓDULO: API do Sistema de Doações - CORRIGIDO
+ * ================================================================
+ * 
+ * VERSÃO: 1.2.2
+ * DATA: 10/09/2025
+ * 
+ * CORREÇÕES:
+ * - URLs corretas (/api/doacoes em vez de /api/donations)
+ * - Sem redeclaração de variáveis globais
+ * - Endpoints correspondentes ao server.js
+ * 
+ * ================================================================
+ */
+
+// Namespace do módulo
+window.SistemaDoacao = window.SistemaDoacao || {};
+window.SistemaDoacao.api = window.SistemaDoacao.api || {};
+
+(function(api) {
+    'use strict';
+    
+    // ================================================================
+    // CONFIGURAÇÃO DA API - URLs CORRETAS
+    // ================================================================
+    
+    const API_BASE = window.location.origin + '/api';
+    const API_TIMEOUT = 30000; // 30 segundos
+    
+    // Mapeamento de endpoints corretos
+    const ENDPOINTS = {
+        // Doações
+        doacoes: '/doacoes',
+        doacoesById: (id) => `/doacoes/${id}`,
+        doacoesHistorico: (id) => `/doacoes/${id}/historico`,
+        doacoesParcelas: (id) => `/doacoes/${id}/parcelas`,
+        doacoesCarne: (id) => `/doacoes/${id}/carne`,
+        
+        // Doadores
+        doadores: '/doadores',
+        doadoresById: (id) => `/doadores/${id}`,
+        doadoresCheckDuplicates: '/doadores/check-duplicates',
+        
+        // Relatórios
+        relatoriosResumo: '/relatorios/resumo',
+        relatoriosPDF: '/relatorios/pdf',
+        
+        // Histórico
+        historicoById: (id) => `/historico/${id}`
+    };
+    
+    /**
+     * Função auxiliar para fazer requisições
+     * VERSÃO: 1.2.2 - Melhorada com tratamento de erro
+     */
+    function apiRequest(url, options = {}) {
+        console.log(`[API] Requisição para: ${url}`);
+        
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
+        
+        const defaultOptions = {
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            },
+            signal: controller.signal,
+            ...options
+        };
+        
+        return fetch(url, defaultOptions)
+            .then(response => {
+                clearTimeout(timeoutId);
+                console.log(`[API] Resposta: ${response.status}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .catch(error => {
+                clearTimeout(timeoutId);
+                if (error.name === 'AbortError') {
+                    throw new Error('Requisição expirou (timeout)');
+                }
+                console.error(`[API] Erro na requisição: ${error.message}`);
+                throw error;
+            });
+    }
+    
+    // ================================================================
+    // FUNÇÕES DE DOAÇÕES - URLs CORRIGIDAS
+    // ================================================================
+    
+    /**
+     * Carrega todas as doações
+     * VERSÃO: 1.2.2 - URL corrigida
+     */
+    api.loadDonations = function() {
+        console.log('[API] Carregando doações...');
+        
+        const url = API_BASE + ENDPOINTS.doacoes;
+        
+        return apiRequest(url)
+            .then(data => {
+                console.log(`[API] ${data.length} doações carregadas`);
+                
+                // Atualiza variável global se existir (não redeclara)
+                if (typeof window.allDonations !== 'undefined') {
+                    window.allDonations = data;
+                }
+                
+                // Chama função de renderização se existir
+                if (typeof window.renderDonations === 'function') {
+                    window.renderDonations(data);
+                }
+                
+                // Atualiza dashboard se existir
+                if (typeof window.updateDashboard === 'function') {
+                    window.updateDashboard();
+                }
+                
+                return data;
+            })
+            .catch(error => {
+                console.error('[API] Erro ao carregar doações:', error);
+                
+                // Notifica erro se função existir
+                if (window.SistemaDoacao && window.SistemaDoacao.core && window.SistemaDoacao.core.showNotification) {
+                    window.SistemaDoacao.core.showNotification('Erro ao carregar doações: ' + error.message, 'error');
+                } else if (typeof window.showNotification === 'function') {
+                    window.showNotification('Erro ao carregar doações', 'error');
+                }
+                
+                throw error;
+            });
+    };
+    
+    /**
+     * Salva uma nova doação
+     * VERSÃO: 1.2.2 - URL corrigida
+     */
+    api.saveDonation = function(donationData) {
+        console.log('[API] Salvando doação...', donationData);
+        
+        const url = API_BASE + ENDPOINTS.doacoes;
+        
+        return apiRequest(url, {
+            method: 'POST',
+            body: JSON.stringify(donationData)
+        })
+        .then(result => {
+            console.log('[API] Doação salva com ID:', result.id);
+            
+            // Recarrega doações
+            api.loadDonations();
+            
+            // Notifica sucesso
+            if (window.SistemaDoacao && window.SistemaDoacao.core && window.SistemaDoacao.core.showNotification) {
+                window.SistemaDoacao.core.showNotification('Doação salva com sucesso!', 'success');
+            }
+            
+            return result;
+        })
+        .catch(error => {
+            console.error('[API] Erro ao salvar doação:', error);
+            
+            if (window.SistemaDoacao && window.SistemaDoacao.core && window.SistemaDoacao.core.showNotification) {
+                window.SistemaDoacao.core.showNotification('Erro ao salvar doação: ' + error.message, 'error');
+            }
+            
+            throw error;
+        });
+    };
+    
+    /**
+     * Atualiza uma doação existente
+     * VERSÃO: 1.2.2 - URL corrigida
+     */
+    api.updateDonation = function(id, donationData) {
+        console.log('[API] Atualizando doação ID:', id);
+        
+        const url = API_BASE + ENDPOINTS.doacoesById(id);
+        
+        return apiRequest(url, {
+            method: 'PUT',
+            body: JSON.stringify(donationData)
+        })
+        .then(result => {
+            console.log('[API] Doação atualizada');
+            
+            // Recarrega doações
+            api.loadDonations();
+            
+            // Notifica sucesso
+            if (window.SistemaDoacao && window.SistemaDoacao.core && window.SistemaDoacao.core.showNotification) {
+                window.SistemaDoacao.core.showNotification('Doação atualizada com sucesso!', 'success');
+            }
+            
+            return result;
+        })
+        .catch(error => {
+            console.error('[API] Erro ao atualizar doação:', error);
+            
+            if (window.SistemaDoacao && window.SistemaDoacao.core && window.SistemaDoacao.core.showNotification) {
+                window.SistemaDoacao.core.showNotification('Erro ao atualizar doação: ' + error.message, 'error');
+            }
+            
+            throw error;
+        });
+    };
+    
+    /**
+     * Deleta uma doação
+     * VERSÃO: 1.2.2 - URL corrigida
+     */
+    api.deleteDonation = function(id) {
+        console.log('[API] Deletando doação ID:', id);
+        
+        const url = API_BASE + ENDPOINTS.doacoesById(id);
+        
+        return apiRequest(url, {
+            method: 'DELETE'
+        })
+        .then(result => {
+            console.log('[API] Doação deletada');
+            
+            // Recarrega doações
+            api.loadDonations();
+            
+            // Notifica sucesso
+            if (window.SistemaDoacao && window.SistemaDoacao.core && window.SistemaDoacao.core.showNotification) {
+                window.SistemaDoacao.core.showNotification('Doação excluída com sucesso!', 'success');
+            }
+            
+            return result;
+        })
+        .catch(error => {
+            console.error('[API] Erro ao deletar doação:', error);
+            
+            if (window.SistemaDoacao && window.SistemaDoacao.core && window.SistemaDoacao.core.showNotification) {
+                window.SistemaDoacao.core.showNotification('Erro ao excluir doação: ' + error.message, 'error');
+            }
+            
+            throw error;
+        });
+    };
+    
+    // ================================================================
+    // FUNÇÕES DE DOADORES - URLs CORRIGIDAS
+    // ================================================================
+    
+    /**
+     * Carrega todos os doadores
+     * VERSÃO: 1.2.2 - URL corrigida
+     */
+    api.loadDonors = function() {
+        console.log('[API] Carregando doadores...');
+        
+        const url = API_BASE + ENDPOINTS.doadores;
+        
+        return apiRequest(url)
+            .then(data => {
+                console.log(`[API] ${data.length} doadores carregados`);
+                
+                // Atualiza variável global se existir (não redeclara)
+                if (typeof window.allDonors !== 'undefined') {
+                    window.allDonors = data;
+                }
+                
+                return data;
+            })
+            .catch(error => {
+                console.error('[API] Erro ao carregar doadores:', error);
+                
+                if (window.SistemaDoacao && window.SistemaDoacao.core && window.SistemaDoacao.core.showNotification) {
+                    window.SistemaDoacao.core.showNotification('Erro ao carregar doadores: ' + error.message, 'error');
+                }
+                
+                throw error;
+            });
+    };
+    
+    /**
+     * Verifica duplicatas de doador
+     * VERSÃO: 1.2.2 - Nova função
+     */
+    api.checkDuplicateDonor = function(cpf, telefone1) {
+        console.log('[API] Verificando duplicatas...');
+        
+        const url = API_BASE + ENDPOINTS.doadoresCheckDuplicates;
+        
+        return apiRequest(url, {
+            method: 'POST',
+            body: JSON.stringify({ cpf, telefone1 })
+        })
+        .then(data => {
+            console.log('[API] Verificação de duplicatas:', data);
+            return data;
+        })
+        .catch(error => {
+            console.error('[API] Erro ao verificar duplicatas:', error);
+            return { hasDuplicates: false };
+        });
+    };
+    
+    /**
+     * Salva um novo doador
+     * VERSÃO: 1.2.2 - URL corrigida
+     */
+    api.saveDonor = function(donorData) {
+        console.log('[API] Salvando doador...', donorData);
+        
+        const url = API_BASE + ENDPOINTS.doadores;
+        
+        return apiRequest(url, {
+            method: 'POST',
+            body: JSON.stringify(donorData)
+        })
+        .then(result => {
+            console.log('[API] Doador salvo com ID:', result.id);
+            
+            // Recarrega doadores
+            api.loadDonors();
+            
+            // Notifica sucesso
+            if (window.SistemaDoacao && window.SistemaDoacao.core && window.SistemaDoacao.core.showNotification) {
+                window.SistemaDoacao.core.showNotification('Doador salvo com sucesso!', 'success');
+            }
+            
+            return result;
+        })
+        .catch(error => {
+            console.error('[API] Erro ao salvar doador:', error);
+            
+            if (window.SistemaDoacao && window.SistemaDoacao.core && window.SistemaDoacao.core.showNotification) {
+                window.SistemaDoacao.core.showNotification('Erro ao salvar doador: ' + error.message, 'error');
+            }
+            
+            throw error;
+        });
+    };
+    
+    // ================================================================
+    // FUNÇÕES DE HISTÓRICO
+    // ================================================================
+    
+    /**
+     * Carrega histórico de pagamentos
+     * VERSÃO: 1.2.2 - Nova função
+     */
+    api.loadPaymentHistory = function(donationId) {
+        console.log('[API] Carregando histórico da doação:', donationId);
+        
+        const url = API_BASE + ENDPOINTS.doacoesHistorico(donationId);
+        
+        return apiRequest(url)
+            .then(data => {
+                console.log(`[API] ${data.length} pagamentos no histórico`);
+                return data;
+            })
+            .catch(error => {
+                console.error('[API] Erro ao carregar histórico:', error);
+                return [];
+            });
+    };
+    
+    /**
+     * Adiciona pagamento ao histórico
+     * VERSÃO: 1.2.2 - Nova função
+     */
+    api.addPayment = function(donationId, paymentData) {
+        console.log('[API] Adicionando pagamento...');
+        
+        const url = API_BASE + ENDPOINTS.doacoesHistorico(donationId);
+        
+        return apiRequest(url, {
+            method: 'POST',
+            body: JSON.stringify(paymentData)
+        })
+        .then(result => {
+            console.log('[API] Pagamento adicionado');
+            
+            if (window.SistemaDoacao && window.SistemaDoacao.core && window.SistemaDoacao.core.showNotification) {
+                window.SistemaDoacao.core.showNotification('Pagamento registrado com sucesso!', 'success');
+            }
+            
+            return result;
+        })
+        .catch(error => {
+            console.error('[API] Erro ao adicionar pagamento:', error);
+            throw error;
+        });
+    };
+    
+    // ================================================================
+    // FUNÇÕES DE EXPORTAÇÃO
+    // ================================================================
+    
+    /**
+     * Gera carnê de pagamento
+     * VERSÃO: 1.2.2 - URL corrigida
+     */
+    api.generateCarne = function(donationId) {
+        console.log('[API] Gerando carnê para doação ID:', donationId);
+        
+        // URL correta para o carnê
+        const url = API_BASE + ENDPOINTS.doacoesCarne(donationId);
+        
+        // Abre em nova janela
+        window.open(url, '_blank');
+        
+        if (window.SistemaDoacao && window.SistemaDoacao.core && window.SistemaDoacao.core.showNotification) {
+            window.SistemaDoacao.core.showNotification('Carnê gerado com sucesso!', 'success');
+        }
+    };
+    
+    /**
+     * Exporta relatório em PDF
+     * VERSÃO: 1.2.2 - URL corrigida
+     */
+    api.exportToPDF = function(filters = {}) {
+        console.log('[API] Exportando relatório PDF...', filters);
+        
+        // Monta query string
+        const params = new URLSearchParams(filters);
+        const url = API_BASE + ENDPOINTS.relatoriosPDF + '?' + params.toString();
+        
+        // Abre em nova janela
+        window.open(url, '_blank');
+        
+        if (window.SistemaDoacao && window.SistemaDoacao.core && window.SistemaDoacao.core.showNotification) {
+            window.SistemaDoacao.core.showNotification('Relatório gerado com sucesso!', 'success');
+        }
+    };
+    
+    /**
+     * Carrega resumo do dashboard
+     * VERSÃO: 1.2.2 - Nova função
+     */
+    api.loadSummary = function() {
+        console.log('[API] Carregando resumo...');
+        
+        const url = API_BASE + ENDPOINTS.relatoriosResumo;
+        
+        return apiRequest(url)
+            .then(data => {
+                console.log('[API] Resumo carregado:', data);
+                return data;
+            })
+            .catch(error => {
+                console.error('[API] Erro ao carregar resumo:', error);
+                return {
+                    total_arrecadado: 0,
+                    total_doacoes: 0,
+                    doacoes_recorrentes: 0,
+                    total_pagamentos: 0
+                };
+            });
+    };
+    
+    // ================================================================
+    // INICIALIZAÇÃO
+    // ================================================================
+    
+    console.log('[API Module] Módulo de API carregado - v1.2.2 CORRIGIDO');
+    console.log('[API Module] Endpoints disponíveis:', Object.keys(ENDPOINTS));
+    
+})(window.SistemaDoacao.api);

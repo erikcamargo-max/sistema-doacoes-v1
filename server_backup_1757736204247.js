@@ -200,71 +200,33 @@ app.post('/api/doacoes', (req, res) => {
     recorrente, parcelas, proxima_parcela} = req.body;
 
   const insertDoacao = (doadorId) => {
-    // CORREÇÃO v1.1.7: Usar dados de parcelas do frontend
-    const parcelasTotais = recorrente ? (parcelas || 12) : 1;
-    const valorDoacao = amount || 0;
-    
-    console.log('💾 Salvando doação:', {
-        doadorId,
-        valor: valorDoacao,
-        tipo: type,
-        recorrente: recorrente ? 1 : 0,
-        parcelas: parcelasTotais
-    });
-    
+    const parcelas = recurrent ? 12 : 1;
     db.run(
       `INSERT INTO doacoes (doador_id, valor, tipo, data_doacao, recorrente, observacoes, parcelas_totais)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [doadorId, valorDoacao, type, date, recorrente ? 1 : 0, observations, parcelasTotais],
+      [doadorId, amount, type, date, recurrent ? 1 : 0, observations, parcelas],
       function(err) {
         if (err) {
-          console.error('❌ Erro ao inserir doação:', err);
           res.status(500).json({ error: err.message });
           return;
         }
         
         const doacaoId = this.lastID;
-        console.log('✅ Doação criada com ID:', doacaoId);
         
         // Inserir primeiro pagamento no histórico
         db.run(
           `INSERT INTO historico_pagamentos (doacao_id, data_pagamento, valor, status)
            VALUES (?, ?, ?, ?)`,
-          [doacaoId, date, valorDoacao, 'Pago'],
+          [doacaoId, date, amount, 'Pago'],
           (err) => {
             if (err) console.error('Erro ao inserir histórico:', err);
-            else console.log('✅ Histórico de pagamento criado');
           }
         );
         
-        // Se for recorrente, criar parcelas futuras
-        if (recorrente && parcelasTotais > 1) {
-            console.log(`📅 Criando ${parcelasTotais - 1} parcelas futuras...`);
-            
-            for (let i = 2; i <= parcelasTotais; i++) {
-                const dataVencimento = new Date(proxima_parcela || date);
-                dataVencimento.setMonth(dataVencimento.getMonth() + (i - 2));
-                
-                db.run(
-                  `INSERT INTO parcelas_futuras (doacao_id, numero_parcela, data_vencimento, valor, status)
-                   VALUES (?, ?, ?, ?, ?)`,
-                  [doacaoId, i, dataVencimento.toISOString().split('T')[0], valorDoacao, 'Pendente'],
-                  (err) => {
-                    if (err) console.error(`Erro ao criar parcela ${i}:`, err);
-                  }
-                );
-            }
-        }
-        
-        res.json({ 
-            id: doacaoId, 
-            doador_id: doadorId, 
-            message: `Doação ${recorrente ? 'recorrente' : 'única'} criada com sucesso!`,
-            parcelas: parcelasTotais
-        });
+        res.json({ id: doacaoId, doador_id: doadorId, message: 'Doação criada com sucesso!' });
       }
     );
-  }
+  };
 
   const proceed = () => {
     // Verificar se doador já existe
