@@ -577,38 +577,6 @@ app.get('/', (req, res) => {
 // INICIAR SERVIDOR
 // ==============================
 
-
-// Pagar parcela específica
-app.post('/api/doacoes/:id/pagar-parcela', (req, res) => {
-  const { id } = req.params;
-  const { numero_parcela, data_pagamento, valor } = req.body;
-  
-  console.log(`💰 PAGANDO PARCELA: ${numero_parcela} da doação ${id}`);
-  console.log('📦 Dados:', { numero_parcela, data_pagamento, valor });
-  
-  if (!numero_parcela || !data_pagamento || !valor) {
-    return res.status(400).json({ error: 'Dados obrigatórios faltando' });
-  }
-  
-  db.run(
-    'INSERT INTO historico_pagamentos (doacao_id, data_pagamento, valor, status) VALUES (?, ?, ?, ?)',
-    [id, data_pagamento, valor, 'Pago'],
-    function(err) {
-      if (err) {
-        console.log('❌ Erro SQL:', err.message);
-        return res.status(500).json({ error: err.message });
-      }
-      
-      console.log(`✅ Pagamento salvo: ID ${this.lastID}`);
-      res.json({ 
-        success: true,
-        pagamento_id: this.lastID,
-        message: `Parcela ${numero_parcela} registrada!`
-      });
-    }
-  );
-});
-
 app.listen(PORT, () => {
   console.log(`\n🚀 Sistema de Doações v1.1.0`);
   console.log(`📍 Servidor rodando na porta ${PORT}`);
@@ -625,4 +593,54 @@ process.on('SIGINT', () => {
     console.log('Conexão com o banco de dados fechada.');
     process.exit(0);
   });
+
+// Pagar parcela específica - v1.2.3
+app.post('/api/doacoes/:id/pagar-parcela', (req, res) => {
+  const { id } = req.params;
+  const { numero_parcela, data_pagamento, valor } = req.body;
+  
+  console.log(`💰 Pagando parcela ${numero_parcela} da doação ${id}`);
+  console.log('📦 Dados recebidos:', { numero_parcela, data_pagamento, valor });
+  
+  // Validar dados
+  if (!numero_parcela || !data_pagamento || !valor) {
+    return res.status(400).json({ 
+      error: 'Dados incompletos: número_parcela, data_pagamento e valor são obrigatórios' 
+    });
+  }
+  
+  // Inserir pagamento no histórico
+  db.run(
+    'INSERT INTO historico_pagamentos (doacao_id, data_pagamento, valor, status) VALUES (?, ?, ?, ?)',
+    [id, data_pagamento, valor, 'Pago'],
+    function(err) {
+      if (err) {
+        console.error('❌ Erro SQL:', err);
+        return res.status(500).json({ error: 'Erro ao salvar pagamento: ' + err.message });
+      }
+      
+      console.log(`✅ Pagamento salvo com ID ${this.lastID}`);
+      
+      // Atualizar parcela futura (opcional)
+      db.run(
+        'UPDATE parcelas_futuras SET status = ? WHERE doacao_id = ? AND numero_parcela = ?',
+        ['Pago', id, numero_parcela],
+        (updateErr) => {
+          if (updateErr) {
+            console.warn('⚠️ Parcela futura não atualizada:', updateErr.message);
+          } else {
+            console.log('✅ Parcela futura atualizada');
+          }
+        }
+      );
+      
+      res.json({ 
+        success: true,
+        pagamento_id: this.lastID,
+        message: `Parcela ${numero_parcela} paga com sucesso!`
+      });
+    }
+  );
+});
+
 });

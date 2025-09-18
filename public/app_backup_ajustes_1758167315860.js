@@ -739,7 +739,7 @@ function renderDonationsTable(donations) {
                     '</span>' +
                 '</td>' +
                 '<td class="px-6 py-4 text-center">' +
-                    '<button onclick="showSimpleHistory(' + donation.id + ')" ' +
+                    '<button onclick="viewHistory(' + donation.id + ')" ' +
                         'class="text-indigo-600 hover:text-indigo-900 transition-colors" ' +
                         'title="Ver histórico">' +
                         '<i data-feather="clock" class="h-4 w-4"></i>' +
@@ -1492,13 +1492,13 @@ window.editDonation = async function(id) {
                                     '<label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">CEP</label>' +
                                     '<input type="text" id="edit-cep" value="' + (donation.doador_cep || '') + '" placeholder="00000-000" maxlength="9" ' +
                                            'oninput="formatCEPInput(event)" style="' +
-                                        'width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;' +
+                                        'width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;' +
                                     '">' +
                                 '</div>' +
                                 '<div>' +
                                     '<label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">Logradouro</label>' +
                                     '<input type="text" id="edit-logradouro" value="' + (donation.doador_logradouro || '') + '" placeholder="Rua, Avenida..." style="' +
-                                        'width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;' +
+                                        'width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;' +
                                     '">' +
                                 '</div>' +
                             '</div>' +
@@ -1507,13 +1507,13 @@ window.editDonation = async function(id) {
                                 '<div>' +
                                     '<label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">Número</label>' +
                                     '<input type="text" id="edit-numero" value="' + (donation.doador_numero || '') + '" placeholder="123" style="' +
-                                        'width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;' +
+                                        'width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;' +
                                     '">' +
                                 '</div>' +
                                 '<div>' +
                                     '<label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">Complemento</label>' +
                                     '<input type="text" id="edit-complemento" value="' + (donation.doador_complemento || '') + '" placeholder="Apto, Bloco, Sala..." style="' +
-                                        'width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;' +
+                                        'width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;' +
                                     '">' +
                                 '</div>' +
                             '</div>' +
@@ -1521,7 +1521,7 @@ window.editDonation = async function(id) {
                             '<div style="margin-bottom: 10px;">' +
                                 '<label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">Bairro</label>' +
                                 '<input type="text" id="edit-bairro" value="' + (donation.doador_bairro || '') + '" placeholder="Nome do bairro" style="' +
-                                    'width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;' +
+                                    'width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;' +
                                 '">' +
                             '</div>' +
                             
@@ -1529,13 +1529,13 @@ window.editDonation = async function(id) {
                                 '<div>' +
                                     '<label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">Cidade</label>' +
                                     '<input type="text" id="edit-cidade" value="' + (donation.doador_cidade || '') + '" placeholder="Nome da cidade" style="' +
-                                        'width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;' +
+                                        'width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;' +
                                     '">' +
                                 '</div>' +
                                 '<div>' +
                                     '<label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">Estado</label>' +
                                     '<input type="text" id="edit-estado" value="' + (donation.doador_estado || '') + '" placeholder="UF" maxlength="2" style="' +
-                                        'width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px; text-transform: uppercase;' +
+                                        'width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px; text-transform: uppercase;' +
                                     '">' +
                                 '</div>' +
                             '</div>' +
@@ -2042,13 +2042,13 @@ function gerarHTMLCarneProfissional(doacao, doador, historico) {
             <table style="width: 100%; border: 2px solid #000; border-collapse: collapse; margin-bottom: 10px;">
                 <tr>
                     <!-- Logo e Banco -->
-                    <td style="width: 20%; border-right: 1px solid #000; padding: 12px; vertical-align: middle;">
-                        <img src="/logo-apae.png" alt="Logo APAE" style="width: 150px; height: 150px; object-fit: contain;">
-                        
+                    <td style="width: 20%; border-right: 1px solid #000; padding: 10px; vertical-align: middle;">
+                        <img src="/logo-apae.png" alt="Logo APAE" style="width: 60px; height: 60px; object-fit: contain;">
+                        <div style="font-size: 10px; margin-top: 5px;">APAE<br>Três Lagoas</div>
                     </td>
                     
                     <!-- Recibo do Pagador -->
-                    <td style="width: 40%; border-right: 2px dashed #666; padding: 12px;">
+                    <td style="width: 40%; border-right: 2px dashed #666; padding: 10px;">
                         <div style="font-size: 12px; font-weight: bold; margin-bottom: 8px;">Recibo do Pagador</div>
                         
                         <div style="font-size: 10px; margin-bottom: 5px;">
@@ -2082,15 +2082,63 @@ function gerarHTMLCarneProfissional(doacao, doador, historico) {
                     </td>
                     
                     <!-- Ficha de Compensação -->
-                    <td style="width: 40%; padding: 12px; position: relative;">
+                    <td style="width: 40%; padding: 10px; position: relative;">
+                        <div style="background: #f0f0f0; padding: 5px; margin: -10px -10px 10px -10px; border-bottom: 1px solid #000;">
+                            <span style="font-size: 11px; font-weight: bold;">Pagável usando o Pix!</span>
+                        </div>
                         
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <div style="font-size: 10px;">
+                                <strong>Beneficiário</strong><br>
+                                APAE TRES LAGOAS
+                            </div>
+                            <div style="font-size: 10px; text-align: right;">
+                                <strong>Vencimento</strong><br>
+                                <span style="font-weight: bold; font-size: 12px;">${formatDate(dataVencimento)}</span>
+                            </div>
+                        </div>
+                        
+                        <div style="font-size: 10px; margin-bottom: 8px;">
+                            <strong>CNPJ do Beneficiário</strong><br>
+                            03.689.866/0001-40
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <div style="font-size: 10px;">
+                                <strong>Nº do documento</strong><br>
+                                ${numeroDocumento}
+                            </div>
+                            <div style="font-size: 10px; text-align: right;">
+                                <strong>Valor</strong><br>
+                                <span style="font-weight: bold; font-size: 14px;">R$ ${valorParcela.toFixed(2).replace('.', ',')}</span>
+                            </div>
+                        </div>
+                        
+                        <div style="font-size: 10px; margin-bottom: 8px;">
+                            <strong>Instruções adicionais</strong><br>
+                            <span style="font-size: 9px;">
+                                Apoie vencimento: Multa 2,00% + R$0,80 Juros 0,033% a.d = R$0,01/dia<br>
+                                PARCELA ${String(i).padStart(2, '0')}/${String(totalParcelas).padStart(2, '0')}
+                            </span>
+                        </div>
+                        
+                        <div style="font-size: 10px; margin-bottom: 8px;">
+                            <strong>Pagador</strong><br>
+                            ${doador.nome.toUpperCase()} - ${doador.cpf ? formatCPFDisplay(doador.cpf) : 'CPF: Não informado'}
+                        </div>
+                        
+                        <div style="background: #f0f0f0; padding: 8px; border: 1px solid #ccc; margin-bottom: 8px;">
+                            <div style="font-size: 10px;">
+                                <strong>ENDEREÇO:</strong> ${montarEndereco(doador)}
+                            </div>
+                        </div>
                         
                         <!-- QR Code -->
-                        <div style="position: absolute; top: 15px; right: 15px; text-align: center; background: white; padding: 8px; border: 2px solid #000; border-radius: 5px;">
-                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(gerarCodigoPix(valorParcela, i))}" 
+                        <div style="position: absolute; top: 10px; right: 10px; text-align: center;">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(gerarCodigoPix(valorParcela, i))}" 
                                  alt="QR Code PIX" 
                                  style="width: 100px; height: 100px; border: 1px solid #000;">
-                            <div style="font-size: 10px; font-weight: bold; margin-top: 2px;">
+                            <div style="font-size: 8px; margin-top: 2px;">
                                 Use o aplicativo do seu banco<br>
                                 ou instituição financeira
                             </div>
@@ -2123,7 +2171,7 @@ function gerarHTMLCarneProfissional(doacao, doador, historico) {
         body {
             font-family: Arial, Helvetica, sans-serif;
             background: white;
-            padding: 12px;
+            padding: 10px;
             color: #000;
         }
         
@@ -2449,7 +2497,7 @@ window.exportData = async function() {
 '        th {' +
 '            background: #333;' +
 '            color: white;' +
-'            padding: 12px;' +
+'            padding: 10px;' +
 '            text-align: left;' +
 '            font-size: 14px;' +
 '        }' +
@@ -3516,346 +3564,3 @@ window.closeModal = function() {
         console.error('Erro ao fechar modal:', error);
     }
 };
-/**
- * Mostrar histórico simples com estrutura de parcelas
- * Versão: 1.2.2 - CORREÇÃO CIRÚRGICA
- */
-window.showSimpleHistory = async function(doacaoId) {
-    console.log('📋 Carregando histórico com parcelas para doação:', doacaoId);
-    
-    try {
-        // Buscar dados completos da doação
-        const doacaoResponse = await fetch(`/api/doacoes/${doacaoId}`);
-        const doacao = await doacaoResponse.json();
-        
-        if (!doacaoResponse.ok) {
-            throw new Error('Doação não encontrada');
-        }
-        
-        // Buscar histórico de pagamentos
-        const historicoResponse = await fetch(`/api/doacoes/${doacaoId}/historico`);
-        const historico = await historicoResponse.json();
-        
-        // Buscar parcelas futuras
-        const parcelasResponse = await fetch(`/api/doacoes/${doacaoId}/parcelas`);
-        const parcelasFuturas = await parcelasResponse.json();
-        
-        // Montar estrutura completa das parcelas
-        const numParcelas = doacao.parcelas_totais || 1;
-        const valorParcela = doacao.valor / (doacao.recorrente ? numParcelas : 1);
-        const parcelasCompletas = [];
-        
-        for (let i = 1; i <= numParcelas; i++) {
-            const dataVencimento = calcularDataVencimento(doacao.data_doacao, i - 1, doacao.recorrente);
-            const pagamento = buscarPagamentoProximo(historico, dataVencimento);
-            const parcelaFutura = parcelasFuturas.find(p => p.numero_parcela === i);
-            
-            parcelasCompletas.push({
-                numero: i,
-                data_vencimento: dataVencimento,
-                valor: valorParcela,
-                status: pagamento ? 'Pago' : 'Pendente',
-                data_pagamento: pagamento ? pagamento.data_pagamento : null,
-                pagamento_id: pagamento ? pagamento.id : null,
-                parcela_futura_id: parcelaFutura ? parcelaFutura.id : null
-            });
-        }
-        
-        mostrarModalParcelasCompletas(doacao, parcelasCompletas);
-        
-    } catch (error) {
-        console.error('❌ Erro ao carregar histórico:', error);
-        alert('Erro ao carregar histórico: ' + error.message);
-    }
-};
-
-/**
- * Calcular data de vencimento da parcela
- * Versão: 1.2.2
- */
-function calcularDataVencimento(dataInicial, meses, recorrente) {
-    const data = new Date(dataInicial + 'T00:00:00');
-    if (recorrente && meses > 0) {
-        data.setMonth(data.getMonth() + meses);
-    }
-    return data.toISOString().substring(0, 10);
-}
-
-/**
- * Buscar pagamento próximo à data de vencimento
- * Versão: 1.2.2
- */
-function buscarPagamentoProximo(historico, dataVencimento) {
-    if (!historico || !Array.isArray(historico)) return null;
-    
-    const vencimento = new Date(dataVencimento + 'T00:00:00');
-    
-    for (let pagamento of historico) {
-        const dataPagamento = new Date(pagamento.data_pagamento + 'T00:00:00');
-        const diffDias = Math.abs((dataPagamento - vencimento) / (1000 * 60 * 60 * 24));
-        
-        // Tolerância de 10 dias para considerar que é o pagamento da parcela
-        if (diffDias <= 10) {
-            return pagamento;
-        }
-    }
-    
-    return null;
-}
-
-/**
- * Mostrar modal com todas as parcelas
- * Versão: 1.2.2
- */
-function mostrarModalParcelasCompletas(doacao, parcelas) {
-    // Remover modal existente
-    const existingModal = document.getElementById('modal-parcelas-completas');
-    if (existingModal) existingModal.remove();
-    
-    const totalPago = parcelas
-        .filter(p => p.status === 'Pago')
-        .reduce((sum, p) => sum + p.valor, 0);
-    
-    const parcelasPagas = parcelas.filter(p => p.status === 'Pago').length;
-    const parcelasPendentes = parcelas.filter(p => p.status === 'Pendente').length;
-    
-    const modalHTML = `
-    <div id="modal-parcelas-completas" style="
-        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-        background: rgba(0, 0, 0, 0.8); z-index: 999999;
-        display: flex; justify-content: center; align-items: center;
-    ">
-        <div style="
-            background: white; padding: 30px; border-radius: 12px;
-            max-width: 900px; width: 95%; max-height: 80vh; overflow-y: auto;
-        ">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="margin: 0; font-size: 24px; color: #1f2937;">
-                    📋 Histórico de Parcelas
-                </h2>
-                <button onclick="fecharModalParcelas()" style="
-                    background: none; border: none; font-size: 24px; cursor: pointer; color: #6b7280;
-                ">&times;</button>
-            </div>
-            
-            <!-- Informações do Doador -->
-            <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                <h3 style="margin: 0 0 10px 0; color: #1f2937;">${doacao.nome_doador} (${doacao.codigo_doador})</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-                    <div>
-                        <strong>Valor Total:</strong><br>
-                        <span style="font-size: 18px; color: #059669;">R$ ${doacao.valor.toFixed(2).replace('.', ',')}</span>
-                    </div>
-                    <div>
-                        <strong>Tipo:</strong><br>
-                        <span style="color: #374151;">${doacao.tipo}</span>
-                    </div>
-                    <div>
-                        <strong>Total de Parcelas:</strong><br>
-                        <span style="color: #374151;">${doacao.parcelas_totais || 1} parcelas</span>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Resumo -->
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px;">
-                <div style="text-align: center; padding: 15px; background: #dcfce7; border-radius: 8px;">
-                    <div style="font-size: 24px; font-weight: bold; color: #166534;">${parcelasPagas}</div>
-                    <div style="color: #166534;">Pagas</div>
-                </div>
-                <div style="text-align: center; padding: 15px; background: #fef3c7; border-radius: 8px;">
-                    <div style="font-size: 24px; font-weight: bold; color: #92400e;">${parcelasPendentes}</div>
-                    <div style="color: #92400e;">Pendentes</div>
-                </div>
-                <div style="text-align: center; padding: 15px; background: #e0f2fe; border-radius: 8px;">
-                    <div style="font-size: 24px; font-weight: bold; color: #0277bd;">R$ ${totalPago.toFixed(2).replace('.', ',')}</div>
-                    <div style="color: #0277bd;">Total Pago</div>
-                </div>
-            </div>
-            
-            <!-- Tabela de Parcelas -->
-            <div style="overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-                    <thead>
-                        <tr style="background: #f9fafb;">
-                            <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Parcela</th>
-                            <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Vencimento</th>
-                            <th style="padding: 12px; text-align: right; border-bottom: 2px solid #e5e7eb;">Valor</th>
-                            <th style="padding: 12px; text-align: center; border-bottom: 2px solid #e5e7eb;">Status</th>
-                            <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Data Pagamento</th>
-                            <th style="padding: 12px; text-align: center; border-bottom: 2px solid #e5e7eb;">Ação</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${parcelas.map(parcela => `
-                            <tr style="border-bottom: 1px solid #e5e7eb;">
-                                <td style="padding: 12px;">
-                                    <strong>${String(parcela.numero).padStart(2, '0')}/${String(doacao.parcelas_totais).padStart(2, '0')}</strong>
-                                </td>
-                                <td style="padding: 12px;">${formatarDataBrasil(parcela.data_vencimento)}</td>
-                                <td style="padding: 12px; text-align: right; font-weight: bold;">
-                                    R$ ${parcela.valor.toFixed(2).replace('.', ',')}
-                                </td>
-                                <td style="padding: 12px; text-align: center;">
-                                    <span style="
-                                        padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;
-                                        background: ${parcela.status === 'Pago' ? '#dcfce7' : '#fef3c7'};
-                                        color: ${parcela.status === 'Pago' ? '#166534' : '#92400e'};
-                                    ">
-                                        ${parcela.status === 'Pago' ? '✅ PAGO' : '⏳ PENDENTE'}
-                                    </span>
-                                </td>
-                                <td style="padding: 12px;">
-                                    ${parcela.data_pagamento ? formatarDataBrasil(parcela.data_pagamento) : '-'}
-                                </td>
-                                <td style="padding: 12px; text-align: center;">
-                                    ${parcela.status === 'Pendente' ? `
-                                        <button onclick="pagarParcela(${doacao.id}, ${parcela.numero}, ${parcela.valor})" style="
-                                            background: #10b981; color: white; border: none; padding: 6px 12px;
-                                            border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold;
-                                        ">
-                                            💰 Pagar
-                                        </button>
-                                    ` : `
-                                        <span style="color: #6b7280; font-size: 12px;">Pago</span>
-                                    `}
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- Botões -->
-            <div style="display: flex; gap: 15px; justify-content: flex-end;">
-                <button onclick="fecharModalParcelas()" style="
-                    padding: 10px 20px; border: 2px solid #d1d5db; background: white;
-                    border-radius: 8px; cursor: pointer; font-weight: bold;
-                ">Fechar</button>
-                <button onclick="generateCarne(${doacao.id})" style="
-                    padding: 10px 20px; border: none; background: #3b82f6; color: white;
-                    border-radius: 8px; cursor: pointer; font-weight: bold;
-                ">🖨️ Gerar Carnê</button>
-            </div>
-        </div>
-    </div>
-    `;
-    
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-}
-
-/**
- * Fechar modal de parcelas
- * Versão: 1.2.2
- */
-window.fecharModalParcelas = function() {
-    const modal = document.getElementById('modal-parcelas-completas');
-    if (modal) modal.remove();
-};
-
-/**
- * Formatar data para padrão brasileiro
- * Versão: 1.2.2
- */
-function formatarDataBrasil(dataISO) {
-    if (!dataISO) return '';
-    const data = new Date(dataISO + 'T00:00:00');
-    return data.toLocaleDateString('pt-BR');
-}
-
-/**
- * Pagar parcela específica
- * Versão: 1.2.2
- */
-
-/**
- * Validar e converter data brasileira para ISO
- * Versão: 1.2.3
- */
-function validarDataBrasileira(dataBR) {
-    if (!dataBR) return null;
-    
-    // Se já está no formato ISO, manter
-    if (dataBR.match(/^\d{4}-\d{2}-\d{2}$/)) {
-        return dataBR;
-    }
-    
-    // Se está no formato brasileiro DD/MM/AAAA
-    if (dataBR.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) {
-        const [dia, mes, ano] = dataBR.split('/');
-        
-        // Validações básicas
-        const diaNum = parseInt(dia);
-        const mesNum = parseInt(mes);
-        const anoNum = parseInt(ano);
-        
-        if (diaNum < 1 || diaNum > 31) {
-            alert('Dia inválido! Use valores entre 1 e 31.');
-            return null;
-        }
-        
-        if (mesNum < 1 || mesNum > 12) {
-            alert('Mês inválido! Use valores entre 1 e 12.');
-            return null;
-        }
-        
-        if (anoNum < 2020 || anoNum > 2030) {
-            alert('Ano inválido! Use valores entre 2020 e 2030.');
-            return null;
-        }
-        
-        // Converter para formato ISO
-        return `${anoNum}-${mesNum.toString().padStart(2, '0')}-${diaNum.toString().padStart(2, '0')}`;
-    }
-    
-    alert('Formato de data inválido! Use DD/MM/AAAA (ex: 18/09/2025)');
-    return null;
-}
-
-window.pagarParcela = async function(doacaoId, numeroParcela, valor) {
-    const hoje = new Date();
-    const dataHojeBR = hoje.toLocaleDateString('pt-BR');
-    const dataPagamento = prompt(`Data do pagamento da parcela ${numeroParcela} (DD/MM/AAAA):`, dataHojeBR);
-    
-    // Converter data brasileira para formato ISO se necessário
-    let dataISO = dataPagamento;
-    if (dataPagamento && dataPagamento.includes('/')) {
-        const [dia, mes, ano] = dataPagamento.split('/');
-        if (dia && mes && ano) {
-            dataISO = `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
-        }
-    }
-    
-    if (!dataPagamento) return;
-    
-    // Validar e converter data
-    const dataValidada = validarDataBrasileira(dataPagamento);
-    if (!dataValidada) return;
-    
-    try {
-        const response = await fetch(`/api/doacoes/${doacaoId}/pagar-parcela`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                numero_parcela: numeroParcela,
-                data_pagamento: dataValidada,
-                valor: valor
-            })
-        });
-        
-        if (response.ok) {
-            alert(`✅ Pagamento da parcela ${numeroParcela} registrado com sucesso!`);
-            // Recarregar modal
-            showSimpleHistory(doacaoId);
-            // Recarregar dashboard
-            loadDashboard();
-        } else {
-            const error = await response.json();
-            alert('❌ Erro: ' + error.message);
-        }
-    } catch (error) {
-        console.error('❌ Erro ao pagar parcela:', error);
-        alert('❌ Erro ao registrar pagamento: ' + error.message);
-    }
-};
-

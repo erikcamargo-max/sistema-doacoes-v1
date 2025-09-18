@@ -3732,7 +3732,7 @@ function mostrarModalParcelasCompletas(doacao, parcelas) {
                     padding: 10px 20px; border: 2px solid #d1d5db; background: white;
                     border-radius: 8px; cursor: pointer; font-weight: bold;
                 ">Fechar</button>
-                <button onclick="generateCarne(${doacao.id})" style="
+                <button onclick="gerarCarneDoacao(${doacao.id})" style="
                     padding: 10px 20px; border: none; background: #3b82f6; color: white;
                     border-radius: 8px; cursor: pointer; font-weight: bold;
                 ">🖨️ Gerar Carnê</button>
@@ -3767,70 +3767,11 @@ function formatarDataBrasil(dataISO) {
  * Pagar parcela específica
  * Versão: 1.2.2
  */
-
-/**
- * Validar e converter data brasileira para ISO
- * Versão: 1.2.3
- */
-function validarDataBrasileira(dataBR) {
-    if (!dataBR) return null;
-    
-    // Se já está no formato ISO, manter
-    if (dataBR.match(/^\d{4}-\d{2}-\d{2}$/)) {
-        return dataBR;
-    }
-    
-    // Se está no formato brasileiro DD/MM/AAAA
-    if (dataBR.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) {
-        const [dia, mes, ano] = dataBR.split('/');
-        
-        // Validações básicas
-        const diaNum = parseInt(dia);
-        const mesNum = parseInt(mes);
-        const anoNum = parseInt(ano);
-        
-        if (diaNum < 1 || diaNum > 31) {
-            alert('Dia inválido! Use valores entre 1 e 31.');
-            return null;
-        }
-        
-        if (mesNum < 1 || mesNum > 12) {
-            alert('Mês inválido! Use valores entre 1 e 12.');
-            return null;
-        }
-        
-        if (anoNum < 2020 || anoNum > 2030) {
-            alert('Ano inválido! Use valores entre 2020 e 2030.');
-            return null;
-        }
-        
-        // Converter para formato ISO
-        return `${anoNum}-${mesNum.toString().padStart(2, '0')}-${diaNum.toString().padStart(2, '0')}`;
-    }
-    
-    alert('Formato de data inválido! Use DD/MM/AAAA (ex: 18/09/2025)');
-    return null;
-}
-
 window.pagarParcela = async function(doacaoId, numeroParcela, valor) {
-    const hoje = new Date();
-    const dataHojeBR = hoje.toLocaleDateString('pt-BR');
-    const dataPagamento = prompt(`Data do pagamento da parcela ${numeroParcela} (DD/MM/AAAA):`, dataHojeBR);
-    
-    // Converter data brasileira para formato ISO se necessário
-    let dataISO = dataPagamento;
-    if (dataPagamento && dataPagamento.includes('/')) {
-        const [dia, mes, ano] = dataPagamento.split('/');
-        if (dia && mes && ano) {
-            dataISO = `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
-        }
-    }
+    const hoje = new Date().toISOString().substring(0, 10);
+    const dataPagamento = prompt(`Data do pagamento da parcela ${numeroParcela}:`, hoje);
     
     if (!dataPagamento) return;
-    
-    // Validar e converter data
-    const dataValidada = validarDataBrasileira(dataPagamento);
-    if (!dataValidada) return;
     
     try {
         const response = await fetch(`/api/doacoes/${doacaoId}/pagar-parcela`, {
@@ -3838,7 +3779,7 @@ window.pagarParcela = async function(doacaoId, numeroParcela, valor) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 numero_parcela: numeroParcela,
-                data_pagamento: dataValidada,
+                data_pagamento: dataPagamento,
                 valor: valor
             })
         });
