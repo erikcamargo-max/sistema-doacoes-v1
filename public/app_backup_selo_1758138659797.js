@@ -1762,223 +1762,6 @@ function formatCPFDisplay(cpf) {
  * Gerar carnê de pagamento com canhoto
  * Versão: 1.1.2 - Função completa restaurada
  */
-
-
-// ===============================================================================
-// FUNÇÕES PIX BR CODE - PADRÃO BANCO CENTRAL
-// Versão: 1.2.0
-// ===============================================================================
-
-/**
- * Configurações PIX da organização
- */
-const PIX_CONFIG = {
-    chavePix: '03.689.866/0001-40',
-    nomeBeneficiario: 'APAE TRES LAGOAS',
-    cidade: 'TRES LAGOAS',
-    identificador: 'APAE'
-};
-
-/**
- * Gera o payload PIX no padrão EMV/BR Code
- * @param {number} valor - Valor da doação
- * @param {string} identificador - ID único da transação
- * @returns {string} - Payload PIX
- */
-function gerarPayloadPix(valor, identificador) {
-    const ID_PAYLOAD_FORMAT_INDICATOR = '00';
-    const ID_MERCHANT_ACCOUNT_INFORMATION = '26';
-    const ID_MERCHANT_CATEGORY_CODE = '52';
-    const ID_TRANSACTION_CURRENCY = '53';
-    const ID_TRANSACTION_AMOUNT = '54';
-    const ID_COUNTRY_CODE = '58';
-    const ID_MERCHANT_NAME = '59';
-    const ID_MERCHANT_CITY = '60';
-    const ID_ADDITIONAL_DATA_FIELD_TEMPLATE = '62';
-    const ID_CRC16 = '63';
-    
-    const ID_MERCHANT_ACCOUNT_INFORMATION_GUI = '00';
-    const ID_MERCHANT_ACCOUNT_INFORMATION_KEY = '01';
-    const ID_MERCHANT_ACCOUNT_INFORMATION_DESCRIPTION = '02';
-    
-    const ID_ADDITIONAL_DATA_FIELD_TEMPLATE_TXID = '05';
-    
-    // Formatar valor (sempre com 2 casas decimais)
-    const valorFormatado = valor.toFixed(2);
-    
-    // Montar o Merchant Account Information
-    let merchantAccountInfo = '';
-    merchantAccountInfo += ID_MERCHANT_ACCOUNT_INFORMATION_GUI + '14' + 'BR.GOV.BCB.PIX';
-    merchantAccountInfo += ID_MERCHANT_ACCOUNT_INFORMATION_KEY + padLeft(PIX_CONFIG.chavePix.length, 2) + PIX_CONFIG.chavePix;
-    
-    // Montar Additional Data Field
-    const txid = (PIX_CONFIG.identificador + identificador).substring(0, 25).toUpperCase();
-    let additionalDataField = '';
-    additionalDataField += ID_ADDITIONAL_DATA_FIELD_TEMPLATE_TXID + padLeft(txid.length, 2) + txid;
-    
-    // Montar o payload
-    let payload = '';
-    payload += ID_PAYLOAD_FORMAT_INDICATOR + '02' + '01';
-    payload += ID_MERCHANT_ACCOUNT_INFORMATION + padLeft(merchantAccountInfo.length, 2) + merchantAccountInfo;
-    payload += ID_MERCHANT_CATEGORY_CODE + '04' + '0000';
-    payload += ID_TRANSACTION_CURRENCY + '03' + '986'; // BRL
-    payload += ID_TRANSACTION_AMOUNT + padLeft(valorFormatado.length, 2) + valorFormatado;
-    payload += ID_COUNTRY_CODE + '02' + 'BR';
-    payload += ID_MERCHANT_NAME + padLeft(PIX_CONFIG.nomeBeneficiario.length, 2) + PIX_CONFIG.nomeBeneficiario;
-    payload += ID_MERCHANT_CITY + padLeft(PIX_CONFIG.cidade.length, 2) + PIX_CONFIG.cidade;
-    payload += ID_ADDITIONAL_DATA_FIELD_TEMPLATE + padLeft(additionalDataField.length, 2) + additionalDataField;
-    payload += ID_CRC16 + '04';
-    
-    // Calcular e adicionar CRC16
-    payload += calcularCRC16(payload);
-    
-    return payload;
-}
-
-/**
- * Calcula o CRC16 do payload PIX
- */
-function calcularCRC16(payload) {
-    const polinomio = 0x1021;
-    let resultado = 0xFFFF;
-    
-    if (payload.length > 0) {
-        for (let offset = 0; offset < payload.length; offset++) {
-            resultado ^= (payload.charCodeAt(offset) << 8);
-            for (let bitwise = 0; bitwise < 8; bitwise++) {
-                if ((resultado <<= 1) & 0x10000) resultado ^= polinomio;
-                resultado &= 0xFFFF;
-            }
-        }
-    }
-    
-    return resultado.toString(16).toUpperCase().padStart(4, '0');
-}
-
-/**
- * Adiciona zeros à esquerda
- */
-function padLeft(length, size) {
-    return String(length).padStart(size, '0');
-}
-
-/**
- * Gera QR Code usando API pública
- * @param {string} payload - Payload PIX
- * @returns {string} - URL da imagem do QR Code
- */
-function gerarQRCodeURL(payload) {
-    // Usando API pública do QR Server
-    const encoded = encodeURIComponent(payload);
-    return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encoded}`;
-}
-
-/**
- * Gera o HTML do QR Code PIX para o carnê
- */
-function gerarHTMLQRCodePix(valor, doacaoId) {
-    const payload = gerarPayloadPix(valor, String(doacaoId).padStart(6, '0'));
-    const qrCodeURL = gerarQRCodeURL(payload);
-    
-    return `
-        <!-- QR Code PIX Real -->
-        <div class="qr-pix" style="background: white; padding: 15px;">
-            <img src="${qrCodeURL}" alt="QR Code PIX" style="width: 100%; height: auto;">
-            <div class="qr-pix-info" style="margin-top: 10px; font-size: 11px; color: #333;">
-                <strong>PIX COPIA E COLA:</strong><br>
-                <textarea readonly style="width: 100%; height: 60px; font-size: 9px; resize: none; border: 1px solid #ddd; padding: 5px; margin-top: 5px;">${payload}</textarea>
-            </div>
-        </div>
-    `;
-}
-
-// ===============================================================================
-
-// ===============================================================================
-// FUNÇÕES PIX REAL - PADRÃO BANCO CENTRAL BRASILEIRO
-// CNPJ: 03.689.866/0001-40 - APAE TRES LAGOAS
-// Versão: 1.2.0 - Data: 13/09/2025
-// ===============================================================================
-
-/**
- * Gera código PIX no padrão EMV BR Code do Banco Central
- */
-function gerarCodigoPix(valor, idParcela) {
-    // Dados da APAE
-    const chavePix = "03689866000140";  // CNPJ sem formatação
-    const nomeBeneficiario = "APAE TRES LAGOAS";
-    const cidade = "TRES LAGOAS";
-    
-    // IDs do padrão EMV
-    const ID_PAYLOAD_FORMAT = "00";
-    const ID_MERCHANT_ACCOUNT = "26";
-    const ID_MERCHANT_CATEGORY = "52";
-    const ID_CURRENCY = "53";
-    const ID_AMOUNT = "54";
-    const ID_COUNTRY = "58";
-    const ID_MERCHANT_NAME = "59";
-    const ID_MERCHANT_CITY = "60";
-    const ID_ADDITIONAL_DATA = "62";
-    const ID_CRC16 = "63";
-    
-    // Formatar valor com 2 casas decimais
-    const valorFormatado = valor.toFixed(2);
-    
-    // Montar Merchant Account Information
-    let merchantAccount = "";
-    merchantAccount += "0014BR.GOV.BCB.PIX";  // GUI
-    merchantAccount += "01" + chavePix.length.toString().padStart(2, '0') + chavePix;  // Chave
-    
-    // ID da transação
-    const txId = "APAE" + String(idParcela).padStart(6, '0');
-    let additionalData = "05" + txId.length.toString().padStart(2, '0') + txId;
-    
-    // Montar payload (sem CRC16)
-    let payload = "";
-    payload += ID_PAYLOAD_FORMAT + "02" + "01";
-    payload += ID_MERCHANT_ACCOUNT + merchantAccount.length.toString().padStart(2, '0') + merchantAccount;
-    payload += ID_MERCHANT_CATEGORY + "04" + "0000";
-    payload += ID_CURRENCY + "03" + "986";  // BRL
-    payload += ID_AMOUNT + valorFormatado.length.toString().padStart(2, '0') + valorFormatado;
-    payload += ID_COUNTRY + "02" + "BR";
-    payload += ID_MERCHANT_NAME + nomeBeneficiario.length.toString().padStart(2, '0') + nomeBeneficiario;
-    payload += ID_MERCHANT_CITY + cidade.length.toString().padStart(2, '0') + cidade;
-    payload += ID_ADDITIONAL_DATA + additionalData.length.toString().padStart(2, '0') + additionalData;
-    payload += ID_CRC16 + "04";
-    
-    // Calcular CRC16
-    const crc16 = calcularCRC16(payload);
-    payload += crc16;
-    
-    return payload;
-}
-
-/**
- * Calcula CRC16 para o PIX (padrão CCITT)
- */
-function calcularCRC16(str) {
-    let crc = 0xFFFF;
-    let j, i;
-    
-    for (i = 0; i < str.length; i++) {
-        const c = str.charCodeAt(i);
-        crc ^= c << 8;
-        
-        for (j = 0; j < 8; j++) {
-            if (crc & 0x8000) {
-                crc = (crc << 1) ^ 0x1021;
-            } else {
-                crc = crc << 1;
-            }
-        }
-    }
-    
-    crc = crc & 0xFFFF;
-    return crc.toString(16).toUpperCase().padStart(4, '0');
-}
-
-// ===============================================================================
-
 window.generateCarne = async function(id) {
     try {
         console.log('🎨 Gerando carnê profissional para doação ID:', id);
@@ -2017,12 +1800,10 @@ window.generateCarne = async function(id) {
 }
 
 // Função para gerar HTML do carnê profissional
-
-// Função para gerar HTML do carnê modelo bancário
 function gerarHTMLCarneProfissional(doacao, doador, historico) {
     const agora = new Date();
-    const dataGeracao = agora.toLocaleDateString('pt-BR');
-    const numeroDocumento = String(doacao.id).padStart(8, '0');
+    const dataGeracao = agora.toLocaleDateString('pt-BR') + ' às ' + agora.toLocaleTimeString('pt-BR');
+    const numeroDocumento = 'CRN-' + String(doacao.id).padStart(6, '0');
     const codigoDoador = doador.codigo_doador || 'D' + String(doador.id).padStart(3, '0');
     
     // Calcular parcelas
@@ -2036,132 +1817,16 @@ function gerarHTMLCarneProfissional(doacao, doador, historico) {
         const pagamento = buscarPagamentoHistorico(historico, dataVencimento);
         const isPago = !!pagamento;
         
-        // Estilo bancário compacto
-        htmlParcelas += `
-        <div class="parcela-bancaria" style="page-break-inside: avoid;">
-            <table style="width: 100%; border: 2px solid #000; border-collapse: collapse; margin-bottom: 10px;">
-                <tr>
-                    <!-- Logo e Banco -->
-                    <td style="width: 20%; border-right: 1px solid #000; padding: 10px; vertical-align: middle;">
-                        <img src="/logo-apae.png" alt="Logo APAE" style="width: 60px; height: 60px; object-fit: contain;">
-                        <div style="font-size: 10px; margin-top: 5px;">APAE<br>Três Lagoas</div>
-                    </td>
-                    
-                    <!-- Recibo do Pagador -->
-                    <td style="width: 40%; border-right: 2px dashed #666; padding: 10px;">
-                        <div style="font-size: 12px; font-weight: bold; margin-bottom: 8px;">Recibo do Pagador</div>
-                        
-                        <div style="font-size: 10px; margin-bottom: 5px;">
-                            <strong>Nº do Documento</strong><br>
-                            ${numeroDocumento}
-                        </div>
-                        
-                        <div style="font-size: 10px; margin-bottom: 5px;">
-                            <strong>Vencimento</strong><br>
-                            <span style="font-weight: bold; font-size: 12px;">${formatDate(dataVencimento)}</span>
-                        </div>
-                        
-                        <div style="font-size: 10px; margin-bottom: 5px;">
-                            <strong>Valor</strong><br>
-                            <span style="font-weight: bold; font-size: 14px; color: #000;">R$ ${valorParcela.toFixed(2).replace('.', ',')}</span>
-                        </div>
-                        
-                        <div style="font-size: 10px;">
-                            <strong>Valor Cobrado</strong><br>
-                            _____________
-                        </div>
-                        
-                        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #ccc;">
-                            <div style="font-size: 10px;">
-                                <strong>Pagador</strong><br>
-                                ${doador.nome.toUpperCase()}<br>
-                                ${doador.cpf ? 'CPF: ' + formatCPFDisplay(doador.cpf) : ''}<br>
-                                TEL: ${doador.telefone1}
-                            </div>
-                        </div>
-                    </td>
-                    
-                    <!-- Ficha de Compensação -->
-                    <td style="width: 40%; padding: 10px; position: relative;">
-                        <div style="background: #f0f0f0; padding: 5px; margin: -10px -10px 10px -10px; border-bottom: 1px solid #000;">
-                            <span style="font-size: 11px; font-weight: bold;">Pagável usando o Pix!</span>
-                        </div>
-                        
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                            <div style="font-size: 10px;">
-                                <strong>Beneficiário</strong><br>
-                                APAE TRES LAGOAS
-                            </div>
-                            <div style="font-size: 10px; text-align: right;">
-                                <strong>Vencimento</strong><br>
-                                <span style="font-weight: bold; font-size: 12px;">${formatDate(dataVencimento)}</span>
-                            </div>
-                        </div>
-                        
-                        <div style="font-size: 10px; margin-bottom: 8px;">
-                            <strong>CNPJ do Beneficiário</strong><br>
-                            03.689.866/0001-40
-                        </div>
-                        
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                            <div style="font-size: 10px;">
-                                <strong>Nº do documento</strong><br>
-                                ${numeroDocumento}
-                            </div>
-                            <div style="font-size: 10px; text-align: right;">
-                                <strong>Valor</strong><br>
-                                <span style="font-weight: bold; font-size: 14px;">R$ ${valorParcela.toFixed(2).replace('.', ',')}</span>
-                            </div>
-                        </div>
-                        
-                        <div style="font-size: 10px; margin-bottom: 8px;">
-                            <strong>Instruções adicionais</strong><br>
-                            <span style="font-size: 9px;">
-                                Apoie vencimento: Multa 2,00% + R$0,80 Juros 0,033% a.d = R$0,01/dia<br>
-                                PARCELA ${String(i).padStart(2, '0')}/${String(totalParcelas).padStart(2, '0')}
-                            </span>
-                        </div>
-                        
-                        <div style="font-size: 10px; margin-bottom: 8px;">
-                            <strong>Pagador</strong><br>
-                            ${doador.nome.toUpperCase()} - ${doador.cpf ? formatCPFDisplay(doador.cpf) : 'CPF: Não informado'}
-                        </div>
-                        
-                        <div style="background: #f0f0f0; padding: 8px; border: 1px solid #ccc; margin-bottom: 8px;">
-                            <div style="font-size: 10px;">
-                                <strong>ENDEREÇO:</strong> ${montarEndereco(doador)}
-                            </div>
-                        </div>
-                        
-                        <!-- QR Code -->
-                        <div style="position: absolute; top: 10px; right: 10px; text-align: center;">
-                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(gerarCodigoPix(valorParcela, i))}" 
-                                 alt="QR Code PIX" 
-                                 style="width: 100px; height: 100px; border: 1px solid #000;">
-                            <div style="font-size: 8px; margin-top: 2px;">
-                                Use o aplicativo do seu banco<br>
-                                ou instituição financeira
-                            </div>
-                        </div>
-                        
-                        ${isPago ? `
-                        <div style="position: absolute; bottom: 10px; right: 10px; background: #28a745; color: white; padding: 5px 10px; border-radius: 3px; font-size: 10px;">
-                            ✓ PAGO EM ${formatDate(pagamento.data_pagamento)}
-                        </div>
-                        ` : ''}
-                    </td>
-                </tr>
-            </table>
-        </div>
-        `;
+        htmlParcelas += gerarHTMLParcela(i, totalParcelas, dataVencimento, valorParcela, isPago, pagamento, doador, codigoDoador);
     }
     
     return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Carnê Bancário - ${doador.nome}</title>
+    <title>Carnê Profissional - ${doador.nome}</title>
     <style>
+        /* Reset e Base */
         * {
             margin: 0;
             padding: 0;
@@ -2169,137 +1834,455 @@ function gerarHTMLCarneProfissional(doacao, doador, historico) {
         }
         
         body {
-            font-family: Arial, Helvetica, sans-serif;
-            background: white;
-            padding: 10px;
-            color: #000;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
         }
         
+        /* Container Principal */
         .container {
-            max-width: 800px;
+            max-width: 1200px;
             margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
         }
         
+        /* Header */
         .header {
-            text-align: center;
-            margin-bottom: 20px;
-            padding: 15px;
-            border: 2px solid #000;
-            background: #f9f9f9;
-        }
-        
-        .header h1 {
-            font-size: 18px;
-            margin-bottom: 5px;
-        }
-        
-        .header-info {
-            font-size: 12px;
-            margin-top: 10px;
-        }
-        
-        .header-info span {
-            display: inline-block;
-            margin: 0 10px;
-        }
-        
-        .parcela-bancaria {
-            margin-bottom: 10mm;
-        }
-        
-        .no-print {
-            margin: 20px 0;
-            text-align: center;
-        }
-        
-        .btn-imprimir {
-            background: #007bff;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            border: none;
-            padding: 10px 30px;
-            font-size: 14px;
-            cursor: pointer;
-            border-radius: 3px;
-        }
-        
-        .btn-imprimir:hover {
-            background: #0056b3;
-        }
-        
-        @media print {
-            body {
-                margin: 0;
-                padding: 0;
-            }
-            
-            .no-print {
-                display: none;
-            }
-            
-            .parcela-bancaria {
-                page-break-inside: avoid;
-                margin-bottom: 5mm;
-            }
-            
-            .container {
-                max-width: 100%;
-            }
-            
-            .header {
-                display: none;
-            }
-        }
-        
-        /* Estilo para linha tracejada de corte */
-        .linha-corte {
-            border-top: 1px dashed #666;
-            margin: 5px 0;
+            padding: 40px;
+            text-align: center;
             position: relative;
         }
         
-        .linha-corte::before {
-            content: "✂";
+        .header h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .header h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            opacity: 0.95;
+        }
+        
+        .header-info {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        .header-info-item {
+            background: rgba(255,255,255,0.2);
+            padding: 10px 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Selo de Autenticidade */
+        .selo {
             position: absolute;
-            left: -20px;
-            top: -10px;
+            top: 20px;
+            right: 20px;
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transform: rotate(-15deg);
+            border: 3px solid white;
+        }
+        
+        .selo-icon {
+            font-size: 36px;
+            margin-bottom: 5px;
+        }
+        
+        .selo-texto {
+            font-size: 11px;
+            text-align: center;
+        }
+        
+        /* Informações do Documento */
+        .documento-info {
+            background: #f8f9fa;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .documento-numero {
+            font-size: 18px;
+            font-weight: bold;
+            color: #495057;
+        }
+        
+        .documento-data {
+            font-size: 14px;
+            color: #6c757d;
+        }
+        
+        /* Parcelas */
+        .parcelas-container {
+            padding: 40px;
+        }
+        
+        .parcela {
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            page-break-inside: avoid;
+        }
+        
+        .parcela-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .parcela-numero {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .parcela-status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .status-pago {
+            background: #28a745;
+        }
+        
+        .status-pendente {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .parcela-body {
+            display: flex;
+            min-height: 200px;
+        }
+        
+        /* Canhoto */
+        .canhoto {
+            width: 35%;
+            padding: 25px;
+            background: #f8f9fa;
+            border-right: 2px dashed #dee2e6;
+        }
+        
+        .canhoto-titulo {
             font-size: 16px;
-            color: #666;
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        .canhoto-campo {
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+        
+        .canhoto-campo strong {
+            color: #495057;
+            display: inline-block;
+            min-width: 100px;
+        }
+        
+        .canhoto-valor {
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        /* Recibo */
+        .recibo {
+            width: 65%;
+            padding: 25px;
+            position: relative;
+        }
+        
+        .recibo-titulo {
+            font-size: 18px;
+            font-weight: bold;
+            color: #212529;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        .recibo-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .recibo-campo {
+            font-size: 14px;
+        }
+        
+        .recibo-campo strong {
+            color: #495057;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .recibo-valor {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        /* QR Code PIX */
+        .qr-pix {
+            position: absolute;
+            bottom: 25px;
+            right: 25px;
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            padding: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .qr-pix-icon {
+            font-size: 48px;
+            margin-bottom: 5px;
+        }
+        
+        .qr-pix-texto {
+            font-size: 12px;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        /* Rodapé */
+        .footer {
+            background: #f8f9fa;
+            padding: 30px 40px;
+            text-align: center;
+            border-top: 2px solid #dee2e6;
+        }
+        
+        .instrucoes {
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .instrucoes h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        .instrucoes ul {
+            text-align: left;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .instrucoes li {
+            margin-bottom: 8px;
+            color: #495057;
+        }
+        
+        /* Botão de Impressão */
+        .btn-imprimir {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            transition: transform 0.3s;
+            margin-top: 20px;
+        }
+        
+        .btn-imprimir:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.5);
+        }
+        
+        /* Impressão */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .container {
+                box-shadow: none;
+                border-radius: 0;
+            }
+            
+            .btn-imprimir {
+                display: none;
+            }
+            
+            .parcela {
+                page-break-inside: avoid;
+            }
+            
+            .selo {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            .qr-pix {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+        
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .header h2 {
+                font-size: 20px;
+            }
+            
+            .selo {
+                width: 80px;
+                height: 80px;
+                top: 10px;
+                right: 10px;
+            }
+            
+            .selo-icon {
+                font-size: 24px;
+            }
+            
+            .parcela-body {
+                flex-direction: column;
+            }
+            
+            .canhoto,
+            .recibo {
+                width: 100%;
+                border-right: none;
+                border-bottom: 2px dashed #dee2e6;
+            }
+            
+            .qr-pix {
+                position: static;
+                margin: 20px auto;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Cabeçalho (não imprime) -->
+        <!-- Header -->
         <div class="header">
-            <h1>CARNÊ DE PAGAMENTO - MODELO BANCÁRIO</h1>
-            <div class="header-info">
-                <span><strong>Contribuinte:</strong> ${doador.nome}</span>
-                <span><strong>Código:</strong> ${codigoDoador}</span>
-                <span><strong>Total de Parcelas:</strong> ${totalParcelas}</span>
+            <div class="selo">
+                <div class="selo-icon">🔒</div>
+                <div class="selo-texto">DOCUMENTO<br>AUTÊNTICO</div>
             </div>
+            
+            <h1>🎯 CARNÊ DE PAGAMENTO</h1>
+            <h2>${doador.nome.toUpperCase()}</h2>
+            
             <div class="header-info">
-                <span><strong>Documento:</strong> ${numeroDocumento}</span>
-                <span><strong>Gerado em:</strong> ${dataGeracao}</span>
+                <div class="header-info-item">
+                    <strong>Código:</strong> ${codigoDoador}
+                </div>
+                ${doador.cpf ? `
+                <div class="header-info-item">
+                    <strong>CPF:</strong> ${formatCPFDisplay(doador.cpf)}
+                </div>
+                ` : ''}
+                <div class="header-info-item">
+                    <strong>Telefone:</strong> ${doador.telefone1}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Informações do Documento -->
+        <div class="documento-info">
+            <div class="documento-numero">
+                📄 Documento: ${numeroDocumento}
+            </div>
+            <div class="documento-data">
+                ⏰ Gerado em: ${dataGeracao}
             </div>
         </div>
         
         <!-- Parcelas -->
-        ${htmlParcelas}
+        <div class="parcelas-container">
+            ${htmlParcelas}
+        </div>
         
-        <!-- Botão de Impressão -->
-        <div class="no-print">
+        <!-- Rodapé -->
+        <div class="footer">
+            <div class="instrucoes">
+                <h3>📋 INSTRUÇÕES DE PAGAMENTO</h3>
+                <ul>
+                    <li>💰 <strong>DINHEIRO:</strong> Realize o pagamento diretamente com nossos cobradores autorizados</li>
+                    <li>📱 <strong>PIX:</strong> Use a chave: <strong>pix@organizacao.org.br</strong></li>
+                    <li>📅 Mantenha seus pagamentos em dia para continuar apoiando nossa causa</li>
+                    <li>📞 Dúvidas? Entre em contato: (67) 9999-9999</li>
+                    <li>✅ Guarde este carnê como comprovante</li>
+                </ul>
+            </div>
+            
             <button class="btn-imprimir" onclick="window.print()">
                 🖨️ IMPRIMIR CARNÊ
             </button>
-            <p style="margin-top: 10px; font-size: 12px; color: #666;">
-                Configure a impressão para formato A4, orientação retrato, sem margens
+            
+            <p style="margin-top: 20px; color: #6c757d; font-size: 14px;">
+                Este documento foi gerado eletronicamente e possui validade legal.<br>
+                Sistema de Doações v1.1.8 - Todos os direitos reservados
             </p>
         </div>
     </div>
 </body>
 </html>`;
 }
-
 
 // Função para gerar HTML de cada parcela
 function gerarHTMLParcela(numero, total, dataVencimento, valor, isPago, pagamento, doador, codigoDoador) {
@@ -2386,18 +2369,11 @@ function gerarHTMLParcela(numero, total, dataVencimento, valor, isPago, pagament
                 </div>
                 ` : ''}
                 
-				<div class="qr-pix" style="background: white; padding: 8px; border-radius: 8px; border: 2px solid #667eea;">
-					<img src="https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=\${encodeURIComponent(gerarCodigoPix(valor, numero))}" 
-						 alt="QR Code PIX" 
-						 style="width: 130px; height: 130px; display: block;">
-					<div style="font-size: 10px; text-align: center; margin-top: 5px; color: #333;">
-						<strong>PIX CNPJ</strong><br>
-						03.689.866/0001-40<br>
-						<strong style="color: #667eea;">R$ \${valor.toFixed(2).replace('.', ',')}</strong>
-					</div>
-				</div>
-			
-			
+                <!-- QR Code PIX -->
+                <div class="qr-pix">
+                    <div class="qr-pix-icon">📱</div>
+                    <div class="qr-pix-texto">QR CODE<br>PIX</div>
+                </div>
             </div>
         </div>
     </div>

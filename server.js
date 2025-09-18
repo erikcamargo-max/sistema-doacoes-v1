@@ -13,6 +13,9 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static('public'));
 
+// Servir arquivos estáticos da raiz (incluindo logo-apae.png)
+app.use(express.static(__dirname));
+
 // Inicializar banco de dados SQLite
 const db = new sqlite3.Database('./database/doacoes.db', (err) => {
   if (err) {
