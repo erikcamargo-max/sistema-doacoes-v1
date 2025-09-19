@@ -3458,27 +3458,6 @@ window.addDonation = async function() {
             alert('Telefone é obrigatório');
             return;
         }
-        
-        // Validar valor das parcelas futuras (opcional com valor padrão)
-        if (formData.recorrente && formData.valor_parcelas_futuras && formData.valor_parcelas_futuras <= 0) {
-            alert('Valor das parcelas futuras deve ser maior que zero');
-            return;
-        }
-        
-        // Se recorrente mas sem valor das parcelas, usar valor da doação dividido pelas parcelas
-        if (formData.recorrente && (!formData.valor_parcelas_futuras || formData.valor_parcelas_futuras === 0)) {
-            const valorSugerido = (formData.amount / (formData.parcelas_totais || 2)).toFixed(2);
-            const confirmar = confirm(`Valor das parcelas futuras não informado.\n\nUsar valor padrão de R$ ${valorSugerido} por parcela?\n\n(Clique OK para aceitar ou Cancelar para informar manualmente)`);
-            
-            if (confirmar) {
-                formData.valor_parcelas_futuras = parseFloat(valorSugerido);
-                console.log('💰 Valor padrão aplicado:', formData.valor_parcelas_futuras);
-            } else {
-                alert('Por favor, informe o valor das parcelas futuras');
-                return;
-            }
-        }
-        
         if (!formData.amount || formData.amount <= 0) {
             alert('Valor deve ser maior que zero');
             return;

@@ -1,0 +1,39 @@
+[2.3.0] Atualização - 18/09/2025 16:50:41
+
+✅ Arquivos adicionados:
+   -  AJUSTAR-CARNE-CORRIGIDO.js
+   -  AJUSTAR-LAYOUT-CARNE-FINAL.js
+   -  CORRECAO-CIRURGICA-PARCELAS.js
+   -  CORRIGIR-DETALHES-PARCELAS.js
+   -  CORRIGIR-SERVIDOR-FINAL.js
+   -  CORRIGIR-SINTAXE-SERVIDOR.js
+   -  DIAGNOSTICO-SISTEMA-ATUAL.js
+   -  IMPLEMENTAR-CARNE-MODELO-BANCARIO.js
+   -  ORRIGIR-BOTOES-HISTORICO.js
+   -  VERIFICAR-SERVIDOR.js
+   -  corrigir-atualizacao-modal.js
+   -  diagnostico-atual.js
+   -  public/app.js.backup_botoes_1758223040325
+   -  public/app.js.backup_cirurgico_1758222549329
+   -  public/app.js.backup_detalhes_1758223469540
+   -  public/app.js.backup_modal_1758228291072
+   -  public/app_backup_ajustes_1758167082918.js
+   -  public/app_backup_ajustes_1758167140249.js
+   -  public/app_backup_ajustes_1758167170579.js
+   -  public/app_backup_ajustes_1758167315860.js
+   -  public/app_backup_bancario_1758166920545.js
+   -  public/app_backup_corrigido_1758167444967.js
+   -  server.js.backup_cirurgico_1758222549335
+   -  server.js.backup_detalhes_1758223469548
+   -  server.js.backup_final_1758225694464
+   -  server.js.backup_rota_1758224494672
+   -  server.js.backup_syntax_1758225812155
+
+📝 Arquivos modificados:
+   -  database/doacoes.db
+   -  public/app.js
+   -  server.js
+
+📊 Estatísticas:
+   - Tamanho do banco: 40.00 KB
+   - Versão do sistema: 2.3.0
