@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Controle de Doações</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js"></script>
+    <!-- Chart.js REMOVIDO - não é mais necessário -->
+
+<style>
+/* Estilos do Modal v2.2.7 */
+#modal-nova-doacao {
+    display: none;
+}
+
+#modal-nova-doacao.show {
+    display: flex !important;
+}
+
+#modal-nova-doacao input:focus,
+#modal-nova-doacao select:focus,
+#modal-nova-doacao textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    #modal-nova-doacao .max-w-4xl {
+        max-width: 95%;
+        margin: 10px;
+    }
+    
+    #modal-nova-doacao .grid-cols-2,
+    #modal-nova-doacao .md\:grid-cols-2,
+    #modal-nova-doacao .md\:grid-cols-3 {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* Scroll suave */
+#modal-nova-doacao .overflow-y-auto {
+    scroll-behavior: smooth;
+}
+
+/* Animação de abertura */
+#modal-nova-doacao.show {
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+</style>
+
+</head>

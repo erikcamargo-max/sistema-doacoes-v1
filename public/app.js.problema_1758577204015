@@ -670,6 +670,7 @@ function applyFilters() {
             donation.recorrente === parseInt(filterRecurrent);
         
         return matchSearch && matchType && matchRecurrent;
+}
     });
     
     console.log('🔍 Filtros aplicados: ' + filteredDonations.length + '/' + allDonations.length + ' doações');
@@ -686,6 +687,7 @@ function renderDonationsTable(donations) {
     if (!elements.donationsTbody || !elements.tableContainer || !elements.emptyState) {
         console.error('❌ Elementos da tabela não encontrados');
         return;
+}
     }
     
     if (!donations || donations.length === 0) {
@@ -739,7 +741,7 @@ function renderDonationsTable(donations) {
                     '</span>' +
                 '</td>' +
                 '<td class="px-6 py-4 text-center">' +
-                    '<button onclick="viewHistory(' + donation.id + ')" ' +
+                    '<button onclick="showSimpleHistory(' + donation.id + ')" ' +
                         'class="text-indigo-600 hover:text-indigo-900 transition-colors" ' +
                         'title="Ver histórico">' +
                         '<i data-feather="clock" class="h-4 w-4"></i>' +
@@ -1028,20 +1030,32 @@ window.closeSimpleModal = function() {
  */
 window.saveSimpleDonation = async function() {
     console.log('💾 Salvando doação...');
-    
-    const formData = {
-        donor: document.getElementById('simple-donor').value.trim(),
-        amount: parseFloat(document.getElementById('simple-amount').value),
-        type: document.getElementById('simple-type').value,
-        date: document.getElementById('simple-date').value,
-        phone1: document.getElementById('simple-phone1').value.trim(),
-        phone2: document.getElementById('simple-phone2').value.trim(),
-        contact: document.getElementById('simple-email').value.trim(),
-        recurring: document.getElementById('simple-recurring').checked,
-        notes: document.getElementById('simple-notes').value.trim(),
-        cpf: document.getElementById('simple-cpf').value.trim()
-    };
-    
+   
+	const formData = {
+		donor: document.getElementById('input-donor')?.value?.trim() || '',
+		phone1: document.getElementById('input-phone1')?.value?.trim() || '',
+		amount: parseFloat(document.getElementById('input-amount')?.value || 0),
+		date: document.getElementById('input-date')?.value || '',
+		type: document.getElementById('input-type')?.value || 'DINHEIRO',
+		notes: document.getElementById('input-notes')?.value?.trim() || '',
+		contact: document.getElementById('input-contact')?.value?.trim() || '',
+		cpf: document.getElementById('input-cpf')?.value?.trim() || '',
+		// CAMPOS DE ENDEREÇO
+		cep: document.getElementById('input-cep')?.value?.trim() || '',
+		logradouro: document.getElementById('input-logradouro')?.value?.trim() || '',
+		numero: document.getElementById('input-numero')?.value?.trim() || '',
+		complemento: document.getElementById('input-complemento')?.value?.trim() || '',
+		bairro: document.getElementById('input-bairro')?.value?.trim() || '',
+		cidade: document.getElementById('input-cidade')?.value?.trim() || '',
+		estado: document.getElementById('input-estado')?.value?.trim() || '',
+		// CAMPOS DE PARCELAS RECORRENTES
+		recorrente: document.getElementById('input-recurrent')?.checked || false,
+		parcelas: parseInt(document.getElementById('input-parcelas')?.value || 1),
+		proxima_parcela: document.getElementById('input-proxima-parcela')?.value || null,
+		valor_parcelas_futuras: parseFloat(document.getElementById('input-valor-parcelas')?.value || 0)
+	};
+
+      
     // Validação básica
     if (!formData.donor || !formData.amount || !formData.date || !formData.phone1) {
         alert('❌ Preencha todos os campos obrigatórios');
@@ -1049,12 +1063,11 @@ window.saveSimpleDonation = async function() {
     }
     
     try {
-        const response = await fetch(API_BASE + '/doacoes', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
-        });
-        
+		const response = await fetch('/api/doacoes', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(formData)
+		});        
         const data = await response.json();
         
         if (response.ok) {
@@ -1252,6 +1265,7 @@ window.closeHistoryModal = function() {
 window.deleteDonation = async function(id) {
     if (!confirm('Tem certeza que deseja excluir esta doação?')) {
         return;
+}
     }
     
     try {
@@ -1293,6 +1307,7 @@ function formatDate(dateString) {
         const date = new Date(dateString + 'T00:00:00');
         if (isNaN(date.getTime())) {
             return dateString;
+}
         }
         
         return date.toLocaleDateString('pt-BR');
@@ -1492,13 +1507,13 @@ window.editDonation = async function(id) {
                                     '<label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">CEP</label>' +
                                     '<input type="text" id="edit-cep" value="' + (donation.doador_cep || '') + '" placeholder="00000-000" maxlength="9" ' +
                                            'oninput="formatCEPInput(event)" style="' +
-                                        'width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;' +
+                                        'width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;' +
                                     '">' +
                                 '</div>' +
                                 '<div>' +
                                     '<label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">Logradouro</label>' +
                                     '<input type="text" id="edit-logradouro" value="' + (donation.doador_logradouro || '') + '" placeholder="Rua, Avenida..." style="' +
-                                        'width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;' +
+                                        'width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;' +
                                     '">' +
                                 '</div>' +
                             '</div>' +
@@ -1507,13 +1522,13 @@ window.editDonation = async function(id) {
                                 '<div>' +
                                     '<label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">Número</label>' +
                                     '<input type="text" id="edit-numero" value="' + (donation.doador_numero || '') + '" placeholder="123" style="' +
-                                        'width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;' +
+                                        'width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;' +
                                     '">' +
                                 '</div>' +
                                 '<div>' +
                                     '<label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">Complemento</label>' +
                                     '<input type="text" id="edit-complemento" value="' + (donation.doador_complemento || '') + '" placeholder="Apto, Bloco, Sala..." style="' +
-                                        'width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;' +
+                                        'width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;' +
                                     '">' +
                                 '</div>' +
                             '</div>' +
@@ -1521,7 +1536,7 @@ window.editDonation = async function(id) {
                             '<div style="margin-bottom: 10px;">' +
                                 '<label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">Bairro</label>' +
                                 '<input type="text" id="edit-bairro" value="' + (donation.doador_bairro || '') + '" placeholder="Nome do bairro" style="' +
-                                    'width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;' +
+                                    'width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;' +
                                 '">' +
                             '</div>' +
                             
@@ -1529,13 +1544,13 @@ window.editDonation = async function(id) {
                                 '<div>' +
                                     '<label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">Cidade</label>' +
                                     '<input type="text" id="edit-cidade" value="' + (donation.doador_cidade || '') + '" placeholder="Nome da cidade" style="' +
-                                        'width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;' +
+                                        'width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;' +
                                     '">' +
                                 '</div>' +
                                 '<div>' +
                                     '<label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">Estado</label>' +
                                     '<input type="text" id="edit-estado" value="' + (donation.doador_estado || '') + '" placeholder="UF" maxlength="2" style="' +
-                                        'width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px; text-transform: uppercase;' +
+                                        'width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px; text-transform: uppercase;' +
                                     '">' +
                                 '</div>' +
                             '</div>' +
@@ -1706,6 +1721,7 @@ function buscarPagamentoHistorico(historico, dataVencimento) {
         const diff = Math.abs((dataPgto - vencimento) / (1000 * 60 * 60 * 24));
         if (diff <= 5) { // Tolerância de 5 dias
             return pgto;
+}
         }
     }
     return null;
@@ -1722,6 +1738,7 @@ function formatDate(dateString) {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
     return day + '/' + month + '/' + year;
+}
 }
 
 /**
@@ -1740,6 +1757,8 @@ function montarEndereco(doador) {
     
     return parts.length > 0 ? parts.join(', ') : 'Endereço não informado';
 }
+}
+}
 
 /**
  * Formatar CPF para exibição
@@ -1749,6 +1768,8 @@ function formatCPFDisplay(cpf) {
     if (!cpf) return '';
     cpf = cpf.replace(/\D/g, '');
     return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+}
+}
 }
 
 // ===============================================================================
@@ -1834,6 +1855,7 @@ function gerarPayloadPix(valor, identificador) {
     
     return payload;
 }
+}
 
 /**
  * Calcula o CRC16 do payload PIX
@@ -1861,6 +1883,7 @@ function calcularCRC16(payload) {
 function padLeft(length, size) {
     return String(length).padStart(size, '0');
 }
+}
 
 /**
  * Gera QR Code usando API pública
@@ -1872,6 +1895,7 @@ function gerarQRCodeURL(payload) {
     const encoded = encodeURIComponent(payload);
     return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encoded}`;
 }
+}
 
 /**
  * Gera o HTML do QR Code PIX para o carnê
@@ -1882,6 +1906,7 @@ function gerarHTMLQRCodePix(valor, doacaoId) {
     
     return `
         <!-- QR Code PIX Real -->
+}
         <div class="qr-pix" style="background: white; padding: 15px;">
             <img src="${qrCodeURL}" alt="QR Code PIX" style="width: 100%; height: auto;">
             <div class="qr-pix-info" style="margin-top: 10px; font-size: 11px; color: #333;">
@@ -1952,6 +1977,7 @@ function gerarCodigoPix(valor, idParcela) {
     
     return payload;
 }
+}
 
 /**
  * Calcula CRC16 para o PIX (padrão CCITT)
@@ -2017,10 +2043,12 @@ window.generateCarne = async function(id) {
 }
 
 // Função para gerar HTML do carnê profissional
+
+// Função para gerar HTML do carnê modelo bancário
 function gerarHTMLCarneProfissional(doacao, doador, historico) {
     const agora = new Date();
-    const dataGeracao = agora.toLocaleDateString('pt-BR') + ' às ' + agora.toLocaleTimeString('pt-BR');
-    const numeroDocumento = 'CRN-' + String(doacao.id).padStart(6, '0');
+    const dataGeracao = agora.toLocaleDateString('pt-BR');
+    const numeroDocumento = String(doacao.id).padStart(8, '0');
     const codigoDoador = doador.codigo_doador || 'D' + String(doador.id).padStart(3, '0');
     
     // Calcular parcelas
@@ -2034,16 +2062,84 @@ function gerarHTMLCarneProfissional(doacao, doador, historico) {
         const pagamento = buscarPagamentoHistorico(historico, dataVencimento);
         const isPago = !!pagamento;
         
-        htmlParcelas += gerarHTMLParcela(i, totalParcelas, dataVencimento, valorParcela, isPago, pagamento, doador, codigoDoador);
+        // Estilo bancário compacto
+        htmlParcelas += `
+        <div class="parcela-bancaria" style="page-break-inside: avoid;">
+            <table style="width: 100%; border: 2px solid #000; border-collapse: collapse; margin-bottom: 10px;">
+                <tr>
+                    <!-- Logo e Banco -->
+                    <td style="width: 20%; border-right: 1px solid #000; padding: 12px; vertical-align: middle;">
+                        <img src="/logo-apae.png" alt="Logo APAE" style="width: 150px; height: 150px; object-fit: contain;">
+                        
+                    </td>
+                    
+                    <!-- Recibo do Pagador -->
+                    <td style="width: 40%; border-right: 2px dashed #666; padding: 12px;">
+                        <div style="font-size: 12px; font-weight: bold; margin-bottom: 8px;">Recibo do Pagador</div>
+                        
+                        <div style="font-size: 10px; margin-bottom: 5px;">
+                            <strong>Nº do Documento</strong><br>
+                            ${numeroDocumento}
+                        </div>
+                        
+                        <div style="font-size: 10px; margin-bottom: 5px;">
+                            <strong>Vencimento</strong><br>
+                            <span style="font-weight: bold; font-size: 12px;">${formatDate(dataVencimento)}</span>
+                        </div>
+                        
+                        <div style="font-size: 10px; margin-bottom: 5px;">
+                            <strong>Valor</strong><br>
+                            <span style="font-weight: bold; font-size: 14px; color: #000;">R$ ${valorParcela.toFixed(2).replace('.', ',')}</span>
+                        </div>
+                        
+                        <div style="font-size: 10px;">
+                            <strong>Valor Cobrado</strong><br>
+                            _____________
+                        </div>
+                        
+                        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #ccc;">
+                            <div style="font-size: 10px;">
+                                <strong>Pagador</strong><br>
+                                ${doador.nome.toUpperCase()}<br>
+                                ${doador.cpf ? 'CPF: ' + formatCPFDisplay(doador.cpf) : ''}<br>
+                                TEL: ${doador.telefone1}
+                            </div>
+                        </div>
+                    </td>
+                    
+                    <!-- Ficha de Compensação -->
+                    <td style="width: 40%; padding: 12px; position: relative;">
+                        
+                        
+                        <!-- QR Code -->
+                        <div style="position: absolute; top: 15px; right: 15px; text-align: center; background: white; padding: 8px; border: 2px solid #000; border-radius: 5px;">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(gerarCodigoPix(valorParcela, i))}" 
+                                 alt="QR Code PIX" 
+                                 style="width: 100px; height: 100px; border: 1px solid #000;">
+                            <div style="font-size: 10px; font-weight: bold; margin-top: 2px;">
+                                Use o aplicativo do seu banco<br>
+                                ou instituição financeira
+                            </div>
+                        </div>
+                        
+                        ${isPago ? `
+                        <div style="position: absolute; bottom: 10px; right: 10px; background: #28a745; color: white; padding: 5px 10px; border-radius: 3px; font-size: 10px;">
+                            ✓ PAGO EM ${formatDate(pagamento.data_pagamento)}
+                        </div>
+                        ` : ''}
+                    </td>
+                </tr>
+            </table>
+        </div>
+        `;
     }
     
     return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Carnê Profissional - ${doador.nome}</title>
+    <title>Carnê Bancário - ${doador.nome}</title>
     <style>
-        /* Reset e Base */
         * {
             margin: 0;
             padding: 0;
@@ -2051,477 +2147,137 @@ function gerarHTMLCarneProfissional(doacao, doador, historico) {
         }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px;
-            min-height: 100vh;
-        }
-        
-        /* Container Principal */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
+            font-family: Arial, Helvetica, sans-serif;
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
+            padding: 12px;
+            color: #000;
         }
         
-        /* Header */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 40px;
             text-align: center;
-            position: relative;
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 2px solid #000;
+            background: #f9f9f9;
         }
         
         .header h1 {
-            font-size: 36px;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-        }
-        
-        .header h2 {
-            font-size: 28px;
-            margin-bottom: 20px;
-            opacity: 0.95;
+            font-size: 18px;
+            margin-bottom: 5px;
         }
         
         .header-info {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            flex-wrap: wrap;
-            margin-top: 20px;
-        }
-        
-        .header-info-item {
-            background: rgba(255,255,255,0.2);
-            padding: 10px 20px;
-            border-radius: 10px;
-            backdrop-filter: blur(10px);
-        }
-        
-                /* Selo de Autenticidade com Logo */
-        .selo {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 120px;
-            height: 120px;
-            background: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            transform: rotate(-15deg);
-            border: 3px solid #667eea;
-            padding: 10px;
-            overflow: hidden;
-        }
-        
-        .selo img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-        }
-        
-        .selo-icon {
-            font-size: 36px;
-            margin-bottom: 5px;
-        }
-        
-        .selo-texto {
-            font-size: 11px;
-            text-align: center;
-        }
-        
-        /* Informações do Documento */
-        .documento-info {
-            background: #f8f9fa;
-            padding: 20px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #e9ecef;
-        }
-        
-        .documento-numero {
-            font-size: 18px;
-            font-weight: bold;
-            color: #495057;
-        }
-        
-        .documento-data {
-            font-size: 14px;
-            color: #6c757d;
-        }
-        
-        /* Parcelas */
-        .parcelas-container {
-            padding: 40px;
-        }
-        
-        .parcela {
-            background: white;
-            border: 2px solid #dee2e6;
-            border-radius: 15px;
-            margin-bottom: 30px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-            page-break-inside: avoid;
-        }
-        
-        .parcela-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .parcela-numero {
-            font-size: 20px;
-            font-weight: bold;
-        }
-        
-        .parcela-status {
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: bold;
-        }
-        
-        .status-pago {
-            background: #28a745;
-        }
-        
-        .status-pendente {
-            background: #ffc107;
-            color: #212529;
-        }
-        
-        .parcela-body {
-            display: flex;
-            min-height: 200px;
-        }
-        
-        /* Canhoto */
-        .canhoto {
-            width: 35%;
-            padding: 25px;
-            background: #f8f9fa;
-            border-right: 2px dashed #dee2e6;
-        }
-        
-        .canhoto-titulo {
-            font-size: 16px;
-            font-weight: bold;
-            color: #495057;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #dee2e6;
-        }
-        
-        .canhoto-campo {
-            margin-bottom: 12px;
-            font-size: 14px;
-        }
-        
-        .canhoto-campo strong {
-            color: #495057;
-            display: inline-block;
-            min-width: 100px;
-        }
-        
-        .canhoto-valor {
-            color: #667eea;
-            font-weight: bold;
-        }
-        
-        /* Recibo */
-        .recibo {
-            width: 65%;
-            padding: 25px;
-            position: relative;
-        }
-        
-        .recibo-titulo {
-            font-size: 18px;
-            font-weight: bold;
-            color: #212529;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #dee2e6;
-        }
-        
-        .recibo-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .recibo-campo {
-            font-size: 14px;
-        }
-        
-        .recibo-campo strong {
-            color: #495057;
-            display: block;
-            margin-bottom: 5px;
-        }
-        
-        .recibo-valor {
-            font-size: 24px;
-            font-weight: bold;
-            color: #667eea;
-            text-align: center;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            margin: 20px 0;
-        }
-        
-        /* QR Code PIX */
-        .qr-pix {
-            position: absolute;
-            bottom: 25px;
-            right: 25px;
-            width: 120px;
-            height: 120px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 15px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            padding: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        
-        .qr-pix-icon {
-            font-size: 48px;
-            margin-bottom: 5px;
-        }
-        
-        .qr-pix-texto {
             font-size: 12px;
-            font-weight: bold;
+            margin-top: 10px;
+        }
+        
+        .header-info span {
+            display: inline-block;
+            margin: 0 10px;
+        }
+        
+        .parcela-bancaria {
+            margin-bottom: 10mm;
+        }
+        
+        .no-print {
+            margin: 20px 0;
             text-align: center;
         }
         
-        /* Rodapé */
-        .footer {
-            background: #f8f9fa;
-            padding: 30px 40px;
-            text-align: center;
-            border-top: 2px solid #dee2e6;
-        }
-        
-        .instrucoes {
-            background: white;
-            border: 2px solid #667eea;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        
-        .instrucoes h3 {
-            color: #667eea;
-            margin-bottom: 15px;
-        }
-        
-        .instrucoes ul {
-            text-align: left;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        
-        .instrucoes li {
-            margin-bottom: 8px;
-            color: #495057;
-        }
-        
-        /* Botão de Impressão */
         .btn-imprimir {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #007bff;
             color: white;
             border: none;
-            padding: 15px 40px;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 30px;
+            padding: 10px 30px;
+            font-size: 14px;
             cursor: pointer;
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-            transition: transform 0.3s;
-            margin-top: 20px;
+            border-radius: 3px;
         }
         
         .btn-imprimir:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.5);
+            background: #0056b3;
         }
         
-        /* Impressão */
         @media print {
             body {
-                background: white;
+                margin: 0;
                 padding: 0;
             }
             
-            .container {
-                box-shadow: none;
-                border-radius: 0;
-            }
-            
-            .btn-imprimir {
+            .no-print {
                 display: none;
             }
             
-            .parcela {
+            .parcela-bancaria {
                 page-break-inside: avoid;
+                margin-bottom: 5mm;
             }
             
-            .selo {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
+            .container {
+                max-width: 100%;
             }
             
-            .qr-pix {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
+            .header {
+                display: none;
             }
         }
         
-        /* Responsividade */
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 24px;
-            }
-            
-            .header h2 {
-                font-size: 20px;
-            }
-            
-            .selo {
-                width: 80px;
-                height: 80px;
-                top: 10px;
-                right: 10px;
-            }
-            
-            .selo-icon {
-                font-size: 24px;
-            }
-            
-            .parcela-body {
-                flex-direction: column;
-            }
-            
-            .canhoto,
-            .recibo {
-                width: 100%;
-                border-right: none;
-                border-bottom: 2px dashed #dee2e6;
-            }
-            
-            .qr-pix {
-                position: static;
-                margin: 20px auto;
-            }
-        }
-    
-        /* QR Code PIX Real */
-        .qr-pix {
-            width: 150px !important;
-            background: white !important;
-            border: 2px solid #667eea !important;
-            padding: 10px !important;
+        /* Estilo para linha tracejada de corte */
+        .linha-corte {
+            border-top: 1px dashed #666;
+            margin: 5px 0;
+            position: relative;
         }
         
-        .qr-pix img {
-            width: 100%;
-            height: auto;
+        .linha-corte::before {
+            content: "✂";
+            position: absolute;
+            left: -20px;
+            top: -10px;
+            font-size: 16px;
+            color: #666;
         }
-        
-        .qr-pix textarea {
-            font-family: monospace;
-            word-break: break-all;
-        }
-</style>
+    </style>
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
+        <!-- Cabeçalho (não imprime) -->
         <div class="header">
-            <div class="selo">
-                <img src="/logo-apae.png" alt="Logo APAE" style="width: 100%; height: 100%; object-fit: contain;">
-            </div>
-            
-            <h1>🎯 CARNÊ DE PAGAMENTO</h1>
-            <h2>${doador.nome.toUpperCase()}</h2>
-            
+            <h1>CARNÊ DE PAGAMENTO - MODELO BANCÁRIO</h1>
             <div class="header-info">
-                <div class="header-info-item">
-                    <strong>Código:</strong> ${codigoDoador}
-                </div>
-                ${doador.cpf ? `
-                <div class="header-info-item">
-                    <strong>CPF:</strong> ${formatCPFDisplay(doador.cpf)}
-                </div>
-                ` : ''}
-                <div class="header-info-item">
-                    <strong>Telefone:</strong> ${doador.telefone1}
-                </div>
+                <span><strong>Contribuinte:</strong> ${doador.nome}</span>
+                <span><strong>Código:</strong> ${codigoDoador}</span>
+                <span><strong>Total de Parcelas:</strong> ${totalParcelas}</span>
             </div>
-        </div>
-        
-        <!-- Informações do Documento -->
-        <div class="documento-info">
-            <div class="documento-numero">
-                📄 Documento: ${numeroDocumento}
-            </div>
-            <div class="documento-data">
-                ⏰ Gerado em: ${dataGeracao}
+            <div class="header-info">
+                <span><strong>Documento:</strong> ${numeroDocumento}</span>
+                <span><strong>Gerado em:</strong> ${dataGeracao}</span>
             </div>
         </div>
         
         <!-- Parcelas -->
-        <div class="parcelas-container">
-            ${htmlParcelas}
-        </div>
+        ${htmlParcelas}
         
-        <!-- Rodapé -->
-        <div class="footer">
-            <div class="instrucoes">
-                <h3>📋 INSTRUÇÕES DE PAGAMENTO</h3>
-                <ul>
-                    <li>💰 <strong>DINHEIRO:</strong> Realize o pagamento diretamente na APAE</li>
-                    <li>📱 <strong>PIX:</strong> Use a chave CNPJ: <strong>03.689.866/0001-40</strong></li>
-                    <li>📞 Dúvidas? Entre em contato: (67) 3521-2789</li>
-                    <li>✅ Guarde este carnê como comprovante e controle</li>
-					<li>📅 a APAE agradece seu apoio!</li>
-                </ul>
-            </div>
-            
+        <!-- Botão de Impressão -->
+        <div class="no-print">
             <button class="btn-imprimir" onclick="window.print()">
                 🖨️ IMPRIMIR CARNÊ
             </button>
-            
-            <p style="margin-top: 20px; color: #6c757d; font-size: 14px;">
-                Este documento foi gerado eletronicamente e possui validade legal.<br>
-                Sistema de Doações v1.1.8 - Todos os direitos reservados
+            <p style="margin-top: 10px; font-size: 12px; color: #666;">
+                Configure a impressão para formato A4, orientação retrato, sem margens
             </p>
         </div>
     </div>
 </body>
 </html>`;
 }
+
 
 // Função para gerar HTML de cada parcela
 function gerarHTMLParcela(numero, total, dataVencimento, valor, isPago, pagamento, doador, codigoDoador) {
@@ -2603,6 +2359,7 @@ function gerarHTMLParcela(numero, total, dataVencimento, valor, isPago, pagament
                 </div>
                 
                 ${isPago ? `
+}
                 <div style="text-align: center; color: #28a745; font-weight: bold;">
                     ✅ Pagamento confirmado em ${formatDate(pagamento.data_pagamento)}
                 </div>
@@ -2719,7 +2476,7 @@ window.exportData = async function() {
 '        th {' +
 '            background: #333;' +
 '            color: white;' +
-'            padding: 10px;' +
+'            padding: 12px;' +
 '            text-align: left;' +
 '            font-size: 14px;' +
 '        }' +
@@ -3075,10 +2832,12 @@ function criarHTMLCarne(doacao, doador, historico) {
     <script>
         function formatarCPF(cpf) {
             return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+}
         }
         
         function formatarData(data) {
             return new Date(data + 'T00:00:00').toLocaleDateString('pt-BR');
+}
         }
         
         function gerarParcelasHTML(doacao, historico) {
@@ -3347,6 +3106,7 @@ function criarRelatorioPDF(resumo, doacoes) {
     <meta charset="UTF-8">
     <title>Relatório de Doações</title>
     <style>
+}
         body { font-family: Arial, sans-serif; margin: 20px; color: #333; }
         .header { text-align: center; background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; padding: 30px; border-radius: 12px; margin-bottom: 30px; }
         .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 30px 0; }
@@ -3626,6 +3386,7 @@ function buscarPagamentoHistorico(historico, dataVencimento) {
         const diff = Math.abs((dataPgto - vencimento) / (1000 * 60 * 60 * 24));
         if (diff <= 5) { // Tolerância de 5 dias
             return pgto;
+}
         }
     }
     return null;
@@ -3664,78 +3425,80 @@ console.log('✅ Funções de Edição e Carnê restauradas - v1.1.2');
 // ===============================================================================
 // FUNÇÃO PARA SALVAR NOVA DOAÇÃO - Versão Simples
 // ===============================================================================
+
+/**
+ * Função para salvar nova doação - v2.1.2 CORRIGIDA
+ */
 window.addDonation = async function() {
     try {
-        console.log('🚀 Iniciando salvamento de doação...');
+        console.log('🎯 Salvando doação v2.1.2...');
         
-        // Coletar TODOS os dados do formulário - v1.1.7
+        // Coletar TODOS os dados do formulário
         const formData = {
-            // Dados básicos
+            // Dados do doador
             donor: document.getElementById('input-donor')?.value?.trim() || '',
             phone1: document.getElementById('input-phone1')?.value?.trim() || '',
             phone2: document.getElementById('input-phone2')?.value?.trim() || '',
+            email: document.getElementById('input-email')?.value?.trim() || '',
             cpf: document.getElementById('input-cpf')?.value?.trim() || '',
-            contact: document.getElementById('input-contact')?.value?.trim() || '',
-            
-            // Dados da doação
-            amount: parseFloat(document.getElementById('input-amount')?.value || 0),
-            date: document.getElementById('input-date')?.value || '',
-            type: document.getElementById('input-type')?.value || 'DINHEIRO',
-            notes: document.getElementById('input-notes')?.value?.trim() || '',
             
             // Endereço
             cep: document.getElementById('input-cep')?.value?.trim() || '',
-            logradouro: document.getElementById('input-logradouro')?.value?.trim() || '',
-            numero: document.getElementById('input-numero')?.value?.trim() || '',
-            complemento: document.getElementById('input-complemento')?.value?.trim() || '',
-            bairro: document.getElementById('input-bairro')?.value?.trim() || '',
-            cidade: document.getElementById('input-cidade')?.value?.trim() || '',
-            estado: document.getElementById('input-estado')?.value?.trim() || '',
+            logradouro: document.getElementById('input-address')?.value?.trim() || '',
+            numero: document.getElementById('input-number')?.value?.trim() || '',
+            complemento: document.getElementById('input-complement')?.value?.trim() || '',
+            bairro: document.getElementById('input-neighborhood')?.value?.trim() || '',
+            cidade: document.getElementById('input-city')?.value?.trim() || '',
+            estado: document.getElementById('input-state')?.value?.trim() || '',
             
-            // PARCELAS RECORRENTES - CORREÇÃO v1.1.7
+            // Doação
+            amount: parseFloat(document.getElementById('input-amount')?.value || 0),
+            date: document.getElementById('input-date')?.value || '',
+            type: document.getElementById('input-type')?.value || 'PIX',
+            notes: document.getElementById('input-notes')?.value?.trim() || '',
+            
+            // RECORRÊNCIA - DADOS CRÍTICOS
             recorrente: document.getElementById('input-recurrent')?.checked || false,
-            parcelas: 1,
-            proxima_parcela: null
+            parcelas_totais: parseInt(document.getElementById('input-parcelas')?.value || 1),
+            valor_parcelas_futuras: parseFloat(document.getElementById('input-valor-parcelas')?.value || 0),
+            data_proxima_parcela: document.getElementById('input-proxima-parcela')?.value || null
         };
         
-        // Se for recorrente, coletar dados de parcelas
-        if (formData.recorrente) {
-            const parcelasInput = document.getElementById('input-parcelas');
-            const proximaInput = document.getElementById('input-proxima-parcela');
-            
-            formData.parcelas = parseInt(parcelasInput?.value) || 12;
-            formData.proxima_parcela = proximaInput?.value || null;
-            
-            // Calcular próxima parcela se não informada
-            if (!formData.proxima_parcela && formData.date) {
-                const dataDoacao = new Date(formData.date);
-                dataDoacao.setMonth(dataDoacao.getMonth() + 1);
-                formData.proxima_parcela = dataDoacao.toISOString().split('T')[0];
-            }
-            
-            console.log('📊 Doação Recorrente:', {
-                parcelas: formData.parcelas,
-                proxima: formData.proxima_parcela
-            });
-        }
+        console.log('=== DEBUG v2.1.2 ===');
+        console.log('Nome:', formData.donor);
+        console.log('Recorrente:', formData.recorrente);
+        console.log('Parcelas:', formData.parcelas_totais);
+        console.log('Valor futuras:', formData.valor_parcelas_futuras);
+        console.log('====================');
         
-        // Validação
+        // Validações
         if (!formData.donor) {
-            alert('Nome é obrigatório');
+            alert('❌ Nome é obrigatório');
             return;
         }
         if (!formData.phone1) {
-            alert('Telefone é obrigatório');
+            alert('❌ Telefone é obrigatório');
             return;
         }
         if (!formData.amount || formData.amount <= 0) {
-            alert('Valor deve ser maior que zero');
+            alert('❌ Valor deve ser maior que zero');
             return;
         }
         
-        console.log('📤 Enviando dados:', formData);
+        // Validação recorrente
+        if (formData.recorrente) {
+            if (!formData.parcelas_totais || formData.parcelas_totais < 2) {
+                alert('❌ Doação recorrente precisa de pelo menos 2 parcelas');
+                return;
+            }
+            if (!formData.valor_parcelas_futuras || formData.valor_parcelas_futuras <= 0) {
+                alert('❌ Valor das parcelas futuras é obrigatório');
+                return;
+            }
+        }
         
-        // Enviar para servidor
+        // ENVIO CORRETO PARA SERVIDOR
+        console.log('📤 Enviando para servidor...');
         const response = await fetch('/api/doacoes', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -3744,45 +3507,500 @@ window.addDonation = async function() {
         
         if (response.ok) {
             const result = await response.json();
-            const tipoMsg = formData.recorrente ? 
-                `recorrente com ${formData.parcelas} parcelas` : 
-                'única';
-            alert(`✅ Doação ${tipoMsg} salva com sucesso!`);
-            closeModal();
-            loadDashboard();
+            console.log('✅ Sucesso:', result);
+            
+            alert('✅ Doação salva com sucesso!');
+            
+            // Fechar modal
+            const modal = document.getElementById('donation-modal');
+            if (modal) modal.style.display = 'none';
+            
+            // Limpar form
+            const form = document.getElementById('donation-form');
+            if (form) form.reset();
+            
+            // Atualizar dashboard
+            if (typeof loadDashboard === 'function') {
+                loadDashboard();
+            }
+            
         } else {
             const error = await response.json();
-            alert('❌ Erro: ' + (error.message || 'Erro ao salvar'));
+            console.error('❌ Erro servidor:', error);
+            alert('❌ Erro: ' + (error.error || 'Erro desconhecido'));
         }
         
     } catch (error) {
-        console.error('❌ Erro:', error);
-        alert('❌ Erro ao salvar doação: ' + error.message);
-    }
-}
-
-// ===============================================================================
-// FUNÇÃO PARA FECHAR MODAL - Versão Simples  
-// ===============================================================================
-window.closeModal = function() {
-    try {
-        const modal = document.getElementById('modal');
-        if (modal) {
-            modal.style.display = 'none';
-            
-            // Limpar campos básicos
-            const campos = ['input-donor', 'input-phone1', 'input-amount', 'input-date', 'input-notes', 'input-contact', 'input-cpf'];
-            campos.forEach(id => {
-                const campo = document.getElementById(id);
-                if (campo) campo.value = '';
-            });
-            
-            const checkbox = document.getElementById('input-recurrent');
-            if (checkbox) checkbox.checked = false;
-            
-            console.log('Modal fechado');
-        }
-    } catch (error) {
-        console.error('Erro ao fechar modal:', error);
+        console.error('❌ Erro função:', error);
+        alert('❌ Erro ao salvar: ' + error.message);
     }
 };
+
+
+// Função alternativa de histórico v2.2.2
+window.showHistoryFallback = async function(doacaoId) {
+    console.log('📋 Usando histórico fallback para doação:', doacaoId);
+    
+    try {
+        // Buscar dados básicos da doação
+        const response = await fetch(`/api/doacoes/${doacaoId}`);
+        const doacao = await response.json();
+        
+        // Buscar histórico de pagamentos
+        const histResponse = await fetch(`/api/doacoes/${doacaoId}/historico`);
+        const historico = await histResponse.json();
+        
+        // Criar modal simples
+        let modalHTML = `
+            <div class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+                <div class="bg-white rounded-lg p-6 max-w-3xl max-h-[80vh] overflow-auto">
+                    <h2 class="text-xl font-bold mb-4">📋 Histórico - ${doacao.nome_doador || 'Doador'}</h2>
+                    <div class="mb-4">
+                        <p><strong>Valor Total:</strong> R$ ${doacao.valor.toFixed(2)}</p>
+                        <p><strong>Tipo:</strong> ${doacao.tipo}</p>
+                        <p><strong>Data:</strong> ${new Date(doacao.data_doacao).toLocaleDateString('pt-BR')}</p>
+                        <p><strong>Recorrente:</strong> ${doacao.recorrente ? 'Sim' : 'Não'}</p>
+                        ${doacao.parcelas_totais > 1 ? '<p><strong>Parcelas:</strong> ' + doacao.parcelas_totais + '</p>' : ''}
+                    </div>
+                    <h3 class="font-bold mb-2">Pagamentos Registrados:</h3>
+                    <div class="space-y-2">
+        `;
+        
+        if (historico && historico.length > 0) {
+            historico.forEach(pag => {
+                const data = new Date(pag.data_pagamento).toLocaleDateString('pt-BR');
+                modalHTML += `
+                    <div class="border rounded p-2">
+                        <span class="font-medium">${data}</span> - 
+                        <span class="text-green-600">R$ ${pag.valor.toFixed(2)}</span> - 
+                        <span class="badge badge-success">${pag.status}</span>
+                    </div>
+                `;
+            });
+        } else {
+            modalHTML += '<p class="text-gray-500">Nenhum pagamento registrado ainda.</p>';
+        }
+        
+        modalHTML += `
+                    </div>
+                    <div class="mt-4 flex justify-end">
+                        <button onclick="document.getElementById('history-modal').innerHTML=''; document.getElementById('history-modal').style.display='none'" 
+                                class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+                            Fechar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        const modal = document.getElementById('history-modal') || createHistoryModal();
+        modal.innerHTML = modalHTML;
+        modal.style.display = 'block';
+        
+    } catch (error) {
+        console.error('❌ Erro no fallback:', error);
+        alert('Erro ao carregar histórico. Por favor, tente novamente.');
+    }
+};
+
+// Criar modal se não existir
+function createHistoryModal() {
+    const modal = document.createElement('div');
+    modal.id = 'history-modal';
+    document.body.appendChild(modal);
+    return modal;
+}
+}
+
+
+console.log('✅ addDonation v2.1.2 carregada');
+/**
+ * Mostrar histórico simples com estrutura de parcelas
+ * Versão: 1.2.2 - CORREÇÃO CIRÚRGICA
+ */
+window.showSimpleHistory = async function(doacaoId) {
+    console.log('📋 Carregando histórico com parcelas para doação:', doacaoId);
+    
+    try {
+        // Buscar dados completos da doação
+        const doacaoResponse = await fetch(`/api/doacoes/${doacaoId}`);
+        const doacao = await doacaoResponse.json();
+        
+        if (!doacaoResponse.ok) {
+            throw new Error('Doação não encontrada');
+        }
+        
+        // Buscar histórico de pagamentos
+        const historicoResponse = await fetch(`/api/doacoes/${doacaoId}/historico`);
+        const historico = await historicoResponse.json();
+        
+        // Buscar parcelas futuras
+        const parcelasResponse = await fetch(`/api/doacoes/${doacaoId}/parcelas`);
+        const parcelasFuturas = await parcelasResponse.json();
+        
+        // Montar estrutura completa das parcelas
+        const numParcelas = doacao.parcelas_totais || 1;
+        const valorParcela = doacao.valor / (doacao.recorrente ? numParcelas : 1);
+        const parcelasCompletas = [];
+        
+        for (let i = 1; i <= numParcelas; i++) {
+            // Validar data antes de calcular
+            const dataBase = doacao.data_proxima_parcela || doacao.data_doacao || new Date().toISOString().split('T')[0];
+            const dataVencimento = calcularDataVencimento(doacao.data_doacao, i - 1, doacao.recorrente);
+            const pagamento = buscarPagamentoProximo(historico, dataVencimento);
+            const parcelaFutura = parcelasFuturas.find(p => p.numero_parcela === i);
+            
+            parcelasCompletas.push({
+                numero: i,
+                data_vencimento: dataVencimento,
+                valor: valorParcela,
+                status: pagamento ? 'Pago' : 'Pendente',
+                data_pagamento: pagamento ? pagamento.data_pagamento : null,
+                pagamento_id: pagamento ? pagamento.id : null,
+                parcela_futura_id: parcelaFutura ? parcelaFutura.id : null
+            });
+        }
+        
+        mostrarModalParcelasCompletas(doacao, parcelasCompletas);
+        
+    } catch (error) {
+        console.error('❌ Erro ao carregar histórico:', error);
+        alert('Erro ao carregar histórico: ' + error.message);
+    }
+};
+
+/**
+ * Calcular data de vencimento da parcela
+ * Versão: 1.2.2
+ */
+function calcularDataVencimento(dataBase, mesesAdicionais) {
+        // v2.2.2 - Tratamento robusto de datas
+        try {
+            // Garantir que temos uma data válida
+            if (!dataBase) {
+                console.warn('⚠️ Data base não fornecida, usando hoje');
+                dataBase = new Date().toISOString().split('T')[0];
+            }
+            
+            // Converter para Date de forma segura
+            let data;
+            if (dataBase instanceof Date) {
+                data = new Date(dataBase);
+            } else if (typeof dataBase === 'string') {
+                // Tratar diferentes formatos
+                if (dataBase.includes('/')) {
+                    // Formato DD/MM/YYYY
+                    const [dia, mes, ano] = dataBase.split('/');
+                    data = new Date(ano, mes - 1, dia);
+                } else if (dataBase.includes('T')) {
+                    // Formato ISO com hora
+                    data = new Date(dataBase.split('T')[0] + 'T12:00:00');
+                } else {
+                    // Formato YYYY-MM-DD
+                    data = new Date(dataBase + 'T12:00:00');
+                }
+            } else {
+                console.warn('⚠️ Formato de data desconhecido:', dataBase);
+                data = new Date();
+            }
+            
+            // Verificar se a data é válida
+            if (isNaN(data.getTime())) {
+                console.warn('⚠️ Data inválida, usando hoje:', dataBase);
+                data = new Date();
+            }
+            
+            // Adicionar meses se necessário
+            if (mesesAdicionais && mesesAdicionais > 0) {
+                data.setMonth(data.getMonth() + mesesAdicionais);
+            }
+            
+            // Retornar no formato YYYY-MM-DD
+            return data.toISOString().split('T')[0];
+        } catch (error) {
+            console.error('❌ Erro ao calcular data:', error);
+            return new Date().toISOString().split('T')[0];
+        }
+    }
+//     return data.toISOString().substring(0, 10); // REMOVIDO: return fora de função
+}
+
+/**
+ * Buscar pagamento próximo à data de vencimento
+ * Versão: 1.2.2
+ */
+function buscarPagamentoProximo(historico, dataVencimento) {
+    if (!historico || !Array.isArray(historico)) return null;
+    
+    const vencimento = new Date(dataVencimento + 'T00:00:00');
+    
+    for (let pagamento of historico) {
+        const dataPagamento = new Date(pagamento.data_pagamento + 'T00:00:00');
+        const diffDias = Math.abs((dataPagamento - vencimento) / (1000 * 60 * 60 * 24));
+        
+        // Tolerância de 10 dias para considerar que é o pagamento da parcela
+        if (diffDias <= 730) {
+            return pagamento;
+}
+        }
+    }
+    
+//     return null; // REMOVIDO: return fora de função
+}
+
+/**
+ * Mostrar modal com todas as parcelas
+ * Versão: 1.2.2
+ */
+function mostrarModalParcelasCompletas(doacao, parcelas) {
+    // Remover modal existente
+    const existingModal = document.getElementById('modal-parcelas-completas');
+    if (existingModal) existingModal.remove();
+    
+    const totalPago = parcelas
+        .filter(p => p.status === 'Pago')
+        .reduce((sum, p) => sum + p.valor, 0);
+    
+    const parcelasPagas = parcelas.filter(p => p.status === 'Pago').length;
+    const parcelasPendentes = parcelas.filter(p => p.status === 'Pendente').length;
+    
+    const modalHTML = `
+    <div id="modal-parcelas-completas" style="
+        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(0, 0, 0, 0.8); z-index: 999999;
+        display: flex; justify-content: center; align-items: center;
+    ">
+        <div style="
+            background: white; padding: 30px; border-radius: 12px;
+            max-width: 900px; width: 95%; max-height: 80vh; overflow-y: auto;
+        ">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0; font-size: 24px; color: #1f2937;">
+                    📋 Histórico de Parcelas
+                </h2>
+                <button onclick="fecharModalParcelas()" style="
+                    background: none; border: none; font-size: 24px; cursor: pointer; color: #6b7280;
+                ">&times;</button>
+            </div>
+            
+            <!-- Informações do Doador -->
+            <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <h3 style="margin: 0 0 10px 0; color: #1f2937;">${doacao.nome_doador} (${doacao.codigo_doador})</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                    <div>
+                        <strong>Valor Total:</strong><br>
+                        <span style="font-size: 18px; color: #059669;">R$ ${doacao.valor.toFixed(2).replace('.', ',')}</span>
+                    </div>
+                    <div>
+                        <strong>Tipo:</strong><br>
+                        <span style="color: #374151;">${doacao.tipo}</span>
+                    </div>
+                    <div>
+                        <strong>Total de Parcelas:</strong><br>
+                        <span style="color: #374151;">${doacao.parcelas_totais || 1} parcelas</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Resumo -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                <div style="text-align: center; padding: 15px; background: #dcfce7; border-radius: 8px;">
+                    <div style="font-size: 24px; font-weight: bold; color: #166534;">${parcelasPagas}</div>
+                    <div style="color: #166534;">Pagas</div>
+                </div>
+                <div style="text-align: center; padding: 15px; background: #fef3c7; border-radius: 8px;">
+                    <div style="font-size: 24px; font-weight: bold; color: #92400e;">${parcelasPendentes}</div>
+                    <div style="color: #92400e;">Pendentes</div>
+                </div>
+                <div style="text-align: center; padding: 15px; background: #e0f2fe; border-radius: 8px;">
+                    <div style="font-size: 24px; font-weight: bold; color: #0277bd;">R$ ${totalPago.toFixed(2).replace('.', ',')}</div>
+                    <div style="color: #0277bd;">Total Pago</div>
+                </div>
+            </div>
+            
+            <!-- Tabela de Parcelas -->
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                    <thead>
+                        <tr style="background: #f9fafb;">
+                            <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Parcela</th>
+                            <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Vencimento</th>
+                            <th style="padding: 12px; text-align: right; border-bottom: 2px solid #e5e7eb;">Valor</th>
+                            <th style="padding: 12px; text-align: center; border-bottom: 2px solid #e5e7eb;">Status</th>
+                            <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Data Pagamento</th>
+                            <th style="padding: 12px; text-align: center; border-bottom: 2px solid #e5e7eb;">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${parcelas.map(parcela => `
+                            <tr style="border-bottom: 1px solid #e5e7eb;">
+                                <td style="padding: 12px;">
+                                    <strong>${String(parcela.numero).padStart(2, '0')}/${String(doacao.parcelas_totais).padStart(2, '0')}</strong>
+                                </td>
+                                <td style="padding: 12px;">${formatarDataBrasil(parcela.data_vencimento)}</td>
+                                <td style="padding: 12px; text-align: right; font-weight: bold;">
+                                    R$ ${parcela.valor.toFixed(2).replace('.', ',')}
+                                </td>
+                                <td style="padding: 12px; text-align: center;">
+                                    <span style="
+                                        padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;
+                                        background: ${parcela.status === 'Pago' ? '#dcfce7' : '#fef3c7'};
+                                        color: ${parcela.status === 'Pago' ? '#166534' : '#92400e'};
+                                    ">
+                                        ${parcela.status === 'Pago' ? '✅ PAGO' : '⏳ PENDENTE'}
+                                    </span>
+                                </td>
+                                <td style="padding: 12px;">
+                                    ${parcela.data_pagamento ? formatarDataBrasil(parcela.data_pagamento) : '-'}
+                                </td>
+                                <td style="padding: 12px; text-align: center;">
+                                    ${parcela.status === 'Pendente' ? `
+                                        <button onclick="pagarParcela(${doacao.id}, ${parcela.numero}, ${parcela.valor})" style="
+                                            background: #10b981; color: white; border: none; padding: 6px 12px;
+                                            border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold;
+                                        ">
+                                            💰 Pagar
+                                        </button>
+                                    ` : `
+                                        <span style="color: #6b7280; font-size: 12px;">Pago</span>
+                                    `}
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Botões -->
+            <div style="display: flex; gap: 15px; justify-content: flex-end;">
+                <button onclick="fecharModalParcelas()" style="
+                    padding: 10px 20px; border: 2px solid #d1d5db; background: white;
+                    border-radius: 8px; cursor: pointer; font-weight: bold;
+                ">Fechar</button>
+                <button onclick="generateCarne(${doacao.id})" style="
+                    padding: 10px 20px; border: none; background: #3b82f6; color: white;
+                    border-radius: 8px; cursor: pointer; font-weight: bold;
+                ">🖨️ Gerar Carnê</button>
+            </div>
+        </div>
+    </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+/**
+ * Fechar modal de parcelas
+ * Versão: 1.2.2
+ */
+window.fecharModalParcelas = function() {
+    const modal = document.getElementById('modal-parcelas-completas');
+    if (modal) modal.remove();
+};
+
+/**
+ * Formatar data para padrão brasileiro
+ * Versão: 1.2.2
+ */
+function formatarDataBrasil(dataISO) {
+    if (!dataISO) return '';
+    const data = new Date(dataISO + 'T00:00:00');
+//     return data.toLocaleDateString('pt-BR'); // REMOVIDO: return fora de função
+}
+
+/**
+ * Pagar parcela específica
+ * Versão: 1.2.2
+ */
+
+/**
+ * Validar e converter data brasileira para ISO
+ * Versão: 1.2.3
+ */
+function validarDataBrasileira(dataBR) {
+    if (!dataBR) return null;
+    
+    // Se já está no formato ISO, manter
+    if (dataBR.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        return dataBR;
+    }
+    
+    // Se está no formato brasileiro DD/MM/AAAA
+    if (dataBR.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) {
+        const [dia, mes, ano] = dataBR.split('/');
+        
+        // Validações básicas
+        const diaNum = parseInt(dia);
+        const mesNum = parseInt(mes);
+        const anoNum = parseInt(ano);
+        
+        if (diaNum < 1 || diaNum > 31) {
+            alert('Dia inválido! Use valores entre 1 e 31.');
+            return null;
+        }
+        
+        if (mesNum < 1 || mesNum > 12) {
+            alert('Mês inválido! Use valores entre 1 e 12.');
+            return null;
+        }
+        
+        if (anoNum < 2020 || anoNum > 2030) {
+            alert('Ano inválido! Use valores entre 2020 e 2030.');
+            return null;
+        }
+        
+        // Converter para formato ISO
+        return `${anoNum}-${mesNum.toString().padStart(2, '0')}-${diaNum.toString().padStart(2, '0')}`;
+    }
+    
+    alert('Formato de data inválido! Use DD/MM/AAAA (ex: 18/09/2025)');
+//     return null; // REMOVIDO: return fora de função
+}
+
+window.pagarParcela = async function(doacaoId, numeroParcela, valor) {
+    const hoje = new Date();
+    const dataHojeBR = hoje.toLocaleDateString('pt-BR');
+    const dataPagamento = prompt(`Data do pagamento da parcela ${numeroParcela} (DD/MM/AAAA):`, dataHojeBR);
+    
+    // Converter data brasileira para formato ISO se necessário
+    let dataISO = dataPagamento;
+    if (dataPagamento && dataPagamento.includes('/')) {
+        const [dia, mes, ano] = dataPagamento.split('/');
+        if (dia && mes && ano) {
+            dataISO = `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
+        }
+    }
+    
+    if (!dataPagamento) return;
+    
+    // Validar e converter data
+    const dataValidada = validarDataBrasileira(dataPagamento);
+    if (!dataValidada) return;
+    
+    try {
+        const response = await fetch(`/api/doacoes/${doacaoId}/pagar-parcela`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                numero_parcela: numeroParcela,
+                data_pagamento: dataValidada,
+                valor: valor
+            })
+        });
+        
+        if (response.ok) {
+            alert(`✅ Pagamento da parcela ${numeroParcela} registrado com sucesso!`);
+            // Recarregar modal
+            showSimpleHistory(doacaoId);
+            // Recarregar dashboard
+            loadDashboard();
+        } else {
+            const error = await response.json();
+            alert('❌ Erro: ' + error.message);
+        }
+    } catch (error) {
+        console.error('❌ Erro ao pagar parcela:', error);
+        alert('❌ Erro ao registrar pagamento: ' + error.message);
+    }
+};
+

@@ -1,45 +1,13 @@
-[2.3.0] Atualização - 19/09/2025 09:48:55
+[2.3.0] Atualização - 19/09/2025 11:22:07
 
-✅ Arquivos adicionados:
-   -  DIAGNOSTICO-PARCELAS-DETALHADO.js
-   -  IMPLEMENTAR-VALOR-PARCELAS-FUTURAS.js
-   -  commit-msg.txt
-   -  public/app.js.backup_2anos_1758237039878
-   -  public/app.js.backup_parcelas_1758240336986
-   -  public/app.js.backup_tolerancia_1758236528978
-   -  public/app.js.backup_validacao_1758241944864
-   -  public/index.html.backup_campo_1758240602506
-   -  public/index.html.backup_parcelas_1758240336484
-   -  server.js.backup_parcelas_1758240337474
 
 📝 Arquivos modificados:
-   -  database/doacoes.db
-   -  public/app.js
-   -  public/index.html
-   -  server.js
+   -  commit-msg.txt
 
 🗑️ Arquivos removidos:
-   -  AJUSTAR-CARNE-CORRIGIDO.js
-   -  AJUSTAR-LAYOUT-CARNE-FINAL.js
-   -  CORRECAO-CIRURGICA-PARCELAS.js
-   -  CORRIGIR-DETALHES-PARCELAS.js
-   -  CORRIGIR-SERVIDOR-FINAL.js
-   -  CORRIGIR-SINTAXE-SERVIDOR.js
-   -  "Estou dando continuidade ao projeto.txt"
-   -  IMPLEMENTAR-CARNE-MODELO-BANCARIO.js
-   -  ORRIGIR-BOTOES-HISTORICO.js
-   -  RELATORIO_ANALISE_SISTEMA.md
-   -  RESUMO_DUPLICACOES.txt
-   -  ROLLBACK_LOG.md
-   -  VERIFICAR-SERVIDOR.js
-   -  VERSAO.txt
-   -  checkpoint-projeto.pdf
-   -  corrigir-atualizacao-modal.js
-   -  corrigir-doadores-final.js
-   -  diagnostico-atual.js
-   -  onde-parei-declarar-esse-prompt-para-seguir.txt
-   -  resumo-executivo-fase1.md
-   -  resumo-executivo-fase1.pdf
+   -  CHANGELOG.md
+   -  PLANO_MIGRACAO.md
+   -  checkpoint-projeto.md
 
 📊 Estatísticas:
    - Tamanho do banco: 40.00 KB

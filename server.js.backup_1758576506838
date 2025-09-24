@@ -1,4 +1,4 @@
-// server.js - VERSÃO CORRETA PARA SEU PROJETO
+// server.js - VERSÃO CORRIGIDA FINAL v2.1.5
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
@@ -192,33 +192,45 @@ app.get('/api/doacoes/:id', (req, res) => {
   });
 });
 
-// Criar nova doação
+// Criar nova doação - VERSÃO CORRIGIDA v2.1.5
 app.post('/api/doacoes', (req, res) => {
   const {
     donor, contact, phone1, phone2, cpf,
-    amount, type, date, recurrent, observations,
+    amount, type, date, observations,
     forceCreate,
-    cep, logradouro, numero, complemento, bairro, cidade, estado
-  ,
-    recorrente, parcelas, proxima_parcela} = req.body;
+    cep, logradouro, numero, complemento, bairro, cidade, estado,
+    recorrente, parcelas, proxima_parcela, valor_parcelas_futuras 
+  } = req.body;
 
   const insertDoacao = (doadorId) => {
-    // CORREÇÃO v1.1.7: Usar dados de parcelas do frontend
-    const parcelasTotais = recorrente ? (parcelas || 12) : 1;
-    const valorDoacao = amount || 0;
+    // CORREÇÃO v2.1.5: Calcular parcelas totais corretamente
+    const parcelasTotais = recorrente ? Math.max(parseInt(parcelas) || 1, 1) : 1;
     
-    console.log('💾 Salvando doação:', {
-        doadorId,
-        valor: valorDoacao,
-        tipo: type,
-        recorrente: recorrente ? 1 : 0,
-        parcelas: parcelasTotais
+    // CORREÇÃO v2.1.5: Valores das parcelas
+    const valorPrimeiraParcela = parseFloat(amount) || 0;
+    const valorParcelasFuturas = parseFloat(valor_parcelas_futuras) || valorPrimeiraParcela;
+    
+    // DEBUG v2.1.5: Logs detalhados
+    console.log('🔍 DEBUG v2.1.5 - Dados recebidos:', {
+      recorrente: recorrente,
+      parcelas: parcelas,
+      parcelasTotais: parcelasTotais,
+      valorPrimeiraParcela: valorPrimeiraParcela,
+      valorParcelasFuturas: valorParcelasFuturas,
+      proxima_parcela: proxima_parcela
     });
     
+    if (recorrente) {
+      console.log(`✅ Doação RECORRENTE detectada - Criando ${parcelasTotais} parcelas`);
+    } else {
+      console.log('✅ Doação ÚNICA detectada');
+    }
+    
+    // CORREÇÃO v2.1.5: INSERT com valores corretos
     db.run(
-      `INSERT INTO doacoes (doador_id, valor, tipo, data_doacao, recorrente, observacoes, parcelas_totais)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [doadorId, valorDoacao, type, date, recorrente ? 1 : 0, observations, parcelasTotais],
+      `INSERT INTO doacoes (doador_id, valor, tipo, data_doacao, recorrente, observacoes, parcelas_totais, data_proxima_parcela)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [doadorId, valorPrimeiraParcela, type, date, recorrente ? 1 : 0, observations, parcelasTotais, proxima_parcela],
       function(err) {
         if (err) {
           console.error('❌ Erro ao inserir doação:', err);
@@ -227,47 +239,52 @@ app.post('/api/doacoes', (req, res) => {
         }
         
         const doacaoId = this.lastID;
-        console.log('✅ Doação criada com ID:', doacaoId);
+        console.log(`✅ Doação criada com ID: ${doacaoId}`);
         
         // Inserir primeiro pagamento no histórico
         db.run(
           `INSERT INTO historico_pagamentos (doacao_id, data_pagamento, valor, status)
            VALUES (?, ?, ?, ?)`,
-          [doacaoId, date, valorDoacao, 'Pago'],
+          [doacaoId, date, valorPrimeiraParcela, 'Pago'],
           (err) => {
             if (err) console.error('Erro ao inserir histórico:', err);
             else console.log('✅ Histórico de pagamento criado');
           }
         );
         
-        // Se for recorrente, criar parcelas futuras
+        // CORREÇÃO v2.1.5: Criar parcelas futuras se recorrente
         if (recorrente && parcelasTotais > 1) {
-            console.log(`📅 Criando ${parcelasTotais - 1} parcelas futuras...`);
+          console.log(`📅 Criando ${parcelasTotais - 1} parcelas futuras...`);
+          
+          for (let i = 2; i <= parcelasTotais; i++) {
+            const dataVencimento = new Date(proxima_parcela || date);
+            dataVencimento.setMonth(dataVencimento.getMonth() + (i - 2));
             
-            for (let i = 2; i <= parcelasTotais; i++) {
-                const dataVencimento = new Date(proxima_parcela || date);
-                dataVencimento.setMonth(dataVencimento.getMonth() + (i - 2));
-                
-                db.run(
-                  `INSERT INTO parcelas_futuras (doacao_id, numero_parcela, data_vencimento, valor, status)
-                   VALUES (?, ?, ?, ?, ?)`,
-                  [doacaoId, i, dataVencimento.toISOString().split('T')[0], valorDoacao, 'Pendente'],
-                  (err) => {
-                    if (err) console.error(`Erro ao criar parcela ${i}:`, err);
-                  }
-                );
-            }
+            db.run(
+              `INSERT INTO parcelas_futuras (doacao_id, numero_parcela, data_vencimento, valor, status)
+               VALUES (?, ?, ?, ?, ?)`,
+              [doacaoId, i, dataVencimento.toISOString().split('T')[0], valorParcelasFuturas, 'Pendente'],
+              (err) => {
+                if (err) {
+                  console.error(`Erro ao criar parcela ${i}:`, err);
+                } else {
+                  console.log(`✅ Parcela ${i}/${parcelasTotais} criada: R$ ${valorParcelasFuturas}`);
+                }
+              }
+            );
+          }
         }
         
+        // CORREÇÃO v2.1.5: Resposta com número correto de parcelas
         res.json({ 
-            id: doacaoId, 
-            doador_id: doadorId, 
-            message: `Doação ${recorrente ? 'recorrente' : 'única'} criada com sucesso!`,
-            parcelas: parcelasTotais
+          id: doacaoId, 
+          doador_id: doadorId, 
+          message: `Doação ${recorrente ? 'recorrente' : 'única'} criada com sucesso!`,
+          parcelas: parcelasTotais // CORREÇÃO: Retorna valor correto
         });
       }
     );
-  }
+  };
 
   const proceed = () => {
     // Verificar se doador já existe
@@ -355,20 +372,28 @@ app.put('/api/doacoes/:id', (req, res) => {
 app.delete('/api/doacoes/:id', (req, res) => {
   const { id } = req.params;
   
-  // Deletar histórico primeiro
-  db.run('DELETE FROM historico_pagamentos WHERE doacao_id=?', [id], (err) => {
+  // Deletar parcelas futuras primeiro
+  db.run('DELETE FROM parcelas_futuras WHERE doacao_id=?', [id], (err) => {
     if (err) {
       res.status(500).json({ error: err.message });
       return;
     }
     
-    // Depois deletar a doação
-    db.run('DELETE FROM doacoes WHERE id=?', [id], function(err) {
+    // Deletar histórico
+    db.run('DELETE FROM historico_pagamentos WHERE doacao_id=?', [id], (err) => {
       if (err) {
         res.status(500).json({ error: err.message });
         return;
       }
-      res.json({ message: 'Doação excluída!', changes: this.changes });
+      
+      // Depois deletar a doação
+      db.run('DELETE FROM doacoes WHERE id=?', [id], function(err) {
+        if (err) {
+          res.status(500).json({ error: err.message });
+          return;
+        }
+        res.json({ message: 'Doação excluída!', changes: this.changes });
+      });
     });
   });
 });
@@ -472,6 +497,39 @@ app.get('/api/doacoes/:id/parcelas', (req, res) => {
   );
 });
 
+// Pagar parcela específica
+app.post('/api/doacoes/:id/pagar-parcela', (req, res) => {
+  const { id } = req.params;
+  const { numero_parcela, data_pagamento, valor } = req.body;
+  
+  console.log(`💰 PAGANDO PARCELA: ${numero_parcela} da doação ${id}`);
+  console.log('📦 Dados:', { numero_parcela, data_pagamento, valor });
+  
+  if (!numero_parcela || !data_pagamento || !valor) {
+    return res.status(400).json({ error: 'Dados obrigatórios faltando' });
+  }
+  
+  db.run(
+    'INSERT INTO historico_pagamentos (doacao_id, data_pagamento, valor, status) VALUES (?, ?, ?, ?)',
+    [id, data_pagamento, valor, 'Pago'],
+    function(err) {
+      if (err) {
+        console.log('❌ Erro SQL:', err.message);
+        return res.status(500).json({ error: err.message });
+      }
+      
+      console.log(`✅ Pagamento salvo: ID ${this.lastID}`);
+      res.json({ 
+        success: true,
+        pagamento_id: this.lastID,
+        message: `Parcela ${numero_parcela} registrada!`
+      });
+    }
+  );
+});
+
+// ==============================
+// ROTAS DE VERIFICAÇÃO
 // ==============================
 
 // Rota para verificar duplicatas - Versão 1.1.1
@@ -578,7 +636,7 @@ app.get('/', (req, res) => {
 // ==============================
 
 app.listen(PORT, () => {
-  console.log(`\n🚀 Sistema de Doações v1.1.0`);
+  console.log(`\n🚀 Sistema de Doações v2.1.5 - PARCELAS CORRIGIDAS`);
   console.log(`📍 Servidor rodando na porta ${PORT}`);
   console.log(`🌐 Acesse: http://localhost:${PORT}`);
   console.log(`✅ Servidor iniciado com sucesso!\n`);
