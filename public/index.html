@@ -430,5 +430,129 @@
             console.log('💡 Para testar manualmente: testarViaCEP()');
         });
     </script>
+
+            
+            <div id="history-content" class="space-y-6 min-h-20">
+                <p class="text-center text-gray-500">Carregando histórico...</p>
+            </div>
+            
+            <div class="flex justify-between items-center pt-6 border-t mt-6">
+                <div id="history-stats" class="text-sm text-gray-600">
+                    <!-- Estatísticas do histórico -->
+                </div>
+
+
+<!-- Modal Histórico de Pagamentos - v2.5.2 -->
+<div id="history-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl overflow-auto" style="height: 90vh;">
+        
+        <!-- Cabeçalho -->
+        <div class="bg-gradient-to-r from-blue-600 to-blue-700 p-6 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <h2 class="text-2xl font-bold text-white">Histórico de Parcelas</h2>
+            </div>
+            <button onclick="closeHistoryModal()" class="text-white hover:bg-white hover:bg-opacity-20 rounded-full p-2 transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Conteúdo -->
+        <div class="p-6 overflow-y-auto max-h-[calc(65vh-120px)]">
+            
+            <!-- Info Doador -->
+            <div class="mb-6 bg-gray-50 rounded-lg p-4">
+                <h3 id="history-donor-name" class="text-xl font-bold text-gray-800 mb-3">-</h3>
+                
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">Valor Total:</p>
+                        <p id="history-donation-value" class="text-lg font-bold text-gray-900">R$ 0,00</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">Tipo:</p>
+                        <p id="history-type" class="text-lg font-semibold text-gray-700">-</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">Total de Parcelas:</p>
+                        <p id="history-total-parcelas" class="text-lg font-semibold text-gray-700">-</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cards de Resumo -->
+            <div class="grid grid-cols-3 gap-4 mb-6">
+                <div class="bg-green-50 rounded-lg p-4 text-center border-2 border-green-200">
+                    <div id="history-pagas-count" class="text-4xl font-bold text-green-600">0</div>
+                    <div class="text-sm text-green-800 mt-1">Pagas</div>
+                </div>
+                <div class="bg-yellow-50 rounded-lg p-4 text-center border-2 border-yellow-200">
+                    <div id="history-pendentes-count" class="text-4xl font-bold text-yellow-600">0</div>
+                    <div class="text-sm text-yellow-800 mt-1">Pendentes</div>
+                </div>
+                <div class="bg-blue-50 rounded-lg p-4 text-center border-2 border-blue-200">
+                    <div id="history-total-value" class="text-2xl font-bold text-blue-600">R$ 0,00</div>
+                    <div class="text-sm text-blue-800 mt-1">Total Pago</div>
+                </div>
+            </div>
+
+            <!-- Tabela de Parcelas -->
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse">
+                    <thead>
+                        <tr class="bg-gray-100 border-b-2 border-gray-300">
+                            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Parcela</th>
+                            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Vencimento</th>
+                            <th class="px-4 py-3 text-right text-sm font-semibold text-gray-700">Valor</th>
+                            <th class="px-4 py-3 text-center text-sm font-semibold text-gray-700">Status</th>
+                            <th class="px-4 py-3 text-center text-sm font-semibold text-gray-700">Data Pagamento</th>
+                            <th class="px-4 py-3 text-center text-sm font-semibold text-gray-700">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-payments-tbody" class="divide-y divide-gray-200">
+                        <!-- Preenchido via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Rodapé -->
+        <div class="bg-gray-50 px-6 py-4 flex justify-between items-center border-t">
+            <button onclick="closeHistoryModal()" class="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition font-medium">
+                Fechar
+            </button>
+            <button onclick="generateCarneFromHistory()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                Gerar Carnê
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Função para fechar modal
+function closeHistoryModal() {
+    const modal = document.getElementById('history-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+}
+
+// Função auxiliar para carnê (se não existir)
+function generateCarneFromHistory() {
+    const doacaoId = window.currentDoacaoId; // Definido pelo viewHistory
+    if (doacaoId) {
+        generateCarne(doacaoId);
+    }
+}
+</script>
+
 </body>
 </html>

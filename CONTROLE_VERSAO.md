@@ -4,13 +4,13 @@
 
 ### Identificação
 - **Nome do Sistema:** Sistema de Controle de Doações
-- **Versão Atual:** 2.1.1 ✅ (Hotfix aplicado)
+- **Versão Atual:** 2.4.1 ✅ (Hotfix aplicado)
 - **Data de Início:** Agosto/2025
-- **Última Atualização:** 20/09/2025
+- **Última Atualização:** 25/09/2025
 - **Repositório:** https://github.com/erikcamargo-max/sistema-doacoes-v1
 - **Stack Tecnológica:** Node.js + Express + SQLite + Vanilla JS
 - **Ambiente:** Desenvolvimento/Produção Local
-- **Status:** ✅ SISTEMA BASE 100% FUNCIONAL - PARCELAS RECORRENTES EM TESTE
+- **Status:** ✅ SISTEMA 100% OPERACIONAL COM DADOS REAIS
 
 ### Responsáveis
 - **Desenvolvedor Principal:** Erik Camargo
@@ -138,7 +138,7 @@
 ```
 sistema-doacoes-v1/
 ├── database/
-│   ├── doacoes.db (LIMPO - 0 registros)
+│   ├── doacoes.db (ATIVO - 17 doadores, 5 doações)
 │   └── backup_antes_limpeza_1758412733674.db
 ├── public/
 │   ├── app.js (v2.1.1 - 53KB, corrigido)
@@ -266,7 +266,7 @@ npm start
 http://localhost:3001
 
 # Estado atual do banco
-# Todas as tabelas: 0 registros (banco limpo)
+# Sistema em produção: 17 doadores, 5 doações, 15 parcelas
 
 # Testar QR Code PIX  
 # Funcionando 100% com dados APAE
@@ -293,3 +293,67 @@ http://localhost:3001
 **Data:** 20/09/2025  
 **Versão:** 2.1.1  
 **Status:** Pronto para teste final das parcelas recorrentes
+
+## 📊 ATUALIZAÇÃO SISTEMA v2.4.1 (25/09/2025)
+
+### Status Atual Consolidado:
+- ✅ Sistema em produção com dados reais
+- 📊 17 doadores ativos cadastrados  
+- 💰 5 doações processadas
+- 📅 15 parcelas futuras ativas
+- 🔧 Frontend v2.4.1 funcional
+- 💾 Backend v2.3.3 estável
+
+### Evolução das Versões:
+- **v2.4.1** (25/09/2025) - Sistema completo em produção
+- **v2.3.3** (24/09/2025) - Backend otimizado
+- **v2.2.x** (21-23/09/2025) - Desenvolvimento intensivo
+- **v2.1.1** (20/09/2025) - Correções iniciais
+
+### Funcionalidades 100% Operacionais:
+- ✅ Cadastro de doadores com endereço completo
+- ✅ Doações únicas e recorrentes
+- ✅ Geração de carnês profissionais
+- ✅ QR Code PIX funcionando
+- ✅ Sistema de parcelas automático
+- ✅ Dashboard com dados reais
+- ✅ Exportação PDF/CSV/JSON
+
+---
+
+## 🔄 SESSÃO 30/09/2025 - v2.5.2
+
+### ✅ CONQUISTAS
+**Modal de Histórico:**
+- ✅ Criado do zero com design profissional
+- ✅ Lógica 100% funcional (valores reais do banco)
+- ✅ Primeira parcela = valor doação, demais = valor específico
+- ✅ Numeração correta (testado com doação real)
+- ✅ Altura ajustada com CSS inline: `style="height: 90vh;"`
+
+**Backend:**
+- ✅ server.js v2.5.0 limpo e otimizado
+- ✅ Rota `/api/doacoes/:id/parcelas-futuras` adicionada e funcional
+- ✅ Código organizado por seções
+
+**Testes:**
+- ✅ Nova doação recorrente testada: R$ 100 + 5x R$ 25 = R$ 225
+- ✅ Console mostra valores corretos
+- ✅ Modal exibe corretamente
+
+### ⚠️ PENDÊNCIAS
+- [ ] **Carnê PDF** - ainda mostra valores incorretos
+- [ ] **Padronizar modais** - edição e nova doação no estilo do histórico
+- [ ] **Limpar doações antigas** - dados de teste com numeração errada
+
+### 📊 ESTADO ATUAL
+- **Versão:** 2.5.2
+- **Backend:** server.js v2.5.0 (limpo)
+- **Frontend:** app.js v2.4.2 (função viewHistory corrigida)
+- **Modal Histórico:** HTML v2.5.2 (novo, funcional)
+- **Banco:** 8 doações (7 recorrentes), 25 parcelas futuras
+
+### 🎯 PRÓXIMO CHAT - COMEÇAR ASSIM
+"Sistema v2.5.2. Modal histórico OK. Precisamos: 1) Corrigir carnê PDF (valores errados), 2) Padronizar modais restantes. Backend está limpo, não mexer."
+
+
