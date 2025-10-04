@@ -1960,22 +1960,19 @@ function calcularCRC16(str) {
 
 window.generateCarne = async function(id) {
     try {
-        console.log('🎨 Gerando carnê bancario para doação ID:', id);
+        console.log('🎨 Gerando carnê profissional para doação ID:', id);
         
         // Buscar dados
         const doacaoResponse = await fetch('/api/doacoes/' + id);
         if (!doacaoResponse.ok) throw new Error('Erro ao buscar doação');
         const doacao = await doacaoResponse.json();
         
- 
         const doadorResponse = await fetch('/api/doadores/' + doacao.doador_id);
         if (!doadorResponse.ok) throw new Error('Erro ao buscar doador');
         const doador = await doadorResponse.json();
         
-        const parcelasResponse = await fetch('/api/doacoes/' + id + '/parcelas-futuras');
-        const parcelas = await parcelasResponse.json();
-        
-        console.log('📋 PARCELAS FUTURAS:', parcelas);
+        const historicoResponse = await fetch('/api/doacoes/' + id + '/historico');
+        const historico = await historicoResponse.json();
         
         // Abrir nova janela
         const novaJanela = window.open('', '_blank', 'width=1000,height=800');
@@ -1983,12 +1980,14 @@ window.generateCarne = async function(id) {
             throw new Error('Pop-up bloqueado! Permita pop-ups para gerar o carnê.');
         }
         
-        const htmlContent = gerarHTMLCarneProfissional(doacao, doador, parcelas);
+        // Gerar HTML do carnê profissional
+        const htmlContent = gerarHTMLCarneProfissional(doacao, doador, historico);
         
+        // Escrever conteúdo
         novaJanela.document.write(htmlContent);
         novaJanela.document.close();
         
-        console.log('✅ Carnê bancario gerado com sucesso!');
+        console.log('✅ Carnê profissional gerado com sucesso!');
         
     } catch (error) {
         console.error('❌ Erro ao gerar carnê:', error);
@@ -1996,23 +1995,24 @@ window.generateCarne = async function(id) {
     }
 }
 
+// Função para gerar HTML do carnê profissional
+
 // Função para gerar HTML do carnê modelo bancário
-function gerarHTMLCarneProfissional(doacao, doador, parcelas) {
+function gerarHTMLCarneProfissional(doacao, doador, historico) {
     const agora = new Date();
     const dataGeracao = agora.toLocaleDateString('pt-BR');
     const numeroDocumento = String(doacao.id).padStart(8, '0');
     const codigoDoador = doador.codigo_doador || 'D' + String(doador.id).padStart(3, '0');
     
     // Calcular parcelas
-	const totalParcelas = doacao.parcelas_totais || (doacao.recorrente ? 12 : 1);
+    const totalParcelas = doacao.parcelas_totais || (doacao.recorrente ? 12 : 1);
+    const valorParcela = doacao.valor;
     
     // Gerar HTML das parcelas
     let htmlParcelas = '';
     for (let i = 1; i <= totalParcelas; i++) {
-        // Valor diferenciado: 1ª parcela = valor doação, demais = valor futuras
-        const valorParcela = (i === 1) ? doacao.valor : (doacao.valor_parcelas_futuras || doacao.valor);
         const dataVencimento = calcularVencimento(doacao.data_doacao, i - 1, doacao.recorrente);
-        const pagamento = buscarPagamentoHistorico(parcelas, dataVencimento);
+        const pagamento = buscarPagamentoHistorico(historico, dataVencimento);
         const isPago = !!pagamento;
         
         // Estilo bancário compacto
@@ -3148,6 +3148,174 @@ function criarCSV(doacoes) {
 }
 
 
+
+
+// ===============================================================================
+// GERAÇÃO DE CARNÊ PROFISSIONAL - Versão 1.1.5 FINAL
+// Data: 05/09/2025
+// ===============================================================================
+
+async function generateCarne(doacaoId) {
+    try {
+        alert('🔍 Iniciando geração do carnê...');
+        
+        // Buscar dados básicos
+        const doacaoResponse = await fetch(`/api/doacoes/${doacaoId}`);
+        const doacao = await doacaoResponse.json();
+        const doadorResponse = await fetch(`/api/doadores/${doacao.doador_id}`);
+        const doador = await doadorResponse.json();
+        
+        alert('📄 Dados carregados. Criando janela...');
+        
+        // Criar janela
+        const novaJanela = window.open('', '_blank', 'width=900,height=700');
+        
+        // HTML MÍNIMO com selo e QR FORÇADOS
+        const htmlTeste = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>TESTE - Carnê com Selo e QR</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: #f0f0f0;
+        }
+        
+        /* SELO TESTE - SUPER VISÍVEL */
+        #selo-teste {
+            position: fixed !important;
+            top: 20px !important;
+            right: 20px !important;
+            width: 150px !important;
+            height: 150px !important;
+            background: red !important;
+            color: white !important;
+            border: 5px solid black !important;
+            border-radius: 50% !important;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            text-align: center !important;
+            font-size: 14px !important;
+            font-weight: bold !important;
+            z-index: 99999 !important;
+            box-shadow: 0 0 20px rgba(255,0,0,0.8) !important;
+        }
+        
+        /* QR CODE TESTE - SUPER VISÍVEL */
+        .qr-teste {
+            width: 200px !important;
+            height: 200px !important;
+            background: blue !important;
+            color: white !important;
+            border: 5px solid black !important;
+            margin: 20px auto !important;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            text-align: center !important;
+            font-size: 16px !important;
+            font-weight: bold !important;
+        }
+        
+        .cabecalho {
+            text-align: center;
+            padding: 20px;
+            background: yellow;
+            border: 3px solid black;
+            margin-bottom: 20px;
+        }
+        
+        .parcela-teste {
+            border: 3px solid black;
+            padding: 20px;
+            margin: 20px 0;
+            background: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- SELO TESTE -->
+    <div id="selo-teste">
+        🔒<br>
+        SELO<br>
+        TESTE<br>
+        VISÍVEL
+    </div>
+    
+    <!-- CABEÇALHO -->
+    <div class="cabecalho">
+        <h1>🔍 TESTE - CARNÊ COM SELO E QR</h1>
+        <h2>${doador.nome}</h2>
+        <p>Código: ${doador.codigo_doador || 'D' + doador.id}</p>
+    </div>
+    
+    <!-- PARCELA TESTE -->
+    <div class="parcela-teste">
+        <h3>📄 PARCELA DE TESTE</h3>
+        <p><strong>Valor:</strong> R$ ${doacao.valor.toFixed(2).replace('.', ',')}</p>
+        <p><strong>Tipo:</strong> ${doacao.tipo}</p>
+        
+        <!-- QR CODE TESTE -->
+        <div class="qr-teste">
+            📱<br>
+            QR CODE<br>
+            TESTE<br>
+            VISÍVEL
+        </div>
+        
+        <p style="color: red; font-weight: bold;">
+            ⚠️ Se você está vendo este texto, o carnê está sendo gerado!<br>
+            ✅ Se você vê o SELO VERMELHO no canto, o CSS está funcionando!<br>
+            ✅ Se você vê o QR CODE AZUL, tudo está OK!
+        </p>
+    </div>
+    
+    <div style="text-align: center; margin: 30px;">
+        <button onclick="window.print()" style="
+            padding: 15px 30px; 
+            background: green; 
+            color: white; 
+            border: none; 
+            font-size: 16px; 
+            cursor: pointer;
+        ">🖨️ Imprimir Teste</button>
+    </div>
+    
+    <script>
+        // Debug no console
+        console.log('🔍 Carnê de teste carregado!');
+        console.log('Selo:', document.getElementById('selo-teste'));
+        console.log('QR Codes:', document.querySelectorAll('.qr-teste'));
+        
+        // Garantir que o selo seja visível
+        setTimeout(() => {
+            const selo = document.getElementById('selo-teste');
+            if (selo) {
+                selo.style.background = 'red';
+                selo.style.display = 'flex';
+                console.log('✅ Selo forçado como visível');
+            }
+        }, 100);
+    </script>
+</body>
+</html>`;
+        
+        // Escrever na janela
+        novaJanela.document.write(htmlTeste);
+        novaJanela.document.close();
+        
+        alert('✅ Carnê de teste criado! Verifique se o SELO VERMELHO e QR CODE AZUL estão visíveis.');
+        
+    } catch (error) {
+        alert('❌ Erro no teste: ' + error.message);
+        console.error('Erro:', error);
+    }
+}
+
+// ===============================================================================
 
 /**
  * Calcular data de vencimento para parcelas

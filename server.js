@@ -198,15 +198,17 @@ app.post('/api/doacoes', (req, res) => {
     recorrente, parcelas, proxima_parcela, valor_parcelas_futuras 
   } = req.body;
 
-  const insertDoacao = (doadorId) => {
+  
+	const insertDoacao = (doadorId) => {
     const parcelasTotais = recorrente ? Math.max(parseInt(parcelas) || 1, 1) : 1;
     const valorPrimeiraParcela = parseFloat(amount) || 0;
     const valorParcelasFuturas = parseFloat(valor_parcelas_futuras) || valorPrimeiraParcela;
     
     db.run(
-      `INSERT INTO doacoes (doador_id, valor, tipo, data_doacao, recorrente, observacoes, parcelas_totais, data_proxima_parcela)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [doadorId, valorPrimeiraParcela, type, date, recorrente ? 1 : 0, observations, parcelasTotais, proxima_parcela],
+      `INSERT INTO doacoes (doador_id, valor, tipo, data_doacao, recorrente, observacoes, parcelas_totais, data_proxima_parcela, valor_parcelas_futuras)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [doadorId, valorPrimeiraParcela, type, date, recorrente ? 1 : 0, observations, parcelasTotais, proxima_parcela, valorParcelasFuturas],
+  
       function(err) {
         if (err) {
           res.status(500).json({ error: err.message });
