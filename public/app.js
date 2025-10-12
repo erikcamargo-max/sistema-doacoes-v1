@@ -3654,6 +3654,7 @@ window.pagarParcela = async function(doacaoId, numeroParcela, valor) {
 // v2.4.2 - viewHistory corrigida - Busca valores REAIS do banco
 window.viewHistory = async function(doacaoId) {
     try {
+		window.currentHistoryDonationId = doacaoId;  // ← ADICIONAR ESTA LINHA
         console.log('[viewHistory v2.4.2] Buscando dados para doação:', doacaoId);
         
         // Buscar dados completos da doação
@@ -3697,18 +3698,26 @@ window.viewHistory = async function(doacaoId) {
             console.log('[viewHistory] Primeira parcela:', primeiraParcela.valor);
         }
         
-        // Adicionar parcelas futuras com valores REAIS de cada uma
-        futurePayments.forEach(parcela => {
-            const parcelaObj = {
-                numero: parcela.numero_parcela,
-                data: parcela.data_vencimento,
-                valor: parseFloat(parcela.valor), // VALOR REAL DA PARCELA
-                status: parcela.status || 'PENDENTE',
-                tipo: 'futura',
-                id: parcela.id
-            };
-            allPayments.push(parcelaObj);
-        });
+		// Adicionar parcelas futuras com valores REAIS de cada uma
+				futurePayments.forEach(parcela => {
+					// Buscar pagamento correspondente no histórico (para parcelas já pagas)
+					const pagamentoCorrespondente = historyData.find(h => {
+						const dataH = new Date(h.data_pagamento);
+						const dataV = new Date(parcela.data_vencimento);
+						const diffDias = Math.abs((dataH - dataV) / (1000 * 60 * 60 * 24));
+						return diffDias <= 60; // Tolerância de 60 dias
+					});
+					
+					const parcelaObj = {
+						numero: parcela.numero_parcela,
+						data: pagamentoCorrespondente ? pagamentoCorrespondente.data_pagamento : parcela.data_vencimento,
+						valor: parseFloat(parcela.valor),
+						status: pagamentoCorrespondente ? 'Pago' : (parcela.status || 'Pendente'),
+						tipo: 'futura',
+						id: parcela.id
+					};
+					allPayments.push(parcelaObj);
+				});
         
         // Ordenar por número da parcela
         allPayments.sort((a, b) => a.numero - b.numero);
@@ -3750,22 +3759,32 @@ window.viewHistory = async function(doacaoId) {
             
             allPayments.forEach(payment => {
                 const row = document.createElement('tr');
-                row.className = payment.status === 'PAGA' 
-                    ? 'bg-green-50 hover:bg-green-100' 
-                    : 'bg-yellow-50 hover:bg-yellow-100';
+					row.className = (payment.status === 'PAGA' || payment.status === 'Pago')
+					? 'bg-green-50 hover:bg-green-100' 
+					: 'bg-yellow-50 hover:bg-yellow-100';
                 
-                const statusBadge = payment.status === 'PAGA'
-                    ? '<span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">✅ PAGA</span>'
-                    : '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">⏳ PENDENTE</span>';
+				const statusBadge = (payment.status === 'PAGA' || payment.status === 'Pago')
+					? '<span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">✅ PAGA</span>'
+					: '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">⏳ PENDENTE</span>';
                 
                 const dataFormatada = new Date(payment.data + 'T00:00:00').toLocaleDateString('pt-BR');
-                
-                row.innerHTML = `
-                    <td class="px-4 py-3 text-sm text-gray-700 font-medium">${payment.numero}/${allPayments.length}</td>
-                    <td class="px-4 py-3 text-sm text-gray-700">${dataFormatada}</td>
-                    <td class="px-4 py-3 text-sm font-bold text-gray-900">${formatCurrency(payment.valor)}</td>
-                    <td class="px-4 py-3 text-sm">${statusBadge}</td>
-                `;
+                	row.innerHTML = `
+					<td class="px-4 py-3 text-sm text-gray-700 font-medium">${payment.numero}/${allPayments.length}</td>
+					<td class="px-4 py-3 text-sm text-gray-700">${dataFormatada}</td>
+					<td class="px-4 py-3 text-sm font-bold text-gray-900">${formatCurrency(payment.valor)}</td>
+					<td class="px-4 py-3 text-sm">${statusBadge}</td>
+				    <td class="px-4 py-3 text-sm text-gray-700">${(payment.status === 'PAGA' || payment.status === 'Pago') ? dataFormatada : '-'}</td>
+					<td class="px-4 py-3 text-center">
+						${(payment.status === 'Pendente' || payment.status === 'PENDENTE') ? `
+							<button onclick="pagarParcela(${doacaoId}, ${payment.numero}, ${payment.valor})" 
+									class="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-xs font-medium">
+								💰 Pagar
+							</button>
+						` : `
+							<span class="text-gray-400 text-xs">-</span>
+						`}
+					</td>
+				`;
                 
                 tbody.appendChild(row);
             });

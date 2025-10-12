@@ -457,6 +457,49 @@ app.get('/api/doacoes/:id/parcelas-futuras', (req, res) => {
   );
 });
 
+// v2.5.3 - Pagar parcela específica
+app.post('/api/doacoes/:id/pagar-parcela', (req, res) => {
+  const { id } = req.params;
+  const { numero_parcela, data_pagamento, valor } = req.body;
+  
+  // Validar dados
+  if (!numero_parcela || !data_pagamento || !valor) {
+    res.status(400).json({ error: 'Dados incompletos' });
+    return;
+  }
+  
+  // Adicionar ao histórico de pagamentos
+  db.run(
+    'INSERT INTO historico_pagamentos (doacao_id, data_pagamento, valor, status) VALUES (?, ?, ?, ?)',
+    [id, data_pagamento, valor, 'Pago'],
+    function(err) {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        return;
+      }
+      
+      // Atualizar status da parcela futura
+      db.run(
+        'UPDATE parcelas_futuras SET status = ? WHERE doacao_id = ? AND numero_parcela = ?',
+        ['Pago', id, numero_parcela],
+        function(err) {
+          if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+          }
+          res.json({ 
+            message: 'Pagamento registrado com sucesso!',
+            id: this.lastID 
+          });
+        }
+      );
+    }
+  );
+});
+
+
+
+
 // ============================================================================
 // ROTAS - RELATÓRIOS
 // ============================================================================
