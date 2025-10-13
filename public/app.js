@@ -3399,16 +3399,18 @@ function buscarPagamentoProximo(historico, dataVencimento) {
  * Versão: 1.2.2
  */
 function mostrarModalParcelasCompletas(doacao, parcelas) {
-    // Remover modal existente
+   		// Remover modal existente
     const existingModal = document.getElementById('modal-parcelas-completas');
     if (existingModal) existingModal.remove();
+
+	
+	  // Calcular totais das parcelas
+	const parcelasPagas = parcelas.filter(p => p.status === 'PAGA' || p.status === 'Pago').length;
+	const parcelasPendentes = parcelas.filter(p => p.status === 'Pendente' || p.status === 'PENDENTE').length;
+	const totalPago = parcelas
+		.filter(p => p.status === 'PAGA' || p.status === 'Pago')
+		.reduce((sum, p) => sum + p.valor, 0);
     
-    const totalPago = parcelas
-        .filter(p => p.status === 'Pago')
-        .reduce((sum, p) => sum + p.valor, 0);
-    
-    const parcelasPagas = parcelas.filter(p => p.status === 'Pago').length;
-    const parcelasPendentes = parcelas.filter(p => p.status === 'Pendente').length;
     
     const modalHTML = `
     <div id="modal-parcelas-completas" style="
@@ -3705,7 +3707,8 @@ window.viewHistory = async function(doacaoId) {
 						const dataH = new Date(h.data_pagamento);
 						const dataV = new Date(parcela.data_vencimento);
 						const diffDias = Math.abs((dataH - dataV) / (1000 * 60 * 60 * 24));
-						return diffDias <= 60; // Tolerância de 60 dias
+						const valorMatch = Math.abs(parseFloat(h.valor) - parseFloat(parcela.valor)) < 0.01;
+						return diffDias <= 60 && valorMatch; // Data E valor devem corresponder
 					});
 					
 					const parcelaObj = {

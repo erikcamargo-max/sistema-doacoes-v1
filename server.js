@@ -506,11 +506,42 @@ app.post('/api/doacoes/:id/pagar-parcela', (req, res) => {
 
 // v2.5.0 - Relatório resumo
 app.get('/api/relatorios/resumo', (req, res) => {
+  // DEBUG TEMPORÁRIO - INÍCIO
+  db.all('SELECT * FROM historico_pagamentos', [], (err, rows) => {
+    console.log('\n=== 🔍 DEBUG HISTÓRICO ===');
+    console.log('Total registros:', rows ? rows.length : 0);
+    if (rows) {
+      let soma = 0;
+      rows.forEach(r => {
+        console.log(`ID ${r.id} | R$ ${r.valor} | Status: "${r.status}"`);
+        soma += parseFloat(r.valor);
+      });
+      console.log('SOMA TOTAL:', soma);
+    }
+    console.log('==========================\n');
+  });
+  
+  // DEBUG PARCELAS FUTURAS
+db.all('SELECT * FROM parcelas_futuras WHERE status = "Pago"', [], (err, rows) => {
+  console.log('\n=== 🔍 DEBUG PARCELAS FUTURAS PAGAS ===');
+  console.log('Total:', rows ? rows.length : 0);
+  if (rows) {
+    rows.forEach(r => {
+      console.log(`Doação ${r.doacao_id} | Parcela ${r.numero_parcela} | R$ ${r.valor} | Status: "${r.status}"`);
+    });
+  }
+  console.log('=======================================\n');
+});
+  
+  
+  
+  // DEBUG TEMPORÁRIO - FIM
+  
   const queries = [
     'SELECT COUNT(*) as total_doacoes FROM doacoes',
-    'SELECT SUM(valor) as total_arrecadado FROM historico_pagamentos WHERE status = "Pago"',
+    'SELECT SUM(valor) as total_arrecadado FROM historico_pagamentos WHERE (status = "Pago" OR status = "PAGO")',
     'SELECT COUNT(*) as doacoes_recorrentes FROM doacoes WHERE recorrente = 1',
-    'SELECT COUNT(*) as total_pagamentos FROM historico_pagamentos WHERE status = "Pago"'
+    'SELECT COUNT(*) as total_pagamentos FROM historico_pagamentos WHERE (status = "Pago" OR status = "PAGO")'
   ];
   
   Promise.all(queries.map(query => {
@@ -537,7 +568,7 @@ app.get('/api/relatorios/completo', (req, res) => {
   const queries = [
     'SELECT COUNT(DISTINCT doador_id) as total_doadores FROM doacoes',
     'SELECT COUNT(*) as total_doacoes FROM doacoes',
-    'SELECT SUM(valor) as total_arrecadado FROM historico_pagamentos WHERE status = "Pago"',
+    'SELECT SUM(valor) as total_arrecadado FROM historico_pagamentos WHERE (status = "Pago" OR status = "PAGO")',
     'SELECT COUNT(*) as doacoes_recorrentes FROM doacoes WHERE recorrente = 1'
   ];
   
