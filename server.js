@@ -457,7 +457,8 @@ app.get('/api/doacoes/:id/parcelas-futuras', (req, res) => {
   );
 });
 
-// v2.5.3 - Pagar parcela específica
+// v2.5.8 - Pagar parcela especifica (COM data_pagamento real)
+// Data: 13/10/2025 - Registra data real do pagamento para conciliacao
 app.post('/api/doacoes/:id/pagar-parcela', (req, res) => {
   const { id } = req.params;
   const { numero_parcela, data_pagamento, valor } = req.body;
@@ -468,37 +469,32 @@ app.post('/api/doacoes/:id/pagar-parcela', (req, res) => {
     return;
   }
   
-  // Adicionar ao histórico de pagamentos
+  // Atualizar status E data_pagamento (data REAL do pagamento)
   db.run(
-    'INSERT INTO historico_pagamentos (doacao_id, data_pagamento, valor, status) VALUES (?, ?, ?, ?)',
-    [id, data_pagamento, valor, 'Pago'],
+    'UPDATE parcelas_futuras SET status = ?, data_pagamento = ? WHERE doacao_id = ? AND numero_parcela = ?',
+    ['Pago', data_pagamento, id, numero_parcela],
     function(err) {
       if (err) {
+        console.error('Erro ao atualizar parcela:', err.message);
         res.status(500).json({ error: err.message });
         return;
       }
       
-      // Atualizar status da parcela futura
-      db.run(
-        'UPDATE parcelas_futuras SET status = ? WHERE doacao_id = ? AND numero_parcela = ?',
-        ['Pago', id, numero_parcela],
-        function(err) {
-          if (err) {
-            res.status(500).json({ error: err.message });
-            return;
-          }
-          res.json({ 
-            message: 'Pagamento registrado com sucesso!',
-            id: this.lastID 
-          });
-        }
-      );
+      if (this.changes === 0) {
+        res.status(404).json({ error: 'Parcela nao encontrada' });
+        return;
+      }
+      
+      console.log('Parcela', numero_parcela, 'paga em', data_pagamento, '- Alteracoes:', this.changes);
+      res.json({ 
+        message: 'Pagamento registrado com sucesso!',
+        parcela: numero_parcela,
+        data_pagamento: data_pagamento,
+        changes: this.changes
+      });
     }
   );
 });
-
-
-
 
 // ============================================================================
 // ROTAS - RELATÓRIOS

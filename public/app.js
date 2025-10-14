@@ -3605,51 +3605,70 @@ function validarDataBrasileira(dataBR) {
     return null;
 }
 
+// v2.5.9 - Pagar parcela com DEBUG ativo
+// Data: 14/10/2025 - Investigar porque envia data errada
 window.pagarParcela = async function(doacaoId, numeroParcela, valor) {
+    console.log('=== PAGAR PARCELA - INICIO ===');
+    console.log('Doacao ID:', doacaoId);
+    console.log('Numero Parcela:', numeroParcela);
+    console.log('Valor:', valor);
+    
     const hoje = new Date();
     const dataHojeBR = hoje.toLocaleDateString('pt-BR');
+    console.log('Data hoje (BR):', dataHojeBR);
+    
     const dataPagamento = prompt(`Data do pagamento da parcela ${numeroParcela} (DD/MM/AAAA):`, dataHojeBR);
+    console.log('Usuario digitou:', dataPagamento);
     
-    // Converter data brasileira para formato ISO se necessário
-    let dataISO = dataPagamento;
-    if (dataPagamento && dataPagamento.includes('/')) {
-        const [dia, mes, ano] = dataPagamento.split('/');
-        if (dia && mes && ano) {
-            dataISO = `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
-        }
+    if (!dataPagamento) {
+        console.log('Usuario cancelou');
+        return;
     }
-    
-    if (!dataPagamento) return;
     
     // Validar e converter data
     const dataValidada = validarDataBrasileira(dataPagamento);
-    if (!dataValidada) return;
+    console.log('Data validada (ISO):', dataValidada);
+    
+    if (!dataValidada) {
+        console.log('Data invalida, abortando');
+        return;
+    }
+    
+    const payload = {
+        numero_parcela: numeroParcela,
+        data_pagamento: dataValidada,
+        valor: valor
+    };
+    console.log('Payload a enviar:', JSON.stringify(payload, null, 2));
     
     try {
         const response = await fetch(`/api/doacoes/${doacaoId}/pagar-parcela`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                numero_parcela: numeroParcela,
-                data_pagamento: dataValidada,
-                valor: valor
-            })
+            body: JSON.stringify(payload)
         });
         
+        console.log('Response status:', response.status);
+        
         if (response.ok) {
-            alert(`✅ Pagamento da parcela ${numeroParcela} registrado com sucesso!`);
+            const resultado = await response.json();
+            console.log('Resultado:', resultado);
+            alert(`Pagamento da parcela ${numeroParcela} registrado com sucesso!`);
             // Recarregar modal
             viewHistory(doacaoId);
             // Recarregar dashboard
             loadDashboard();
         } else {
             const error = await response.json();
-            alert('❌ Erro: ' + error.message);
+            console.error('Erro do servidor:', error);
+            alert('Erro: ' + error.error);
         }
     } catch (error) {
-        console.error('❌ Erro ao pagar parcela:', error);
-        alert('❌ Erro ao registrar pagamento: ' + error.message);
+        console.error('Erro ao pagar parcela:', error);
+        alert('Erro ao registrar pagamento: ' + error.message);
     }
+    
+    console.log('=== PAGAR PARCELA - FIM ===');
 };
 
 
@@ -3713,9 +3732,10 @@ window.viewHistory = async function(doacaoId) {
 					
 					const parcelaObj = {
 						numero: parcela.numero_parcela,
-						data: pagamentoCorrespondente ? pagamentoCorrespondente.data_pagamento : parcela.data_vencimento,
+						data: parcela.data_vencimento,  // ✅ SEMPRE vencimento
+						data_pagamento: parcela.data_pagamento || null,  // ✅ NOVO: data real do pagamento
 						valor: parseFloat(parcela.valor),
-						status: pagamentoCorrespondente ? 'Pago' : (parcela.status || 'Pendente'),
+						status: parcela.status || 'Pendente',
 						tipo: 'futura',
 						id: parcela.id
 					};
@@ -3755,51 +3775,72 @@ window.viewHistory = async function(doacaoId) {
             totalValueElem.textContent = formatCurrency(totalValue);
         }
         
-        // Montar tabela de parcelas
+ // Montar tabela de parcelas
         const tbody = document.getElementById('history-payments-tbody');
         if (tbody) {
             tbody.innerHTML = '';
             
             allPayments.forEach(payment => {
                 const row = document.createElement('tr');
-					row.className = (payment.status === 'PAGA' || payment.status === 'Pago')
-					? 'bg-green-50 hover:bg-green-100' 
-					: 'bg-yellow-50 hover:bg-yellow-100';
+                row.className = (payment.status === 'PAGA' || payment.status === 'Pago')
+                    ? 'bg-green-50 hover:bg-green-100' 
+                    : 'bg-yellow-50 hover:bg-yellow-100';
                 
-				const statusBadge = (payment.status === 'PAGA' || payment.status === 'Pago')
-					? '<span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">✅ PAGA</span>'
-					: '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">⏳ PENDENTE</span>';
+                const statusBadge = (payment.status === 'PAGA' || payment.status === 'Pago')
+                    ? '<span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">✅ PAGA</span>'
+                    : '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">⏳ PENDENTE</span>';
                 
-                const dataFormatada = new Date(payment.data + 'T00:00:00').toLocaleDateString('pt-BR');
-                	row.innerHTML = `
-					<td class="px-4 py-3 text-sm text-gray-700 font-medium">${payment.numero}/${allPayments.length}</td>
-					<td class="px-4 py-3 text-sm text-gray-700">${dataFormatada}</td>
-					<td class="px-4 py-3 text-sm font-bold text-gray-900">${formatCurrency(payment.valor)}</td>
-					<td class="px-4 py-3 text-sm">${statusBadge}</td>
-				    <td class="px-4 py-3 text-sm text-gray-700">${(payment.status === 'PAGA' || payment.status === 'Pago') ? dataFormatada : '-'}</td>
-					<td class="px-4 py-3 text-center">
-						${(payment.status === 'Pendente' || payment.status === 'PENDENTE') ? `
-							<button onclick="pagarParcela(${doacaoId}, ${payment.numero}, ${payment.valor})" 
-									class="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-xs font-medium">
-								💰 Pagar
-							</button>
-						` : `
-							<span class="text-gray-400 text-xs">-</span>
-						`}
-					</td>
-				`;
+                // Data de VENCIMENTO (sempre mostrar)
+                const dataVencimento = new Date(payment.data + 'T00:00:00').toLocaleDateString('pt-BR');
+                
+                // Data de PAGAMENTO (apenas se pago e existir)
+                let dataPagamentoFormatada = '-';
+                if ((payment.status === 'PAGA' || payment.status === 'Pago') && payment.data_pagamento) {
+                    dataPagamentoFormatada = new Date(payment.data_pagamento + 'T00:00:00').toLocaleDateString('pt-BR');
+                }
+                
+                row.innerHTML = `
+                    <td class="px-4 py-3 text-sm text-gray-700 font-medium">${payment.numero}/${allPayments.length}</td>
+                    <td class="px-4 py-3 text-sm text-gray-700">${dataVencimento}</td>
+                    <td class="px-4 py-3 text-sm font-bold text-gray-900">${formatCurrency(payment.valor)}</td>
+                    <td class="px-4 py-3 text-sm">${statusBadge}</td>
+                    <td class="px-4 py-3 text-sm text-gray-700">${dataPagamentoFormatada}</td>
+                    <td class="px-4 py-3 text-center">
+                        ${(payment.status === 'Pendente' || payment.status === 'PENDENTE') ? `
+                            <button onclick="pagarParcela(${doacaoId}, ${payment.numero}, ${payment.valor})" 
+                                    class="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-xs font-medium">
+                                💰 Pagar
+                            </button>
+                        ` : `
+                            <span class="text-gray-400 text-xs">-</span>
+                        `}
+                    </td>
+                `;
                 
                 tbody.appendChild(row);
             });
         }
         
-        // Exibir modal
+// Exibir modal
         const modal = document.getElementById('history-modal');
         if (modal) {
             modal.classList.remove('hidden');
             modal.classList.add('flex');
         }
         
+        // v2.5.5 - Corrigir cards de resumo do modal histórico
+        // Data: 13/10/2025 - Correção de contadores e valores
+        const pagasCount = allPayments.filter(p => p.status === 'PAGA' || p.status === 'Pago').length;
+        const pendentesCount = allPayments.filter(p => p.status === 'PENDENTE' || p.status === 'Pendente').length;
+        const totalPago = allPayments
+            .filter(p => p.status === 'PAGA' || p.status === 'Pago')
+            .reduce((sum, p) => sum + p.valor, 0);
+
+        document.getElementById('history-pagas-count').textContent = pagasCount;
+        document.getElementById('history-pendentes-count').textContent = pendentesCount;
+        document.getElementById('history-total-value').textContent = formatCurrency(totalPago);
+
+        console.log('[viewHistory] Cards atualizados - Pagas:', pagasCount, 'Pendentes:', pendentesCount, 'Total:', totalPago);
         console.log('[viewHistory] Modal exibido com sucesso!');
         
     } catch (error) {
@@ -3807,7 +3848,6 @@ window.viewHistory = async function(doacaoId) {
         showNotification('Erro ao carregar histórico: ' + error.message, 'error');
     }
 }
-
 
 // v2.4.2 - Função auxiliar para formatar moeda
 function formatCurrency(value) {

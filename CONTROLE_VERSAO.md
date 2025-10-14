@@ -484,3 +484,45 @@ WHERE (status = "Pago" OR status = "PAGO")
 
 **Sistema funcional com melhorias no modal de histórico e pagamento de parcelas.**
 
+## 🔄 SESSÃO 13/10/2025 - v2.5.8
+
+### ✅ CONQUISTAS
+**Pagamento de Parcelas com Data Real:**
+- ✅ Adicionada coluna `data_pagamento` em `parcelas_futuras`
+- ✅ Corrigida função `pagarParcela` (frontend)
+- ✅ Corrigida rota `/api/doacoes/:id/pagar-parcela` (backend)
+- ✅ Corrigida renderização do modal de histórico
+- ✅ Separação entre vencimento e pagamento real
+
+**Correção dos Cards do Modal:**
+- ✅ Cards agora calculam corretamente (Pagas/Pendentes/Total)
+- ✅ Filtros case-insensitive (PAGA/Pago/PENDENTE/Pendente)
+
+### 🔧 ARQUIVOS MODIFICADOS
+
+**1. database/doacoes.db**
+- Nova coluna: `parcelas_futuras.data_pagamento`
+
+**2. server.js (linha 460-498)**
+- Rota atualizada para salvar data_pagamento real
+
+**3. public/app.js**
+- Linha 3608-3653: Função `pagarParcela` com validação de data
+- Linha 3710-3720: Objeto `parcelaObj` com campos separados
+- Linha 3777-3813: Renderização com vencimento e pagamento distintos
+- Linha 3815: Cards com cálculo correto
+
+### 📊 ESTADO ATUAL
+
+- **Versão:** 2.5.8
+- **Status:** ✅ Sistema 100% funcional
+- **Funcionalidades:** Todas operacionais
+- **Próximo:** Testar carnê PDF e relatórios
+
+### 🎯 PRÓXIMAS MELHORIAS
+
+- [ ] Validar carnê PDF com datas corretas
+- [ ] Adicionar filtro por data de pagamento
+- [ ] Dashboard com gráfico de pagamentos
+- [ ] Relatório de inadimplência
+
