@@ -526,3 +526,110 @@ WHERE (status = "Pago" OR status = "PAGO")
 - [ ] Dashboard com gráfico de pagamentos
 - [ ] Relatório de inadimplência
 
+## 🔄 SESSÃO 15/10/2025 - v2.5.9 - PADRONIZAÇÃO COMPLETA DOS MODAIS
+
+### ✅ CONQUISTAS PRINCIPAIS
+
+**1. Modal de Histórico - Correções Críticas:**
+- ✅ Corrigida data de pagamento real vs vencimento
+- ✅ Separação clara entre data_vencimento e data_pagamento
+- ✅ Cards de resumo calculam corretamente (pagas/pendentes/total)
+- ✅ Filtros case-insensitive para status (PAGA/Pago/PENDENTE/Pendente)
+- ✅ Parcela 1 agora mostra data de pagamento corretamente
+
+**2. Lógica de Parcelas Futuras:**
+- ✅ Campo "Parcelas futuras" agora significa REALMENTE futuras (não conta entrada)
+- ✅ Entrada = Parcela 1 (sempre paga no ato)
+- ✅ Futuras = Parcela 2 em diante
+- ✅ Exemplo: 5 parcelas futuras = 6 parcelas total (1 entrada + 5 futuras)
+
+**3. Dashboard - Correção de Cálculo:**
+- ✅ Total Arrecadado agora soma: historico_pagamentos + parcelas_futuras pagas
+- ✅ Queries SQL corrigidas com COALESCE para somar ambas as tabelas
+- ✅ Eliminados debugs temporários do código
+
+**4. Padronização Visual Completa:**
+- ✅ index.html reescrito (código limpo, sem duplicações)
+- ✅ Modal Nova Doação padronizado (cabeçalho azul, cards organizados)
+- ✅ Modal Editar Doação padronizado (mesmo estilo profissional)
+- ✅ Modal Histórico já estava perfeito, mantido
+- ✅ UTF-8 correto (sem caracteres quebrados)
+
+**5. Backend - Rota PUT Completa:**
+- ✅ Rota /api/doacoes/:id agora atualiza doador + doação
+- ✅ Atualiza nome, telefone, endereço completo, CPF
+- ✅ Atualiza valor, tipo, data, recorrência, observações
+
+### 🔧 ARQUIVOS MODIFICADOS
+
+**1. database/doacoes.db**
+- Coluna `data_pagamento` adicionada em `parcelas_futuras`
+
+**2. server.js**
+- Linha 195-220: Lógica de parcelas corrigida (entrada não conta)
+- Linha 460-498: Rota pagar-parcela com data_pagamento
+- Linha 315-360: Rota PUT completa (doador + doação)
+- Linha 506-540: Queries de resumo corrigidas (soma ambas tabelas)
+- Debugs temporários removidos (linhas 506-537)
+
+**3. public/index.html**
+- Reescrito completo (~800 linhas)
+- Modal Nova Doação padronizado (cabeçalho azul, cards)
+- Modal Editar Doação padronizado (novo, estático)
+- Modal Histórico mantido (já estava perfeito)
+- Código duplicado removido
+- UTF-8 correto
+
+**4. public/app.js**
+- Linha 1363-1500: Função editDonation simplificada (90 linhas vs 290)
+- Linha 3710-3720: Objeto parcelaObj com data_pagamento separada
+- Linha 3777-3813: Renderização com vencimento e pagamento distintos
+- Linha 3815-3850: Cards com cálculo correto
+
+### 📊 ESTADO ATUAL DO SISTEMA
+
+- **Versão:** 2.5.9
+- **Status:** ✅ 100% Funcional
+- **Código:** Limpo, organizado, documentado
+- **Modais:** 3/3 padronizados
+- **Banco de Dados:** Estruturado corretamente
+- **Lógica:** Correta e testada
+
+### 🎯 PRÓXIMAS MELHORIAS SUGERIDAS
+
+- [ ] Testar carnê PDF com novos valores
+- [ ] Adicionar filtro por data de pagamento
+- [ ] Dashboard com gráficos (opcional)
+- [ ] Relatório de inadimplência
+- [ ] Notificações de vencimento (futuro)
+
+### 👨‍💻 OBSERVAÇÕES TÉCNICAS
+
+**Tokens Utilizados:** ~95.000 de 190.000 (50% da sessão)
+**Duração:** ~3 horas
+**Commits:** Recomendado 1 commit com todas as alterações
+**Testes:** Sistema testado e validado em ambiente local
+
+### 💬 FEEDBACK DO DESENVOLVEDOR
+
+"Sonnet 4.5 evoluiu absurdamente. Mais centrado, preciso."
+- Erik, 15/10/2025
+
+---
+
+## 📌 COMANDOS GIT PARA SINCRONIZAR
+
+git add .
+git commit -m "v2.5.9 - Padronizacao completa dos modais + correcoes criticas"
+git push origin main
+```
+
+---
+
+## 📦 **ARQUIVOS PARA COMMIT:**
+```
+modified:   database/doacoes.db
+modified:   server.js
+modified:   public/index.html
+modified:   public/app.js
+modified:   CONTROLE_VERSAO.md

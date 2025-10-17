@@ -200,7 +200,9 @@ app.post('/api/doacoes', (req, res) => {
 
   
 	const insertDoacao = (doadorId) => {
-    const parcelasTotais = recorrente ? Math.max(parseInt(parcelas) || 1, 1) : 1;
+    // v2.5.9 - Lógica corrigida: parcelas = quantidade de FUTURAS (não inclui entrada)
+	const parcelasFuturas = recorrente ? Math.max(parseInt(parcelas) || 0, 0) : 0;
+	const parcelasTotais = 1 + parcelasFuturas; // 1 entrada + N futuras	
     const valorPrimeiraParcela = parseFloat(amount) || 0;
     const valorParcelasFuturas = parseFloat(valor_parcelas_futuras) || valorPrimeiraParcela;
     
@@ -224,9 +226,10 @@ app.post('/api/doacoes', (req, res) => {
           [doacaoId, date, valorPrimeiraParcela, 'Pago']
         );
         
-        // Criar parcelas futuras (PENDENTES)
-        if (recorrente && parcelasTotais > 1) {
-          for (let i = 2; i <= parcelasTotais; i++) {
+			// Criar parcelas futuras (PENDENTES)
+			// Inicia em 2 porque a parcela 1 é a entrada (já registrada em historico_pagamentos)
+			if (recorrente && parcelasFuturas > 0) {
+				for (let i = 2; i <= parcelasTotais; i++) {
             const dataVencimento = new Date(proxima_parcela || date);
             dataVencimento.setMonth(dataVencimento.getMonth() + (i - 2));
             
@@ -309,23 +312,65 @@ app.post('/api/doacoes', (req, res) => {
   }
 });
 
-// v2.5.0 - Atualizar doação
+// v2.5.9 - Atualizar doação COMPLETA (doação + doador)
 app.put('/api/doacoes/:id', (req, res) => {
   const { id } = req.params;
-  const { valor, tipo, data_doacao, recorrente, observacoes } = req.body;
+  const { 
+    // Dados do doador (recebidos do frontend)
+    donor, phone1, phone2, contact, cpf,
+    cep, logradouro, numero, complemento, bairro, cidade, estado,
+    // Dados da doação
+    amount, type, date, recurring, notes 
+  } = req.body;
   
-  db.run(
-    `UPDATE doacoes SET valor=?, tipo=?, data_doacao=?, recorrente=?, observacoes=?
-     WHERE id=?`,
-    [valor, tipo, data_doacao, recorrente, observacoes, id],
-    function(err) {
-      if (err) {
-        res.status(500).json({ error: err.message });
-        return;
-      }
-      res.json({ message: 'Doação atualizada!', changes: this.changes });
+  // 1. Buscar ID do doador
+  db.get('SELECT doador_id FROM doacoes WHERE id = ?', [id], (err, doacao) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
     }
-  );
+    
+    if (!doacao) {
+      res.status(404).json({ error: 'Doação não encontrada' });
+      return;
+    }
+    
+    const doadorId = doacao.doador_id;
+    
+    // 2. Atualizar dados do doador
+    db.run(
+      `UPDATE doadores SET 
+        nome=?, telefone1=?, telefone2=?, email=?, cpf=?,
+        cep=?, logradouro=?, numero=?, complemento=?, bairro=?, cidade=?, estado=?
+       WHERE id=?`,
+      [donor, phone1, phone2, contact, cpf, cep, logradouro, numero, complemento, bairro, cidade, estado, doadorId],
+      function(errDoador) {
+        if (errDoador) {
+          res.status(500).json({ error: 'Erro ao atualizar doador: ' + errDoador.message });
+          return;
+        }
+        
+        // 3. Atualizar dados da doação
+        db.run(
+          `UPDATE doacoes SET 
+            valor=?, tipo=?, data_doacao=?, recorrente=?, observacoes=?
+           WHERE id=?`,
+          [amount, type, date, recurring ? 1 : 0, notes, id],
+          function(errDoacao) {
+            if (errDoacao) {
+              res.status(500).json({ error: 'Erro ao atualizar doação: ' + errDoacao.message });
+              return;
+            }
+            
+            res.json({ 
+              message: 'Doação e doador atualizados com sucesso!', 
+              changes: this.changes 
+            });
+          }
+        );
+      }
+    );
+  });
 });
 
 // v2.5.0 - Deletar doação
@@ -500,44 +545,19 @@ app.post('/api/doacoes/:id/pagar-parcela', (req, res) => {
 // ROTAS - RELATÓRIOS
 // ============================================================================
 
-// v2.5.0 - Relatório resumo
+// v2.5.9 - Relatório resumo (debugs removidos)
 app.get('/api/relatorios/resumo', (req, res) => {
-  // DEBUG TEMPORÁRIO - INÍCIO
-  db.all('SELECT * FROM historico_pagamentos', [], (err, rows) => {
-    console.log('\n=== 🔍 DEBUG HISTÓRICO ===');
-    console.log('Total registros:', rows ? rows.length : 0);
-    if (rows) {
-      let soma = 0;
-      rows.forEach(r => {
-        console.log(`ID ${r.id} | R$ ${r.valor} | Status: "${r.status}"`);
-        soma += parseFloat(r.valor);
-      });
-      console.log('SOMA TOTAL:', soma);
-    }
-    console.log('==========================\n');
-  });
-  
-  // DEBUG PARCELAS FUTURAS
-db.all('SELECT * FROM parcelas_futuras WHERE status = "Pago"', [], (err, rows) => {
-  console.log('\n=== 🔍 DEBUG PARCELAS FUTURAS PAGAS ===');
-  console.log('Total:', rows ? rows.length : 0);
-  if (rows) {
-    rows.forEach(r => {
-      console.log(`Doação ${r.doacao_id} | Parcela ${r.numero_parcela} | R$ ${r.valor} | Status: "${r.status}"`);
-    });
-  }
-  console.log('=======================================\n');
-});
-  
-  
-  
-  // DEBUG TEMPORÁRIO - FIM
-  
   const queries = [
     'SELECT COUNT(*) as total_doacoes FROM doacoes',
-    'SELECT SUM(valor) as total_arrecadado FROM historico_pagamentos WHERE (status = "Pago" OR status = "PAGO")',
+    `SELECT 
+      (COALESCE((SELECT SUM(valor) FROM historico_pagamentos WHERE status IN ("Pago", "PAGO")), 0) + 
+       COALESCE((SELECT SUM(valor) FROM parcelas_futuras WHERE status IN ("Pago", "PAGO")), 0)) 
+     as total_arrecadado`,
     'SELECT COUNT(*) as doacoes_recorrentes FROM doacoes WHERE recorrente = 1',
-    'SELECT COUNT(*) as total_pagamentos FROM historico_pagamentos WHERE (status = "Pago" OR status = "PAGO")'
+    `SELECT 
+      (COALESCE((SELECT COUNT(*) FROM historico_pagamentos WHERE status IN ("Pago", "PAGO")), 0) + 
+       COALESCE((SELECT COUNT(*) FROM parcelas_futuras WHERE status IN ("Pago", "PAGO")), 0)) 
+     as total_pagamentos`
   ];
   
   Promise.all(queries.map(query => {
@@ -558,8 +578,8 @@ db.all('SELECT * FROM parcelas_futuras WHERE status = "Pago"', [], (err, rows) =
   })
   .catch(err => res.status(500).json({ error: err.message }));
 });
-
-// v2.5.0 - Relatório completo
+  
+ // v2.5.0 - Relatório completo
 app.get('/api/relatorios/completo', (req, res) => {
   const queries = [
     'SELECT COUNT(DISTINCT doador_id) as total_doadores FROM doacoes',

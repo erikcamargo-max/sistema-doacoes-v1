@@ -1361,12 +1361,12 @@ console.log('🎯 Sistema de Doações v1.1.1 - Arquivo app.js carregado com suc
 
 
 // ===============================================================================
-// FUNÇÃO DE EDIÇÃO DE DOAÇÃO - RESTAURADA v1.1.2
+// FUNÇÃO DE EDIÇÃO DE DOAÇÃO - v2.5.9 Simplificada
 // ===============================================================================
 
 /**
- * Editar doação existente
- * Versão: 1.1.2 - Função completa restaurada
+ * v2.5.9 - Editar doação (modal padronizado HTML estático)
+ * Versão simplificada: apenas preenche campos do modal existente
  */
 window.editDonation = async function(id) {
     console.log('✏️ Editando doação ' + id);
@@ -1380,208 +1380,39 @@ window.editDonation = async function(id) {
         
         const donation = await response.json();
         
-        // Criar modal de edição
-        let existingModal = document.getElementById('edit-modal');
-        if (existingModal) {
-            existingModal.remove();
-        }
+        // Preencher campos do modal
+        document.getElementById('edit-donor').value = donation.nome_doador || '';
+        document.getElementById('edit-cpf').value = donation.cpf || '';
+        document.getElementById('edit-phone1').value = donation.telefone1 || '';
+        document.getElementById('edit-phone2').value = donation.telefone2 || '';
+        document.getElementById('edit-email').value = donation.email || '';
         
-        const modalHTML = '<div id="edit-modal" style="' +
-                'display: flex;' +
-                'position: fixed;' +
-                'top: 0;' +
-                'left: 0;' +
-                'width: 100vw;' +
-                'height: 100vh;' +
-                'background: rgba(0, 0, 0, 0.8);' +
-                'z-index: 999999;' +
-                'justify-content: center;' +
-                'align-items: center;' +
-            '">' +
-                '<div style="' +
-                    'background: white;' +
-                    'padding: 30px;' +
-                    'border-radius: 10px;' +
-                    'max-width: 900px;' +
-                    'width: 90%;' +
-                    'max-height: 90vh;' +
-                    'overflow-y: auto;' +
-                '">' +
-                    '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">' +
-                        '<h2 style="margin: 0; font-size: 24px; font-weight: bold;">' +
-                            'Editar Doação - ' + (donation.codigo_doador || 'D' + donation.doador_id) +
-                        '</h2>' +
-                        '<button onclick="closeEditModal()" style="' +
-                            'background: none;' +
-                            'border: none;' +
-                            'font-size: 30px;' +
-                            'cursor: pointer;' +
-                            'color: #666;' +
-                        '">&times;</button>' +
-                    '</div>' +
-                    
-                    '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">' +
-                        '<div>' +
-                            '<h3 style="margin: 0 0 20px 0; font-size: 18px; font-weight: bold; color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px;">' +
-                                '👤 Dados do Doador' +
-                            '</h3>' +
-                            
-                            '<div style="margin-bottom: 15px;">' +
-                                '<label style="display: block; margin-bottom: 5px; font-weight: bold;">Nome Completo *</label>' +
-                                '<input type="text" id="edit-donor" value="' + (donation.nome_doador || donation.doador_nome) + '" style="' +
-                                    'width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px;' +
-                                '">' +
-                            '</div>' +
-                            
-                            '<div style="margin-bottom: 15px;">' +
-                                '<label style="display: block; margin-bottom: 5px; font-weight: bold;">CPF</label>' +
-                                '<input type="text" id="edit-cpf" value="' + (donation.doador_cpf || '') + '" placeholder="000.000.000-00" maxlength="14" ' +
-                                       'oninput="formatCPFInput(event)" style="' +
-                                    'width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px;' +
-                                '">' +
-                            '</div>' +
-                            
-                            '<div style="margin-bottom: 15px;">' +
-                                '<label style="display: block; margin-bottom: 5px; font-weight: bold;">Telefone Principal *</label>' +
-                                '<input type="tel" id="edit-phone1" value="' + (donation.doador_telefone1 || donation.telefone1) + '" style="' +
-                                    'width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px;' +
-                                '">' +
-                            '</div>' +
-                            
-                            '<div style="margin-bottom: 15px;">' +
-                                '<label style="display: block; margin-bottom: 5px; font-weight: bold;">Telefone Alternativo</label>' +
-                                '<input type="tel" id="edit-phone2" value="' + (donation.doador_telefone2 || donation.telefone2 || '') + '" style="' +
-                                    'width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px;' +
-                                '">' +
-                            '</div>' +
-                            
-                            '<div style="margin-bottom: 15px;">' +
-                                '<label style="display: block; margin-bottom: 5px; font-weight: bold;">E-mail</label>' +
-                                '<input type="email" id="edit-email" value="' + (donation.doador_email || '') + '" style="' +
-                                    'width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px;' +
-                                '">' +
-                            '</div>' +
-                            
-                            '<h4 style="margin: 20px 0 15px 0; font-size: 16px; font-weight: bold; color: #555; border-top: 1px solid #eee; padding-top: 15px;">' +
-                                '📍 Endereço' +
-                            '</h4>' +
-                            
-                            '<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 10px; margin-bottom: 10px;">' +
-                                '<div>' +
-                                    '<label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">CEP</label>' +
-                                    '<input type="text" id="edit-cep" value="' + (donation.doador_cep || '') + '" placeholder="00000-000" maxlength="9" ' +
-                                           'oninput="formatCEPInput(event)" style="' +
-                                        'width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;' +
-                                    '">' +
-                                '</div>' +
-                                '<div>' +
-                                    '<label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">Logradouro</label>' +
-                                    '<input type="text" id="edit-logradouro" value="' + (donation.doador_logradouro || '') + '" placeholder="Rua, Avenida..." style="' +
-                                        'width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;' +
-                                    '">' +
-                                '</div>' +
-                            '</div>' +
-                            
-                            '<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 10px; margin-bottom: 10px;">' +
-                                '<div>' +
-                                    '<label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">Número</label>' +
-                                    '<input type="text" id="edit-numero" value="' + (donation.doador_numero || '') + '" placeholder="123" style="' +
-                                        'width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;' +
-                                    '">' +
-                                '</div>' +
-                                '<div>' +
-                                    '<label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">Complemento</label>' +
-                                    '<input type="text" id="edit-complemento" value="' + (donation.doador_complemento || '') + '" placeholder="Apto, Bloco, Sala..." style="' +
-                                        'width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;' +
-                                    '">' +
-                                '</div>' +
-                            '</div>' +
-                            
-                            '<div style="margin-bottom: 10px;">' +
-                                '<label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">Bairro</label>' +
-                                '<input type="text" id="edit-bairro" value="' + (donation.doador_bairro || '') + '" placeholder="Nome do bairro" style="' +
-                                    'width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;' +
-                                '">' +
-                            '</div>' +
-                            
-                            '<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px; margin-bottom: 10px;">' +
-                                '<div>' +
-                                    '<label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">Cidade</label>' +
-                                    '<input type="text" id="edit-cidade" value="' + (donation.doador_cidade || '') + '" placeholder="Nome da cidade" style="' +
-                                        'width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;' +
-                                    '">' +
-                                '</div>' +
-                                '<div>' +
-                                    '<label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px;">Estado</label>' +
-                                    '<input type="text" id="edit-estado" value="' + (donation.doador_estado || '') + '" placeholder="UF" maxlength="2" style="' +
-                                        'width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px; text-transform: uppercase;' +
-                                    '">' +
-                                '</div>' +
-                            '</div>' +
-                        '</div>' +
-                        
-                        '<div>' +
-                            '<h3 style="margin: 0 0 20px 0; font-size: 18px; font-weight: bold; color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px;">' +
-                                '💰 Dados da Doação' +
-                            '</h3>' +
-                            
-                            '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">' +
-                                '<div>' +
-                                    '<label style="display: block; margin-bottom: 5px; font-weight: bold;">Valor (R$) *</label>' +
-                                    '<input type="number" id="edit-amount" value="' + donation.valor + '" step="0.01" style="' +
-                                        'width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px;' +
-                                    '">' +
-                                '</div>' +
-                                
-                                '<div>' +
-                                    '<label style="display: block; margin-bottom: 5px; font-weight: bold;">Tipo *</label>' +
-                                    '<select id="edit-type" style="' +
-                                        'width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; background: white;' +
-                                    '">' +
-                                        '<option value="Dinheiro"' + (donation.tipo === 'Dinheiro' ? ' selected' : '') + '>Dinheiro</option>' +
-                                        '<option value="PIX"' + (donation.tipo === 'PIX' ? ' selected' : '') + '>PIX</option>' +
-                                    '</select>' +
-                                '</div>' +
-                            '</div>' +
-                            
-                            '<div style="margin-bottom: 15px;">' +
-                                '<label style="display: block; margin-bottom: 5px; font-weight: bold;">Data da Doação *</label>' +
-                                '<input type="date" id="edit-date" value="' + donation.data_doacao + '" style="' +
-                                    'width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px;' +
-                                '">' +
-                            '</div>' +
-                            
-                            '<div style="margin-bottom: 15px;">' +
-                                '<label style="display: flex; align-items: center; gap: 10px; font-weight: bold;">' +
-                                    '<input type="checkbox" id="edit-recurring"' + (donation.recorrente ? ' checked' : '') + ' style="' +
-                                        'width: 18px; height: 18px; cursor: pointer;' +
-                                    '">' +
-                                    '<span>Doação recorrente</span>' +
-                                '</label>' +
-                            '</div>' +
-                            
-                            '<div style="margin-bottom: 20px;">' +
-                                '<label style="display: block; margin-bottom: 5px; font-weight: bold;">Observações</label>' +
-                                '<textarea id="edit-notes" rows="4" style="' +
-                                    'width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; resize: vertical;' +
-                                '">' + (donation.observacoes || '') + '</textarea>' +
-                            '</div>' +
-                        '</div>' +
-                    '</div>' +
-                    
-                    '<div style="display: flex; gap: 15px; justify-content: flex-end; margin-top: 25px; padding-top: 20px; border-top: 2px solid #eee;">' +
-                        '<button onclick="closeEditModal()" style="' +
-                            'padding: 12px 25px; border: 2px solid #ccc; background: white; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold;' +
-                        '">Cancelar</button>' +
-                        
-                        '<button onclick="saveEditedDonation(' + id + ')" style="' +
-                            'padding: 12px 25px; border: none; background: #3b82f6; color: white; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold;' +
-                        '">💾 Salvar Alterações</button>' +
-                    '</div>' +
-                '</div>' +
-            '</div>';
+        // Endereço
+        document.getElementById('edit-cep').value = donation.cep || '';
+        document.getElementById('edit-logradouro').value = donation.logradouro || '';
+        document.getElementById('edit-numero').value = donation.numero || '';
+        document.getElementById('edit-complemento').value = donation.complemento || '';
+        document.getElementById('edit-bairro').value = donation.bairro || '';
+        document.getElementById('edit-cidade').value = donation.cidade || '';
+        document.getElementById('edit-estado').value = donation.estado || '';
         
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        // Doação
+        document.getElementById('edit-amount').value = donation.valor;
+        document.getElementById('edit-type').value = donation.tipo;
+        document.getElementById('edit-date').value = donation.data_doacao;
+        document.getElementById('edit-recurring').checked = donation.recorrente == 1;
+        document.getElementById('edit-notes').value = donation.observacoes || '';
+        
+        // Configurar botão de salvar
+        const btnSave = document.getElementById('btn-save-edit');
+        btnSave.onclick = () => saveEditedDonation(id);
+        
+        // Exibir modal
+        const modal = document.getElementById('edit-modal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        
+        console.log('✅ Modal de edição aberto');
         
     } catch (error) {
         console.error('❌ Erro ao carregar doação:', error);
@@ -1590,20 +1421,19 @@ window.editDonation = async function(id) {
 }
 
 /**
- * Fecha modal de edição
- * Versão: 1.1.2
+ * v2.5.9 - Fechar modal de edição
  */
 window.closeEditModal = function() {
     const modal = document.getElementById('edit-modal');
     if (modal) {
-        modal.remove();
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
         console.log('❌ Modal de edição fechado');
     }
 }
 
 /**
- * Salva alterações da doação editada
- * Versão: 1.1.2
+ * v2.5.9 - Salvar alterações da doação
  */
 window.saveEditedDonation = async function(id) {
     const formData = {
@@ -1617,7 +1447,6 @@ window.saveEditedDonation = async function(id) {
         recurring: document.getElementById('edit-recurring').checked,
         notes: document.getElementById('edit-notes').value.trim(),
         cpf: document.getElementById('edit-cpf').value.trim(),
-        // Campos de endereço
         cep: document.getElementById('edit-cep').value.trim(),
         logradouro: document.getElementById('edit-logradouro').value.trim(),
         numero: document.getElementById('edit-numero').value.trim(),
@@ -1627,6 +1456,7 @@ window.saveEditedDonation = async function(id) {
         estado: document.getElementById('edit-estado').value.trim()
     };
     
+    // Validação
     if (!formData.donor || !formData.amount || !formData.date || !formData.phone1) {
         alert('❌ Preencha todos os campos obrigatórios');
         return;
@@ -3705,11 +3535,12 @@ window.viewHistory = async function(doacaoId) {
         // Montar array completo com valores REAIS
         let allPayments = [];
         
-        // Adicionar primeira parcela (PAGA) com valor REAL da doação
+		// Adicionar primeira parcela (PAGA) com valor REAL da doação
         if (historyData.length > 0) {
             const primeiraParcela = {
                 numero: 1,
                 data: historyData[0].data_pagamento,
+                data_pagamento: historyData[0].data_pagamento,  // ✅ ADICIONAR ESTA LINHA!
                 valor: parseFloat(donation.valor), // VALOR REAL DA DOAÇÃO
                 status: 'PAGA',
                 tipo: 'historico',

@@ -1,6 +1,6 @@
 {
   "name": "sistema-doacoes",
-  "version": "2.3.0",
+  "version": "2.5.9",
   "description": "Sistema completo de controle de doações com Node.js e SQLite",
   "main": "server.js",
   "scripts": {
