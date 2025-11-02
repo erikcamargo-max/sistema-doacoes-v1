@@ -285,115 +285,48 @@ app.post('/api/doacoes', (req, res) => {
     );
   };
 
-const proceed = () => {
-    // ============================================================
-    // PASSO 1: LIMPAR CPF (REMOVER MÁSCARA)
-    // ============================================================
-    const cpfLimpo = (cpf && cpf.trim() !== '') ? cpf.replace(/\D/g, '') : null;
-    
-    console.log('📋 CPF recebido:', cpf);
-    console.log('🧹 CPF limpo:', cpfLimpo);
-    
-    // ============================================================
-    // PASSO 2: VERIFICAR SE CPF JÁ EXISTE (SE INFORMADO)
-    // ============================================================
-    if (cpfLimpo) {
-      console.log('🔍 Verificando se CPF já existe no banco...');
+  const proceed = () => {
+    db.get('SELECT * FROM doadores WHERE cpf = ? OR telefone1 = ?', [cpf, phone1], (err, doador) => {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        return;
+      }
       
-      db.get(
-        'SELECT id, nome, codigo_doador FROM doadores WHERE cpf = ?',
-        [cpfLimpo],
-        (err, doadorExistente) => {
-          if (err) {
-            console.error('❌ Erro ao buscar CPF no banco:', err.message);
-            return res.status(500).json({ 
-              error: 'Erro ao verificar CPF: ' + err.message 
-            });
-          }
-          
-          // Se encontrou doador com este CPF = DUPLICADO
-          if (doadorExistente) {
-            console.log('❌ CPF DUPLICADO! Já cadastrado para:', doadorExistente.nome);
-            
-            return res.status(400).json({
-              error: `CPF já cadastrado para: ${doadorExistente.nome} (${doadorExistente.codigo_doador})`,
-              tipo: 'cpf_duplicado',
-              doador_existente: {
-                id: doadorExistente.id,
-                nome: doadorExistente.nome,
-                codigo: doadorExistente.codigo_doador
-              }
-            });
-          }
-          
-          // CPF não encontrado = ÚNICO = pode criar
-          console.log('✅ CPF único! Pode criar novo doador.');
-          criarNovoDoador();
-        }
-      );
-    } else {
-      // Cadastro sem CPF = pode criar normalmente
-      console.log('ℹ️ Cadastro sem CPF informado.');
-      criarNovoDoador();
-    }
-    
-    // ============================================================
-    // PASSO 3: FUNÇÃO INTERNA PARA CRIAR DOADOR
-    // ============================================================
-    function criarNovoDoador() {
-      console.log('👤 Criando novo doador no banco...');
-      
-      db.run(
-        `INSERT INTO doadores (
-          nome, email, telefone1, telefone2, cpf, 
-          cep, logradouro, numero, complemento, bairro, cidade, estado
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          donor,           // Nome
-          contact,         // Email
-          phone1,          // Telefone 1
-          phone2 || null,  // Telefone 2 (pode ser vazio)
-          cpfLimpo,        // ✅ CPF SEM MÁSCARA
-          cep || null,
-          logradouro || null,
-          numero || null,
-          complemento || null,
-          bairro || null,
-          cidade || null,
-          estado || null
-        ],
-        function(err) {
-          if (err) {
-            console.error('❌ Erro ao inserir doador:', err.message);
-            return res.status(500).json({ 
-              error: 'Erro ao criar doador: ' + err.message 
-            });
-          }
-          
-          const doadorId = this.lastID;
-          console.log('✅ Doador criado! ID:', doadorId);
-          
-          // Gerar código do doador (D001, D002, etc)
-          const codigo = generateDoadorCode(donor, doadorId);
-          console.log('🏷️ Código gerado:', codigo);
-          
-          // Atualizar código no banco
-          db.run(
-            'UPDATE doadores SET codigo_doador = ? WHERE id = ?',
-            [codigo, doadorId],
-            (err) => {
-              if (err) {
-                console.error('❌ Erro ao atualizar código:', err.message);
-              }
-              
-              // Criar a doação
-              console.log('💰 Criando doação para doador ID:', doadorId);
-              insertDoacao(doadorId);
+      if (doador) {
+        // Atualizar doador existente
+        db.run(
+          `UPDATE doadores SET nome=?, email=?, telefone1=?, telefone2=?, cpf=?,
+           cep=?, logradouro=?, numero=?, complemento=?, bairro=?, cidade=?, estado=?
+           WHERE id=?`,
+          [donor, contact, phone1, phone2, cpf, cep, logradouro, numero, complemento, bairro, cidade, estado, doador.id],
+          (err) => {
+            if (err) {
+              res.status(500).json({ error: err.message });
+              return;
             }
-          );
-        }
-      );
-    }
+            insertDoacao(doador.id);
+          }
+        );
+      } else {
+        // Criar novo doador
+        db.run(
+          `INSERT INTO doadores (nome, email, telefone1, telefone2, cpf, cep, logradouro, numero, complemento, bairro, cidade, estado)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [donor, contact, phone1, phone2, cpf, cep, logradouro, numero, complemento, bairro, cidade, estado],
+          function(err) {
+            if (err) {
+              res.status(500).json({ error: err.message });
+              return;
+            }
+            const doadorId = this.lastID;
+            const codigo = generateDoadorCode(donor, doadorId);
+            db.run('UPDATE doadores SET codigo_doador=? WHERE id=?', [codigo, doadorId], () => {
+              insertDoacao(doadorId);
+            });
+          }
+        );
+      }
+    });
   };
 
   if (!forceCreate) {

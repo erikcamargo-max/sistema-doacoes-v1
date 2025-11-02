@@ -1379,6 +1379,8 @@ window.editDonation = async function(id) {
         }
         
         const donation = await response.json();
+		
+        window.currentEditingDonorId = donation.doador_id;
         
         // Preencher campos do modal
         document.getElementById('edit-donor').value = donation.nome_doador || '';
@@ -3031,6 +3033,165 @@ function formatCPFDisplay(cpf) {
 
 console.log('✅ Funções de Edição e Carnê restauradas - v1.1.2');
 
+// ===============================================================================
+// VALIDAÇÃO DE CPF - v2.5.9
+// Data: 16/10/2025
+// ===============================================================================
+
+/**
+ * Formata CPF com máscara automática
+ * Versão: 2.5.9
+ */
+function formatCPF(value) {
+    // Remove tudo que não é número
+    value = value.replace(/\D/g, '');
+    
+    // Limita a 11 dígitos
+    value = value.substring(0, 11);
+    
+    // Aplica máscara XXX.XXX.XXX-XX
+    if (value.length <= 3) {
+        return value;
+    } else if (value.length <= 6) {
+        return value.replace(/(\d{3})(\d{0,3})/, '$1.$2');
+    } else if (value.length <= 9) {
+        return value.replace(/(\d{3})(\d{3})(\d{0,3})/, '$1.$2.$3');
+    } else {
+        return value.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/, '$1.$2.$3-$4');
+    }
+}
+
+/**
+ * Valida dígitos verificadores do CPF
+ * Versão: 2.5.9
+ */
+function validarCPF(cpf) {
+    // Remove caracteres não numéricos
+    cpf = cpf.replace(/\D/g, '');
+    
+    // Valida tamanho
+    if (cpf.length !== 11) {
+        return false;
+    }
+    
+    // Valida sequências inválidas (111.111.111-11, etc)
+    if (/^(\d)\1{10}$/.test(cpf)) {
+        return false;
+    }
+    
+    // Valida primeiro dígito verificador
+    let soma = 0;
+    for (let i = 0; i < 9; i++) {
+        soma += parseInt(cpf.charAt(i)) * (10 - i);
+    }
+    let resto = 11 - (soma % 11);
+    let digito1 = resto >= 10 ? 0 : resto;
+    
+    if (digito1 !== parseInt(cpf.charAt(9))) {
+        return false;
+    }
+    
+    // Valida segundo dígito verificador
+    soma = 0;
+    for (let i = 0; i < 10; i++) {
+        soma += parseInt(cpf.charAt(i)) * (11 - i);
+    }
+    resto = 11 - (soma % 11);
+    let digito2 = resto >= 10 ? 0 : resto;
+    
+    if (digito2 !== parseInt(cpf.charAt(10))) {
+        return false;
+    }
+    
+    return true;
+}
+
+/**
+ * Verifica se CPF já existe no sistema
+ * Versão: 2.5.9
+ */
+async function verificarCPFDuplicado(cpf, idAtual = null) {
+    try {
+        // Remove máscara
+        cpf = cpf.replace(/\D/g, '');
+        
+        // Se CPF vazio, não é duplicado
+        if (!cpf) return false;
+        
+        // Buscar no banco
+        const response = await fetch(`/api/doadores/verificar-cpf?cpf=${cpf}&id=${idAtual || ''}`);
+        const data = await response.json();
+        
+        return data.existe;
+    } catch (error) {
+        console.error('Erro ao verificar CPF:', error);
+        return false;
+    }
+}
+
+/**
+ * Aplicar validação visual no campo CPF
+ * Versão: 2.5.9
+ */
+async function aplicarValidacaoCPF(fieldId, feedbackId, idAtual = null) {
+    const field = document.getElementById(fieldId);
+    const feedback = document.getElementById(feedbackId);
+    
+    if (!field) return;
+    
+    const cpf = field.value;
+    
+    // Limpar feedback
+    if (feedback) feedback.textContent = '';
+    field.style.borderColor = '#d1d5db';
+    
+    // Se vazio, não validar
+    if (!cpf || cpf.replace(/\D/g, '').length === 0) {
+        return;
+    }
+    
+    // CPF incompleto
+    if (cpf.replace(/\D/g, '').length < 11) {
+        field.style.borderColor = '#f59e0b';
+        if (feedback) {
+            feedback.textContent = '⚠️ CPF incompleto';
+            feedback.style.color = '#f59e0b';
+        }
+        return;
+    }
+    
+    // Validar formato
+    if (!validarCPF(cpf)) {
+        field.style.borderColor = '#ef4444';
+        if (feedback) {
+            feedback.textContent = '❌ CPF inválido';
+            feedback.style.color = '#ef4444';
+        }
+        return;
+    }
+    
+    // Verificar duplicidade
+    const duplicado = await verificarCPFDuplicado(cpf, idAtual);
+    
+    if (duplicado) {
+        field.style.borderColor = '#ef4444';
+        if (feedback) {
+            feedback.textContent = '❌ CPF já cadastrado no sistema';
+            feedback.style.color = '#ef4444';
+        }
+        return;
+    }
+    
+    // CPF válido e único
+    field.style.borderColor = '#10b981';
+    if (feedback) {
+        feedback.textContent = '✅ CPF válido';
+        feedback.style.color = '#10b981';
+    }
+}
+
+console.log('✅ Validação de CPF v2.5.9 carregada');
+
 
 // ===============================================================================
 // FUNÇÃO PARA SALVAR NOVA DOAÇÃO - Versão Simples
@@ -3132,6 +3293,28 @@ window.addDonation = async function() {
         }
         
         console.log('📤 Enviando dados:', formData);
+		
+		// ============================================================
+		// VALIDAÇÃO FRONTEND: CPF Único (v2.5.9)
+		// ============================================================
+		if (formData.cpf && formData.cpf.trim() !== '') {
+			console.log('🔍 Validando CPF antes de enviar:', formData.cpf);
+			
+			// Validar formato
+			if (!validarCPF(formData.cpf)) {
+				alert('❌ CPF inválido! Verifique os dígitos verificadores.');
+				return;
+			}
+			
+			// Verificar duplicidade
+			const cpfDuplicado = await verificarCPFDuplicado(formData.cpf.replace(/\D/g, ''));
+			if (cpfDuplicado) {
+				alert('❌ Este CPF já está cadastrado no sistema!\n\nVerifique se a pessoa já existe antes de criar um novo cadastro.');
+				return;
+			}
+			
+			console.log('✅ CPF validado - Prosseguindo com cadastro');
+		}
         
         // Enviar para servidor
         const response = await fetch('/api/doacoes', {
@@ -3688,3 +3871,20 @@ function formatCurrency(value) {
         currency: 'BRL'
     }).format(numValue);
 }
+
+/**
+ * Validação CPF específica para modal de edição
+ * Versão: 2.5.9
+ */
+async function aplicarValidacaoCPFEdicao() {
+    // Pegar ID do doador sendo editado (se disponível globalmente)
+    const idDoador = window.currentEditingDonorId || null;
+    
+    await aplicarValidacaoCPF('edit-cpf', 'edit-cpf-feedback', idDoador);
+}
+
+// Expor globalmente
+window.formatCPF = formatCPF;
+window.validarCPF = validarCPF;
+window.aplicarValidacaoCPF = aplicarValidacaoCPF;
+window.aplicarValidacaoCPFEdicao = aplicarValidacaoCPFEdicao;
