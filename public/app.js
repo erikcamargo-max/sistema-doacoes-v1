@@ -1792,22 +1792,72 @@ function calcularCRC16(str) {
 
 window.generateCarne = async function(id) {
     try {
-        console.log('🎨 Gerando carnê bancario para doação ID:', id);
+        console.log('🎨 Gerando carnê bancário para doação ID:', id);
         
-        // Buscar dados
+        // ============================================================
+        // BUSCAR TODOS OS DADOS (v2.5.9 - CORRIGIDO)
+        // ============================================================
+        
+        // 1. Buscar dados da doação
         const doacaoResponse = await fetch('/api/doacoes/' + id);
         if (!doacaoResponse.ok) throw new Error('Erro ao buscar doação');
         const doacao = await doacaoResponse.json();
+        console.log('📊 Doação:', doacao);
         
- 
+        // 2. Buscar dados do doador
         const doadorResponse = await fetch('/api/doadores/' + doacao.doador_id);
         if (!doadorResponse.ok) throw new Error('Erro ao buscar doador');
         const doador = await doadorResponse.json();
+        console.log('👤 Doador:', doador);
         
+        // 3. Buscar HISTÓRICO de pagamentos (parcelas PAGAS)
+        const historicoResponse = await fetch('/api/doacoes/' + id + '/historico');
+        const historico = await historicoResponse.json();
+        console.log('✅ Histórico (PAGAS):', historico);
+        
+        // 4. Buscar parcelas FUTURAS (PENDENTES)
         const parcelasResponse = await fetch('/api/doacoes/' + id + '/parcelas-futuras');
         const parcelas = await parcelasResponse.json();
+        console.log('⏳ Parcelas futuras (PENDENTES):', parcelas);
         
-        console.log('📋 PARCELAS FUTURAS:', parcelas);
+        // ============================================================
+        // COMBINAR PARCELAS PAGAS + PENDENTES (v2.5.9)
+        // ============================================================
+        
+        let todasParcelas = [];
+        
+        // Adicionar primeira parcela (sempre PAGA - do histórico)
+        if (historico && historico.length > 0) {
+            todasParcelas.push({
+                numero: 1,
+                data_vencimento: doacao.data_doacao,
+                data_pagamento: historico[0].data_pagamento,
+                valor: parseFloat(doacao.valor),
+                status: 'Pago'
+            });
+        }
+        
+        // Adicionar parcelas futuras (podem estar PAGAS ou PENDENTES)
+        if (parcelas && Array.isArray(parcelas)) {
+            parcelas.forEach(parcela => {
+                todasParcelas.push({
+                    numero: parcela.numero_parcela,
+                    data_vencimento: parcela.data_vencimento,
+                    data_pagamento: parcela.data_pagamento || null,
+                    valor: parseFloat(parcela.valor),
+                    status: parcela.status || 'Pendente'
+                });
+            });
+        }
+        
+        // Ordenar por número da parcela
+        todasParcelas.sort((a, b) => a.numero - b.numero);
+        
+        console.log('📋 TODAS AS PARCELAS (combinadas):', todasParcelas);
+        
+        // ============================================================
+        // GERAR CARNÊ COM STATUS CORRETO
+        // ============================================================
         
         // Abrir nova janela
         const novaJanela = window.open('', '_blank', 'width=1000,height=800');
@@ -1815,12 +1865,12 @@ window.generateCarne = async function(id) {
             throw new Error('Pop-up bloqueado! Permita pop-ups para gerar o carnê.');
         }
         
-        const htmlContent = gerarHTMLCarneProfissional(doacao, doador, parcelas);
+        const htmlContent = gerarHTMLCarneProfissional(doacao, doador, todasParcelas);
         
         novaJanela.document.write(htmlContent);
         novaJanela.document.close();
         
-        console.log('✅ Carnê bancario gerado com sucesso!');
+        console.log('✅ Carnê bancário gerado com sucesso!');
         
     } catch (error) {
         console.error('❌ Erro ao gerar carnê:', error);
@@ -1835,17 +1885,26 @@ function gerarHTMLCarneProfissional(doacao, doador, parcelas) {
     const numeroDocumento = String(doacao.id).padStart(8, '0');
     const codigoDoador = doador.codigo_doador || 'D' + String(doador.id).padStart(3, '0');
     
-    // Calcular parcelas
-	const totalParcelas = doacao.parcelas_totais || (doacao.recorrente ? 12 : 1);
+    // ============================================================
+    // v2.5.9 - USAR ARRAY DE PARCELAS QUE JÁ VEM COM STATUS
+    // ============================================================
+    
+    const totalParcelas = parcelas.length;
     
     // Gerar HTML das parcelas
     let htmlParcelas = '';
-    for (let i = 1; i <= totalParcelas; i++) {
-        // Valor diferenciado: 1ª parcela = valor doação, demais = valor futuras
-        const valorParcela = (i === 1) ? doacao.valor : (doacao.valor_parcelas_futuras || doacao.valor);
-        const dataVencimento = calcularVencimento(doacao.data_doacao, i - 1, doacao.recorrente);
-        const pagamento = buscarPagamentoHistorico(parcelas, dataVencimento);
-        const isPago = !!pagamento;
+    
+    // ✅ CORREÇÃO: Usar array que já vem com status correto
+    parcelas.forEach(parcela => {
+        const numeroParcela = parcela.numero;
+        const valorParcela = parcela.valor;
+        const dataVencimento = parcela.data_vencimento;
+        
+        // ✅ VERIFICAR STATUS CORRETAMENTE
+        const isPago = parcela.status === 'Pago' || parcela.status === 'PAGA';
+        const dataPagamento = parcela.data_pagamento || dataVencimento;
+        
+        console.log(`Carnê - Parcela ${numeroParcela}: Status=${parcela.status}, isPago=${isPago}, dataPagamento=${dataPagamento}`);
         
         // Estilo bancário compacto
         htmlParcelas += `
@@ -1855,12 +1914,16 @@ function gerarHTMLCarneProfissional(doacao, doador, parcelas) {
                     <!-- Logo e Banco -->
                     <td style="width: 20%; border-right: 1px solid #000; padding: 12px; vertical-align: middle;">
                         <img src="/logo-apae.png" alt="Logo APAE" style="width: 150px; height: 150px; object-fit: contain;">
-                        
                     </td>
                     
                     <!-- Recibo do Pagador -->
                     <td style="width: 40%; border-right: 2px dashed #666; padding: 12px;">
                         <div style="font-size: 12px; font-weight: bold; margin-bottom: 8px;">Recibo do Pagador</div>
+                        
+                        <div style="font-size: 10px; margin-bottom: 5px;">
+                            <strong>Parcela</strong><br>
+                            <span style="font-weight: bold;">${String(numeroParcela).padStart(2, '0')}/${String(totalParcelas).padStart(2, '0')}</span>
+                        </div>
                         
                         <div style="font-size: 10px; margin-bottom: 5px;">
                             <strong>Nº do Documento</strong><br>
@@ -1894,11 +1957,9 @@ function gerarHTMLCarneProfissional(doacao, doador, parcelas) {
                     
                     <!-- Ficha de Compensação -->
                     <td style="width: 40%; padding: 12px; position: relative;">
-                        
-                        
                         <!-- QR Code -->
                         <div style="position: absolute; top: 15px; right: 15px; text-align: center; background: white; padding: 8px; border: 2px solid #000; border-radius: 5px;">
-                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(gerarCodigoPix(valorParcela, i))}" 
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(gerarCodigoPix(valorParcela, numeroParcela))}" 
                                  alt="QR Code PIX" 
                                  style="width: 100px; height: 100px; border: 1px solid #000;">
                             <div style="font-size: 10px; font-weight: bold; margin-top: 2px;">
@@ -1908,8 +1969,8 @@ function gerarHTMLCarneProfissional(doacao, doador, parcelas) {
                         </div>
                         
                         ${isPago ? `
-                        <div style="position: absolute; bottom: 10px; right: 10px; background: #28a745; color: white; padding: 5px 10px; border-radius: 3px; font-size: 10px;">
-                            ✓ PAGO EM ${formatDate(pagamento.data_pagamento)}
+                        <div style="position: absolute; bottom: 10px; right: 10px; background: #28a745; color: white; padding: 8px 15px; border-radius: 5px; font-size: 12px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                            ✓ PAGO EM ${formatDate(dataPagamento)}
                         </div>
                         ` : ''}
                     </td>
@@ -1917,7 +1978,7 @@ function gerarHTMLCarneProfissional(doacao, doador, parcelas) {
             </table>
         </div>
         `;
-    }
+    });
     
     return `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -2013,7 +2074,6 @@ function gerarHTMLCarneProfissional(doacao, doador, parcelas) {
             }
         }
         
-        /* Estilo para linha tracejada de corte */
         .linha-corte {
             border-top: 1px dashed #666;
             margin: 5px 0;
