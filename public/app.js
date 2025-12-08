@@ -72,22 +72,45 @@ function showNotification(message, type = 'info', duration = 5000) {
 
 
 // ===============================================================================
-// FUNÇÃO DE BUSCA DE CEP
-// ===============================================================================
-
-// Função para buscar CEP via ViaCEP
-
-
-
-
-// ===============================================================================
-// SISTEMA DE CONTROLE DE DOAÇÕES - APP.JS CORRIGIDO v1.1.1
-// ===============================================================================
-
-
-// ===============================================================================
 // FUNÇÃO PARA CAMPOS RECORRENTES - Versão 1.1.2
 // ===============================================================================
+
+// ================================================================
+// v2.5.9 - VALIDAÇÃO DE SENHA CENTRALIZADA
+// Data: 07/12/2025
+// Senha: apaetl
+// Uso: Ações críticas (excluir, estornar, etc)
+// ================================================================
+
+/**
+ * Solicita senha para ações críticas
+ * @param {string} acao - Descrição da ação (ex: "EXCLUIR DOAÇÃO")
+ * @param {string} detalhes - Detalhes adicionais (ex: "Doador: João Silva")
+ * @returns {boolean} - true se senha correta, false se incorreta ou cancelado
+ */
+window.validarSenhaSeguranca = function(acao, detalhes = '') {
+    console.log(`🔒 Validação de senha solicitada para: ${acao}`);
+    
+    const mensagem = detalhes 
+        ? `⚠️ ATENÇÃO - ${acao}\n\n${detalhes}\n\nDigite a senha para confirmar:`
+        : `⚠️ ATENÇÃO - ${acao}\n\nDigite a senha para confirmar:`;
+    
+    const senha = prompt(mensagem);
+    
+    if (!senha) {
+        console.log('❌ Operação cancelada - senha não informada');
+        return false;
+    }
+    
+    if (senha !== 'apaetl') {
+        alert('❌ Senha incorreta!');
+        console.log('❌ Senha incorreta fornecida');
+        return false;
+    }
+    
+    console.log('✅ Senha validada com sucesso');
+    return true;
+};
 
 function toggleRecurringFields() {
     const checkbox = document.getElementById('input-recurrent');
@@ -1229,25 +1252,58 @@ window.closeHistoryModal = function() {
  * Versão: 1.1.1
  */
 window.deleteDonation = async function(id) {
-    if (!confirm('Tem certeza que deseja excluir esta doação?')) {
+    // ============================================================
+    // v2.5.9 - Validação com senha antes de excluir
+    // ============================================================
+    
+    // Buscar dados da doação para mostrar na confirmação
+    let nomeDoador = '';
+    try {
+        const response = await fetch(`/api/doacoes/${id}`);
+        if (response.ok) {
+            const doacao = await response.json();
+            nomeDoador = doacao.nome_doador || '';
+        }
+    } catch (error) {
+        console.error('Erro ao buscar doação:', error);
+    }
+    
+    // 1. Solicitar senha
+    if (!validarSenhaSeguranca(
+        'EXCLUIR DOAÇÃO',
+        nomeDoador ? `Doador: ${nomeDoador}\n\nEsta ação é PERMANENTE e não pode ser desfeita!` : 
+                     'Esta ação é PERMANENTE e não pode ser desfeita!'
+    )) {
         return;
     }
     
+    // 2. Confirmação adicional
+    if (!confirm(
+        `⚠️ ÚLTIMA CONFIRMAÇÃO\n\n` +
+        `Excluir doação de ${nomeDoador || 'este doador'}?\n\n` +
+        `Todos os pagamentos e parcelas serão removidos!\n\n` +
+        `Esta ação NÃO pode ser desfeita!`
+    )) {
+        console.log('❌ Exclusão cancelada pelo usuário');
+        return;
+    }
+    
+    // 3. Executar exclusão
     try {
-        const response = await fetch(API_BASE + '/doacoes/' + id, { 
-            method: 'DELETE' 
+        const response = await fetch(`/api/doacoes/${id}`, {
+            method: 'DELETE'
         });
         
-        const data = await response.json();
-        
         if (response.ok) {
-            alert('✅ Doação excluída!');
-            loadDashboard(); // Recarregar dashboard
+            showNotification('Doação excluída com sucesso!', 'success');
+            loadDashboard();
         } else {
-            alert('❌ Erro: ' + data.error);
+            const error = await response.json();
+            throw new Error(error.error || 'Erro ao excluir doação');
         }
     } catch (error) {
-        alert('❌ Erro: ' + error.message);
+        console.error('Erro ao excluir doação:', error);
+        showNotification('Erro ao excluir: ' + error.message, 'error');
     }
 }
 
@@ -3629,10 +3685,7 @@ function formatarDataBrasil(dataISO) {
     return data.toLocaleDateString('pt-BR');
 }
 
-/**
- * Pagar parcela específica
- * Versão: 1.2.2
- */
+
 
 /**
  * Validar e converter data brasileira para ISO
@@ -3743,6 +3796,118 @@ window.pagarParcela = async function(doacaoId, numeroParcela, valor) {
     
     console.log('=== PAGAR PARCELA - FIM ===');
 };
+
+// ================================================================
+// v2.5.9 - ESTORNAR PARCELA FUTURA
+// Data: 07/12/2025
+// Função: Voltar parcela paga para status PENDENTE
+// Restrição: Apenas parcelas futuras (número > 1)
+// ================================================================
+window.estornarParcela = async function(parcelaId, doacaoId, numeroParcela) {
+    console.log('=== ESTORNAR PARCELA - INICIO ===');
+    console.log('Parcela ID:', parcelaId);
+    console.log('Doacao ID:', doacaoId);
+    console.log('Numero Parcela:', numeroParcela);
+    
+    // ============================================================
+    // VALIDAÇÃO: Primeira parcela não pode ser estornada
+    // ============================================================
+    if (numeroParcela === 1) {
+        alert('❌ A primeira parcela (entrada) não pode ser estornada!\n\nPara cancelar completamente, use a função de exclusão.');
+        console.log('❌ Tentativa de estornar primeira parcela bloqueada');
+        return;
+    }
+    
+    // ============================================================
+    // PASSO 1: Solicitar senha
+    // ============================================================
+    const senha = prompt(
+        '⚠️ ATENÇÃO - ESTORNO DE PARCELA\n\n' +
+        `Parcela: ${numeroParcela}\n` +
+        'Status atual: PAGA\n' +
+        'Nova situação: PENDENTE\n\n' +
+        'Digite a senha para confirmar o estorno:'
+    );
+    
+    if (!senha) {
+        console.log('❌ Estorno cancelado - senha não informada');
+        return;
+    }
+    
+    // Validar senha no frontend
+    if (senha !== 'apaetl') {
+        alert('❌ Senha incorreta!');
+        console.log('❌ Senha incorreta fornecida');
+        return;
+    }
+    
+    console.log('✅ Senha validada');
+    
+    // ============================================================
+    // PASSO 2: Confirmação final
+    // ============================================================
+    const confirmar = confirm(
+        `⚠️ CONFIRMAR ESTORNO DA PARCELA ${numeroParcela}?\n\n` +
+        `O pagamento será cancelado e a parcela voltará para PENDENTE.\n\n` +
+        `Esta ação NÃO pode ser desfeita!\n\n` +
+        `Deseja continuar?`
+    );
+    
+    if (!confirmar) {
+        console.log('❌ Estorno cancelado pelo usuário');
+        return;
+    }
+    
+    try {
+        // ============================================================
+        // PASSO 3: Executar estorno via API
+        // ============================================================
+        console.log('📤 Enviando requisição de estorno para API...');
+        
+        const response = await fetch(`/api/pagamentos/${parcelaId}/estornar`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                senha: senha,
+                doacao_id: doacaoId,
+                numero_parcela: numeroParcela
+            })
+        });
+        
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Erro ao estornar parcela');
+        }
+        
+        const resultado = await response.json();
+        console.log('✅ Resultado da API:', resultado);
+        
+        // ============================================================
+        // PASSO 4: Atualizar interface
+        // ============================================================
+        alert(`✅ Parcela ${numeroParcela} estornada com sucesso!\n\nStatus: PENDENTE`);
+        
+        // Recarregar modal de histórico
+        console.log('🔄 Recarregando modal de histórico...');
+        viewHistory(doacaoId);
+        
+        // Recarregar dashboard (atualizar totais)
+        console.log('🔄 Recarregando dashboard...');
+        loadDashboard();
+        
+        console.log('=== ESTORNAR PARCELA - FIM (SUCESSO) ===');
+        
+    } catch (error) {
+        console.error('❌ Erro ao estornar parcela:', error);
+        alert('❌ Erro ao estornar parcela:\n\n' + error.message);
+        console.log('=== ESTORNAR PARCELA - FIM (ERRO) ===');
+    }
+};
+
+
+
 
 
 // v2.4.2 - viewHistory corrigida - Busca valores REAIS do banco
@@ -3879,16 +4044,24 @@ window.viewHistory = async function(doacaoId) {
                     <td class="px-4 py-3 text-sm font-bold text-gray-900">${formatCurrency(payment.valor)}</td>
                     <td class="px-4 py-3 text-sm">${statusBadge}</td>
                     <td class="px-4 py-3 text-sm text-gray-700">${dataPagamentoFormatada}</td>
-                    <td class="px-4 py-3 text-center">
-                        ${(payment.status === 'Pendente' || payment.status === 'PENDENTE') ? `
-                            <button onclick="pagarParcela(${doacaoId}, ${payment.numero}, ${payment.valor})" 
-                                    class="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-xs font-medium">
-                                💰 Pagar
-                            </button>
-                        ` : `
-                            <span class="text-gray-400 text-xs">-</span>
-                        `}
-                    </td>
+					<td class="px-4 py-3 text-center">
+						${(payment.status === 'Pendente' || payment.status === 'PENDENTE') ? `
+							<!-- PARCELA PENDENTE: Botão PAGAR -->
+							<button onclick="pagarParcela(${doacaoId}, ${payment.numero}, ${payment.valor})" 
+									class="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-xs font-medium">
+								💰 Pagar
+							</button>
+						` : payment.numero === 1 ? `
+							<!-- PRIMEIRA PARCELA PAGA: Não pode estornar -->
+							<span class="text-gray-400 text-xs">Entrada</span>
+						` : `
+							<!-- PARCELAS FUTURAS PAGAS: Botão ESTORNAR -->
+							<button onclick="estornarParcela(${payment.id}, ${doacaoId}, ${payment.numero})" 
+									class="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-xs font-medium">
+								🔄 Estornar
+							</button>
+						`}
+					</td>
                 `;
                 
                 tbody.appendChild(row);

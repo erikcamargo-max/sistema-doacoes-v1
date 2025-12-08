@@ -731,6 +731,58 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+
+// ================================================================
+// v2.5.9 - ESTORNAR PAGAMENTO DE PARCELA FUTURA
+// ================================================================
+app.post('/api/pagamentos/:id/estornar', (req, res) => {
+  const { id } = req.params;
+  const { senha, doacao_id, numero_parcela } = req.body;
+  
+  console.log(`🔄 Tentativa de estorno - Parcela ID: ${id}, Número: ${numero_parcela}`);
+  
+  // Validar senha
+  if (senha !== 'apaetl') {
+    console.log('❌ Senha incorreta fornecida');
+    return res.status(401).json({ error: 'Senha incorreta!' });
+  }
+  
+  // Verificar se é primeira parcela (não pode estornar)
+  if (numero_parcela === 1) {
+    console.log('❌ Tentativa de estornar primeira parcela bloqueada');
+    return res.status(400).json({ 
+      error: 'A primeira parcela (entrada) não pode ser estornada!\n\nPara cancelar completamente, use a função de exclusão de doação.' 
+    });
+  }
+  
+  // Estornar parcela futura
+  db.run(
+    `UPDATE parcelas_futuras 
+     SET status = 'Pendente', data_pagamento = NULL 
+     WHERE id = ?`,
+    [id],
+    function(err) {
+      if (err) {
+        console.error('❌ Erro ao estornar parcela:', err.message);
+        return res.status(500).json({ error: err.message });
+      }
+      
+      if (this.changes === 0) {
+        console.log('⚠️ Nenhuma parcela foi alterada - ID não encontrado');
+        return res.status(404).json({ error: 'Parcela não encontrada' });
+      }
+      
+      console.log(`✅ Parcela ${numero_parcela} estornada com sucesso - Alterações: ${this.changes}`);
+      
+      res.json({ 
+        message: `Parcela ${numero_parcela} estornada com sucesso!`,
+        changes: this.changes 
+      });
+    }
+  );
+});
+
+
 // ============================================================================
 // INICIAR SERVIDOR
 // ============================================================================
